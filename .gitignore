@@ -1,0 +1,4 @@
+vendor
+.vscode
+k8dep
+!/pkg/k8dep
