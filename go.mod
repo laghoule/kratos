@@ -1,4 +1,4 @@
-module kratos
+module github.com/laghoule/kratos
 
 go 1.17
 

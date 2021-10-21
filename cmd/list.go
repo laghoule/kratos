@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"kratos/pkg/k8s"
+	"github.com/laghoule/kratos/pkg/k8s"
 
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"

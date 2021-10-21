@@ -1,6 +1,6 @@
 package main
 
-import "kratos/cmd"
+import "github.com/laghoule/kratos/cmd"
 
 func main() {
 	cmd.Execute()
