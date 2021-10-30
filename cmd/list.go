@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/laghoule/kratos/pkg/k8s"
 
 	"github.com/pterm/pterm"
@@ -25,18 +27,19 @@ to quickly create a Cobra application.`,
 			panic(err)
 		}
 
-		depList, err := client.ListDeployment(viper.GetString("namespace"))
+		depList, err := client.ListDeployments(viper.GetString("namespace"))
 		if err != nil {
 			pterm.Error.Println(err)
 		}
 
 		pdata := pterm.TableData{
-			{"Name", "Creation", "Update", "ResourceVersion"},
+			{"Name", "Replicas", "Creation", "Update", "ResourceVersion"},
 		}
 
 		for _, item := range depList {
 			pdata = append(pdata, []string{
-				item.Name, 
+				item.Name,
+				strconv.Itoa(int(*item.Spec.Replicas)),
 				item.CreationTimestamp.UTC().String(),
 				fmt.Sprint(item.Generation),
 				item.ResourceVersion,

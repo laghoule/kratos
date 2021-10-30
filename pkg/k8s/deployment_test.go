@@ -28,7 +28,7 @@ var (
 func TestListNoDeployment(t *testing.T) {
 	client := newTest()
 
-	listDep, err := client.ListDeployment(fakeNamespace)
+	listDep, err := client.ListDeployments(fakeNamespace)
 	if err != nil {
 		return
 	}
@@ -44,7 +44,7 @@ func TestListDeployment(t *testing.T) {
 		t.Error(err)
 	}
 
-	listDep, err := client.ListDeployment(fakeNamespace)
+	listDep, err := client.ListDeployments(fakeNamespace)
 	if err != nil {
 		t.Error(err)
 	}

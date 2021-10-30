@@ -1,5 +1,5 @@
 package kratos
 
 const (
-	DeployLabel = "kratos.io/name"
+	DeployLabel = "app.kubernetes.io/managed-by=kratos"
 )

@@ -7,12 +7,15 @@ import (
 	"github.com/laghoule/kratos/pkg/kratos"
 
 	appsv1 "k8s.io/api/apps/v1"
+	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
-// ListDeployment list deployment of k8dep labels
-func (c *Client) ListDeployment(ns string) ([]appsv1.Deployment, error) {
-	list, err := c.Clientset.AppsV1().Deployments(ns).List(context.Background(), metav1.ListOptions{
+// ListDeployments list deployment of k8dep labels
+func (c *Client) ListDeployments(namespace string) ([]appsv1.Deployment, error) {
+	list, err := c.Clientset.AppsV1().Deployments(namespace).List(context.Background(), metav1.ListOptions{
 		LabelSelector: kratos.DeployLabel,
 	})
 	if err != nil {
@@ -20,4 +23,75 @@ func (c *Client) ListDeployment(ns string) ([]appsv1.Deployment, error) {
 	}
 
 	return list.Items, nil
+}
+
+// CreateUpdateDeployment create a deployment
+func (c *Client) CreateUpdateDeployment(name, namespace, image, tag string, replicas int32) error {
+	kratosLabel, err := labels.ConvertSelectorToLabelsMap(kratos.DeployLabel)
+	if err != nil {
+		return nil
+	}
+
+	dep := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        name,
+			Namespace:   namespace,
+			Labels:      kratosLabel,
+			Annotations: map[string]string{},
+		},
+		Spec: appsv1.DeploymentSpec{
+			Replicas: &replicas,
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"app": name,
+				},
+			},
+			Template: apiv1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      name,
+					Namespace: namespace,
+					Labels: map[string]string{
+						"app": name,
+					},
+					Annotations: map[string]string{},
+				},
+				Spec: apiv1.PodSpec{
+					Volumes:        []apiv1.Volume{},
+					InitContainers: []apiv1.Container{},
+					Containers: []apiv1.Container{
+						{
+							Name:  name,
+							Image: image+":"+tag,
+							Ports: []apiv1.ContainerPort{
+								{
+									ContainerPort: 80,
+								},
+							},
+						},
+					},
+					EphemeralContainers: []apiv1.EphemeralContainer{},
+					ServiceAccountName:  "",
+					SecurityContext:     &apiv1.PodSecurityContext{},
+					Affinity:            &apiv1.Affinity{},
+					Tolerations:         []apiv1.Toleration{},
+					ReadinessGates:      []apiv1.PodReadinessGate{},
+				},
+			},
+		},
+	}
+
+	_, err = c.Clientset.AppsV1().Deployments(namespace).Create(context.Background(), dep, metav1.CreateOptions{})
+	if err != nil {
+		// if deployment exist, we call update
+		if errors.IsAlreadyExists(err) {
+			_, err = c.Clientset.AppsV1().Deployments(namespace).Update(context.Background(), dep, metav1.UpdateOptions{})
+			if err != nil {
+				return fmt.Errorf("error updating deployment: %s", err)
+			}
+		} else {
+			return fmt.Errorf("error creating deployment: %s", err)
+		}
+	}
+
+	return nil
 }
