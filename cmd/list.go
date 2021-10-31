@@ -33,16 +33,16 @@ to quickly create a Cobra application.`,
 		}
 
 		pdata := pterm.TableData{
-			{"Name", "Replicas", "Creation", "Update", "ResourceVersion"},
+			{"Name", "Namespace", "Replicas", "Creation", "Revision"},
 		}
 
 		for _, item := range depList {
 			pdata = append(pdata, []string{
 				item.Name,
+				item.Namespace,
 				strconv.Itoa(int(*item.Spec.Replicas)),
 				item.CreationTimestamp.UTC().String(),
 				fmt.Sprint(item.Generation),
-				item.ResourceVersion,
 			})
 		}
 

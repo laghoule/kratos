@@ -7,9 +7,9 @@ import (
 	"github.com/laghoule/kratos/pkg/kratos"
 
 	appsv1 "k8s.io/api/apps/v1"
-	apiv1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
 
@@ -37,7 +37,6 @@ func (c *Client) CreateUpdateDeployment(name, namespace, image, tag string, repl
 			Name:        name,
 			Namespace:   namespace,
 			Labels:      kratosLabel,
-			Annotations: map[string]string{},
 		},
 		Spec: appsv1.DeploymentSpec{
 			Replicas: &replicas,
@@ -46,35 +45,27 @@ func (c *Client) CreateUpdateDeployment(name, namespace, image, tag string, repl
 					"app": name,
 				},
 			},
-			Template: apiv1.PodTemplateSpec{
+			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      name,
 					Namespace: namespace,
 					Labels: map[string]string{
 						"app": name,
 					},
-					Annotations: map[string]string{},
 				},
-				Spec: apiv1.PodSpec{
-					Volumes:        []apiv1.Volume{},
-					InitContainers: []apiv1.Container{},
-					Containers: []apiv1.Container{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{
 							Name:  name,
-							Image: image+":"+tag,
-							Ports: []apiv1.ContainerPort{
+							Image: image + ":" + tag,
+							Ports: []corev1.ContainerPort{
 								{
 									ContainerPort: 80,
 								},
 							},
 						},
 					},
-					EphemeralContainers: []apiv1.EphemeralContainer{},
 					ServiceAccountName:  "",
-					SecurityContext:     &apiv1.PodSecurityContext{},
-					Affinity:            &apiv1.Affinity{},
-					Tolerations:         []apiv1.Toleration{},
-					ReadinessGates:      []apiv1.PodReadinessGate{},
 				},
 			},
 		},
