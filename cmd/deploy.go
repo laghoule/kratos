@@ -32,12 +32,20 @@ to quickly create a Cobra application.`,
 		image := viper.GetString("depImage")
 		tag := viper.GetString("depTag")
 		replicas := viper.GetInt32("depReplicas")
+		port := viper.GetInt32("depPort")
 
 		depSpinner, _ := pterm.DefaultSpinner.Start("deploying ", name)
 
+		// deployment
 		if err := client.CreateUpdateDeployment(name, namespace, image, tag, replicas); err != nil {
-			depSpinner.Stop()
-			log.Fatal(err)
+			depSpinner.Fail(err)
+			return
+		}
+
+		// service
+		if err := client.CreateUpdateService(name, namespace, port); err != nil {
+			depSpinner.Fail(err)
+			return
 		}
 
 		depSpinner.Success()
@@ -59,9 +67,12 @@ func init() {
 
 	deployCmd.Flags().Int32("replicas", 1, "number of replicas")
 
+	deployCmd.Flags().Int32("port", 80, "container port")
+
 	viper.BindPFlag("depName", deployCmd.Flags().Lookup("name"))
 	viper.BindPFlag("depNamespace", deployCmd.Flags().Lookup("namespace"))
 	viper.BindPFlag("depImage", deployCmd.Flags().Lookup("image"))
 	viper.BindPFlag("depTag", deployCmd.Flags().Lookup("tag"))
 	viper.BindPFlag("depReplicas", deployCmd.Flags().Lookup("replicas"))
+	viper.BindPFlag("depPort", deployCmd.Flags().Lookup("port"))
 }

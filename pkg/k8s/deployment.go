@@ -34,15 +34,20 @@ func (c *Client) CreateUpdateDeployment(name, namespace, image, tag string, repl
 
 	dep := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        name,
-			Namespace:   namespace,
-			Labels:      kratosLabel,
+			Name:      name,
+			Namespace: namespace,
+			Labels: labels.Merge(
+				kratosLabel,
+				labels.Set{
+					appLabelName: name,
+				},
+			),
 		},
 		Spec: appsv1.DeploymentSpec{
 			Replicas: &replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"app": name,
+					appLabelName: name,
 				},
 			},
 			Template: corev1.PodTemplateSpec{
@@ -50,7 +55,7 @@ func (c *Client) CreateUpdateDeployment(name, namespace, image, tag string, repl
 					Name:      name,
 					Namespace: namespace,
 					Labels: map[string]string{
-						"app": name,
+						appLabelName: name,
 					},
 				},
 				Spec: corev1.PodSpec{
@@ -60,12 +65,14 @@ func (c *Client) CreateUpdateDeployment(name, namespace, image, tag string, repl
 							Image: image + ":" + tag,
 							Ports: []corev1.ContainerPort{
 								{
+									// TODO port
 									ContainerPort: 80,
 								},
 							},
 						},
 					},
-					ServiceAccountName:  "",
+					// TODO service account
+					ServiceAccountName: "",
 				},
 			},
 		},
@@ -77,10 +84,10 @@ func (c *Client) CreateUpdateDeployment(name, namespace, image, tag string, repl
 		if errors.IsAlreadyExists(err) {
 			_, err = c.Clientset.AppsV1().Deployments(namespace).Update(context.Background(), dep, metav1.UpdateOptions{})
 			if err != nil {
-				return fmt.Errorf("error updating deployment: %s", err)
+				return fmt.Errorf("updating deployment failed: %s", err)
 			}
 		} else {
-			return fmt.Errorf("error creating deployment: %s", err)
+			return fmt.Errorf("creating deployment failed: %s", err)
 		}
 	}
 

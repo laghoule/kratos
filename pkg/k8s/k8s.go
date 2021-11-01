@@ -15,6 +15,10 @@ type Client struct {
 	Clientset kubernetes.Interface
 }
 
+const (
+	appLabelName = "app"
+)
+
 // New return a a Client
 func New() (*Client, error) {
 	var kubeconfig *string

@@ -10,17 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const (
-	kratosLabelName  = "app.kubernetes.io/managed-by"
-	kratosLabelValue = "kratos"
-	name             = "name"
-	namespace        = "default"
-	image            = "test"
-	tagLatest        = "latest"
-	tagV1            = "v1.0.0"
-	appLabelName     = "app"
-	containerPort    = 80
-)
+
 
 var (
 	replicas   int32 = 1
@@ -54,7 +44,7 @@ var (
 							Image: image + ":" + tagLatest,
 							Ports: []corev1.ContainerPort{
 								{
-									ContainerPort: containerPort,
+									ContainerPort: containerHTTP,
 								},
 							},
 						},
@@ -65,7 +55,7 @@ var (
 	}
 )
 
-// TestListDeployment test list of no deployment
+// TestListNoDeployment test list of no deployment
 func TestListNoDeployment(t *testing.T) {
 	client := newTest()
 
