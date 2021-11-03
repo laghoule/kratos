@@ -25,7 +25,7 @@ func (c *Client) ListDeployments(namespace string) ([]appsv1.Deployment, error) 
 	return list.Items, nil
 }
 
-// CreateUpdateDeployment create a deployment
+// CreateUpdateDeployment create or update a deployment
 func (c *Client) CreateUpdateDeployment(name, namespace, image, tag string, replicas int32) error {
 	kratosLabel, err := labels.ConvertSelectorToLabelsMap(kratos.DeployLabel)
 	if err != nil {

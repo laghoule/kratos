@@ -33,6 +33,9 @@ to quickly create a Cobra application.`,
 		tag := viper.GetString("depTag")
 		replicas := viper.GetInt32("depReplicas")
 		port := viper.GetInt32("depPort")
+		ingresClass := viper.GetString("depIngressClass")
+		clusterIssuer := viper.GetString("depClusterIssuer")
+		hostnames := viper.GetStringSlice("depHostnames")
 
 		depSpinner, _ := pterm.DefaultSpinner.Start("deploying ", name)
 
@@ -44,6 +47,12 @@ to quickly create a Cobra application.`,
 
 		// service
 		if err := client.CreateUpdateService(name, namespace, port); err != nil {
+			depSpinner.Fail(err)
+			return
+		}
+
+		// ingress
+		if err := client.CreateUpdateIngress(name, namespace, ingresClass, clusterIssuer, hostnames, port); err != nil {
 			depSpinner.Fail(err)
 			return
 		}
@@ -69,10 +78,18 @@ func init() {
 
 	deployCmd.Flags().Int32("port", 80, "container port")
 
+	deployCmd.Flags().String("ingressClass", "nginx", "ingress class name")
+	deployCmd.Flags().String("clusterIssuer", "letsencrypt", "letsencrypt cluster issuer name")
+	deployCmd.Flags().StringArray("hostnames", []string{}, "list of hostname to assign")
+	deployCmd.MarkFlagRequired("hostnames")
+
 	viper.BindPFlag("depName", deployCmd.Flags().Lookup("name"))
 	viper.BindPFlag("depNamespace", deployCmd.Flags().Lookup("namespace"))
 	viper.BindPFlag("depImage", deployCmd.Flags().Lookup("image"))
 	viper.BindPFlag("depTag", deployCmd.Flags().Lookup("tag"))
 	viper.BindPFlag("depReplicas", deployCmd.Flags().Lookup("replicas"))
 	viper.BindPFlag("depPort", deployCmd.Flags().Lookup("port"))
+	viper.BindPFlag("depIngressClass", deployCmd.Flags().Lookup("ingressClass"))
+	viper.BindPFlag("depClusterIssuer", deployCmd.Flags().Lookup("clusterIssuer"))
+	viper.BindPFlag("depHostnames", deployCmd.Flags().Lookup("hostnames"))
 }
