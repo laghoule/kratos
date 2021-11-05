@@ -5,9 +5,9 @@ RUN go get -d -v
 
 FROM dep AS build
 WORKDIR /src/
-RUN CGO_ENABLED=0 GOOS=linux go build -o k8dep .
+RUN CGO_ENABLED=0 GOOS=linux go build -o kratos .
 
 FROM alpine:3.14
-COPY --from=build /src/k8dep /usr/bin/
-ENTRYPOINT ["/usr/bin/k8dep"]
+COPY --from=build /src/kratos /usr/bin/
+ENTRYPOINT ["/usr/bin/kratos"]
 CMD ["-h"]
