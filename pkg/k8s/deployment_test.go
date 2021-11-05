@@ -20,6 +20,7 @@ var (
 			Namespace: namespace,
 			Labels: map[string]string{
 				kratosLabelName: kratosLabelValue,
+				appLabelName:    name,
 			},
 		},
 		Spec: appsv1.DeploymentSpec{
