@@ -87,8 +87,18 @@ func (c *Client) CreateUpdateIngress(name, namespace, ingressClass, clusterIssue
 				return fmt.Errorf("updating ingress failed: %s", err)
 			}
 		} else {
-			return fmt.Errorf("create ingress failed: %s", err)
+			return fmt.Errorf("creating ingress failed: %s", err)
 		}
+	}
+
+	return nil
+}
+
+// DeleteIngress delete specified ingress
+func (c *Client) DeleteIngress(name, namespace string) error {
+	err := c.Clientset.NetworkingV1().Ingresses(namespace).Delete(context.Background(), name, metav1.DeleteOptions{})
+	if err != nil {
+		return fmt.Errorf("deleting ingress failed: %s", err)
 	}
 
 	return nil

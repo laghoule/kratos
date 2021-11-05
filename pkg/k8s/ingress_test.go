@@ -7,6 +7,7 @@ import (
 	//"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/assert"
 	netv1 "k8s.io/api/networking/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -102,4 +103,31 @@ func TestUpdateIngress(t *testing.T) {
 	}
 
 	assert.Equal(t, "example.com", ing.Spec.Rules[0].Host)
+}
+
+func TestDeleteIngress(t *testing.T) {
+	client := newTest()
+
+	err := client.CreateUpdateIngress(name, namespace, ingressClass, clusterIssuer, []string{hostname}, containerHTTP)
+	if err != nil {
+		t.Error(err)
+	}
+
+	ing, err := client.Clientset.NetworkingV1().Ingresses(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	if err != nil {
+		t.Error(err)
+	}
+
+	assert.NotEmpty(t, ing)
+
+	if err := client.DeleteIngress(name, namespace); err != nil {
+		t.Error(err)
+	}
+
+	ing, err = client.Clientset.NetworkingV1().Ingresses(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	if err != nil && ! errors.IsNotFound(err) {
+		t.Error(err)
+	}
+
+	assert.Empty(t, ing)
 }
