@@ -14,6 +14,8 @@ const (
 	tagV1            = "v1.0.0"
 	containerHTTP    = 80
 	constainerHTTPS  = 443
+	clusterIssuer    = "letsencrypt"
+	hostname         = "www.example.com"
 )
 
 func newTest() *Client {

@@ -31,7 +31,7 @@ func (c *Client) CreateUpdateIngress(name, namespace, ingressClass, clusterIssue
 	for _, hostname := range hostnames {
 		ingressTLS = append(ingressTLS, netv1.IngressTLS{
 			Hosts:      []string{hostname},
-			SecretName: name + "-cert",
+			SecretName: hostname + "-tls",
 		})
 
 		ingressRules = append(ingressRules, netv1.IngressRule{
