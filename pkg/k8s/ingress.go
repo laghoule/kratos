@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/laghoule/kratos/pkg/kratos"
+	"github.com/laghoule/kratos/pkg/common"
 
 	netv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -19,7 +19,7 @@ const (
 
 // CreateUpdateIngress create or update an ingress
 func (c *Client) CreateUpdateIngress(name, namespace, ingressClass, clusterIssuer string, hostnames []string, port int32) error {
-	kratosLabel, err := labels.ConvertSelectorToLabelsMap(kratos.DeployLabel)
+	kratosLabel, err := labels.ConvertSelectorToLabelsMap(common.DeployLabel)
 	if err != nil {
 		return nil
 	}

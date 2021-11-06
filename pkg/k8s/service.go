@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/laghoule/kratos/pkg/kratos"
+	"github.com/laghoule/kratos/pkg/common"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -15,7 +15,7 @@ import (
 
 // CreateUpdateService create or update a service
 func (c *Client) CreateUpdateService(name, namespace string, port int32) error {
-	kratosLabel, err := labels.ConvertSelectorToLabelsMap(kratos.DeployLabel)
+	kratosLabel, err := labels.ConvertSelectorToLabelsMap(common.DeployLabel)
 	if err != nil {
 		return nil
 	}
@@ -64,7 +64,7 @@ func (c *Client) CreateUpdateService(name, namespace string, port int32) error {
 
 // updateService update an existing service
 func (c *Client) updateService(name, namespace string, port int32) error {
-	kratosLabel, err := labels.ConvertSelectorToLabelsMap(kratos.DeployLabel)
+	kratosLabel, err := labels.ConvertSelectorToLabelsMap(common.DeployLabel)
 	if err != nil {
 		return nil
 	}

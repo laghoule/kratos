@@ -1,12 +1,10 @@
 package cmd
 
 import (
-	"fmt"
-	"strconv"
+	"os"
 
-	"github.com/laghoule/kratos/pkg/k8s"
+	"github.com/laghoule/kratos/pkg/kratos"
 
-	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -18,31 +16,14 @@ var listCmd = &cobra.Command{
 	Long: `List application by namespace, or cluster wide of managed
 kratos deployment.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		client, err := k8s.New()
+		kratos, err := kratos.New()
 		if err != nil {
 			panic(err)
 		}
 
-		depList, err := client.ListDeployments(viper.GetString("listNamespace"))
-		if err != nil {
-			pterm.Error.Println(err)
+		if err := kratos.List(viper.GetString("listNamespace")); err != nil {
+			os.Exit(1)
 		}
-
-		pdata := pterm.TableData{
-			{"Name", "Namespace", "Replicas", "Creation", "Revision"},
-		}
-
-		for _, item := range depList {
-			pdata = append(pdata, []string{
-				item.Name,
-				item.Namespace,
-				strconv.Itoa(int(*item.Spec.Replicas)),
-				item.CreationTimestamp.UTC().String(),
-				fmt.Sprint(item.Generation),
-			})
-		}
-
-		pterm.DefaultTable.WithHasHeader().WithData(pdata).Render()
 	},
 }
 
