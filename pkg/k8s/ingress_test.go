@@ -125,9 +125,9 @@ func TestDeleteIngress(t *testing.T) {
 	}
 
 	ing, err = client.Clientset.NetworkingV1().Ingresses(namespace).Get(context.Background(), name, metav1.GetOptions{})
-	if err != nil && ! errors.IsNotFound(err) {
+	if err != nil && !errors.IsNotFound(err) {
 		t.Error(err)
 	}
 
-	assert.Empty(t, ing)
+	assert.True(t, errors.IsNotFound(err))
 }

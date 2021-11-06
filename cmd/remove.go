@@ -1,36 +1,57 @@
 package cmd
 
 import (
-	"fmt"
+	"github.com/laghoule/kratos/pkg/k8s"
 
+	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // removeCmd represents the remove command
 var removeCmd = &cobra.Command{
 	Use:   "remove",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Remove a deployment in a namespace",
+	Long: `Remove the deployment, service and ingress of the deployed application. 
+Generated cert-manager secret will not be deleted.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("remove called")
+		client, err := k8s.New()
+		if err != nil {
+			panic(err)
+		}
+
+		name := viper.GetString("delName")
+		namespace := viper.GetString("delNamespace")
+
+		// ingress
+		spinner, _ := pterm.DefaultSpinner.Start("removing ingress ", name)
+		if err := client.DeleteIngress(name, namespace); err != nil {
+			pterm.Error.Println(err)
+		}
+		spinner.Success()
+
+		// service
+		spinner, _ = pterm.DefaultSpinner.Start("removing service ", name)
+		if err := client.DeleteService(name, namespace); err != nil {
+			pterm.Error.Println(err)
+		}
+		spinner.Success()
+
+		// deployment
+		spinner, _ = pterm.DefaultSpinner.Start("removing deployment ", name)
+		if err := client.DeleteDeployment(name, namespace); err != nil {
+			pterm.Error.Println(err)
+		}
+		spinner.Success()
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(removeCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// removeCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// removeCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	removeCmd.PersistentFlags().String("name", "", "name of the deployment")
+	removeCmd.MarkFlagRequired("name")
+	removeCmd.PersistentFlags().String("namespace", "", "namespace of the deployment")
+	removeCmd.MarkFlagRequired("namespace")
+	viper.BindPFlag("delName", removeCmd.PersistentFlags().Lookup("name"))
+	viper.BindPFlag("delNamespace", removeCmd.PersistentFlags().Lookup("namespace"))
 }

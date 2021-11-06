@@ -13,13 +13,9 @@ import (
 // deployCmd represents the deploy command
 var deployCmd = &cobra.Command{
 	Use:   "deploy",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Deploy an application in an namespace",
+	Long: `Create deployment, service and ingress of the deployed application. 
+	Cert-manager will create the necessary TLS certificate.`,
 	TraverseChildren: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		client, err := k8s.New()
@@ -37,27 +33,30 @@ to quickly create a Cobra application.`,
 		clusterIssuer := viper.GetString("depClusterIssuer")
 		hostnames := viper.GetStringSlice("depHostnames")
 
-		depSpinner, _ := pterm.DefaultSpinner.Start("deploying ", name)
-
 		// deployment
-		if err := client.CreateUpdateDeployment(name, namespace, image, tag, replicas); err != nil {
-			depSpinner.Fail(err)
+		spinner, _ := pterm.DefaultSpinner.Start("deploying deployment ", name)
+		if err := client.CreateUpdateDeployment(name, namespace, image, tag, replicas, port); err != nil {
+			spinner.Fail(err)
 			return
 		}
+		spinner.Success()
 
 		// service
+		spinner, _ = pterm.DefaultSpinner.Start("deploying service ", name)
 		if err := client.CreateUpdateService(name, namespace, port); err != nil {
-			depSpinner.Fail(err)
+			spinner.Fail(err)
 			return
 		}
+		spinner.Success()
 
 		// ingress
+		spinner, _ = pterm.DefaultSpinner.Start("deploying ingress ", name)
 		if err := client.CreateUpdateIngress(name, namespace, ingresClass, clusterIssuer, hostnames, port); err != nil {
-			depSpinner.Fail(err)
+			spinner.Fail(err)
 			return
 		}
-
-		depSpinner.Success()
+		spinner.Success()
+		
 	},
 }
 

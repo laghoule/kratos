@@ -7,10 +7,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
-
 
 var (
 	replicas   int32 = 1
@@ -72,7 +71,7 @@ func TestListNoDeployment(t *testing.T) {
 func TestListDeployment(t *testing.T) {
 	client := newTest()
 
-	if err := client.CreateUpdateDeployment(name, namespace, image, tagLatest, replicas); err != nil {
+	if err := client.CreateUpdateDeployment(name, namespace, image, tagLatest, replicas, containerHTTP); err != nil {
 		t.Error(err)
 	}
 
@@ -88,7 +87,7 @@ func TestListDeployment(t *testing.T) {
 func TestCreateDeployment(t *testing.T) {
 	client := newTest()
 
-	if err := client.CreateUpdateDeployment(name, namespace, image, tagLatest, replicas); err != nil {
+	if err := client.CreateUpdateDeployment(name, namespace, image, tagLatest, replicas, containerHTTP); err != nil {
 		t.Error(err)
 	}
 
@@ -104,11 +103,11 @@ func TestCreateDeployment(t *testing.T) {
 func TestUpdateDeployment(t *testing.T) {
 	client := newTest()
 
-	if err := client.CreateUpdateDeployment(name, namespace, image, tagLatest, replicas); err != nil {
+	if err := client.CreateUpdateDeployment(name, namespace, image, tagLatest, replicas, containerHTTP); err != nil {
 		t.Error(err)
 	}
 
-	if err := client.CreateUpdateDeployment(name, namespace, image, tagV1, replicas); err != nil {
+	if err := client.CreateUpdateDeployment(name, namespace, image, tagV1, replicas, containerHTTP); err != nil {
 		t.Error(err)
 	}
 
@@ -118,4 +117,30 @@ func TestUpdateDeployment(t *testing.T) {
 	}
 
 	assert.Equal(t, image+":"+tagV1, dep.Spec.Template.Spec.Containers[0].Image)
+}
+
+func TestDeleteDeployment(t *testing.T) {
+	client := newTest()
+
+	if err := client.CreateUpdateDeployment(name, namespace, image, tagLatest, replicas, containerHTTP); err != nil {
+		t.Error(err)
+	}
+
+	dep, err := client.Clientset.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	if err != nil {
+		t.Error(err)
+	}
+
+	assert.NotEmpty(t, dep)
+
+	if err := client.DeleteDeployment(name, namespace); err != nil {
+		t.Error(err)
+	}
+
+	dep, err = client.Clientset.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	if err != nil && !errors.IsNotFound(err) {
+		t.Error(err)
+	}
+
+	assert.True(t, errors.IsNotFound(err))
 }

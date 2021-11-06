@@ -26,7 +26,7 @@ func (c *Client) ListDeployments(namespace string) ([]appsv1.Deployment, error) 
 }
 
 // CreateUpdateDeployment create or update a deployment
-func (c *Client) CreateUpdateDeployment(name, namespace, image, tag string, replicas int32) error {
+func (c *Client) CreateUpdateDeployment(name, namespace, image, tag string, replicas, port int32) error {
 	kratosLabel, err := labels.ConvertSelectorToLabelsMap(kratos.DeployLabel)
 	if err != nil {
 		return nil
@@ -65,8 +65,7 @@ func (c *Client) CreateUpdateDeployment(name, namespace, image, tag string, repl
 							Image: image + ":" + tag,
 							Ports: []corev1.ContainerPort{
 								{
-									// TODO port
-									ContainerPort: 80,
+									ContainerPort: port,
 								},
 							},
 						},
@@ -89,6 +88,15 @@ func (c *Client) CreateUpdateDeployment(name, namespace, image, tag string, repl
 		} else {
 			return fmt.Errorf("creating deployment failed: %s", err)
 		}
+	}
+
+	return nil
+}
+
+// DeleteDeployment delete the specified deployment
+func (c *Client) DeleteDeployment(name, namespace string) error {
+	if err := c.Clientset.AppsV1().Deployments(namespace).Delete(context.Background(), name, metav1.DeleteOptions{}); err != nil {
+		return fmt.Errorf("deleting deployment failed: %s", err)
 	}
 
 	return nil

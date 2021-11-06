@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -71,4 +72,30 @@ func TestUpdateService(t *testing.T) {
 	}
 
 	assert.Equal(t, int32(443), svc.Spec.Ports[0].Port)
+}
+
+func TestDeleteService(t *testing.T) {
+	client := newTest()
+
+	if err := client.CreateUpdateService(name, namespace, containerHTTP); err != nil {
+		t.Error(err)
+	}
+
+	svc, err := client.Clientset.CoreV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	if err != nil {
+		t.Error(err)
+	}
+
+	assert.NotEmpty(t, svc)
+
+	if err := client.DeleteService(name, namespace); err != nil {
+		t.Error(err)
+	}
+
+	svc, err = client.Clientset.CoreV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	if err != nil && !errors.IsNotFound(err) {
+		t.Error(err)
+	}
+
+	assert.True(t, errors.IsNotFound(err))
 }
