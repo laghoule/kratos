@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/laghoule/kratos/pkg/kratos"
@@ -22,6 +23,7 @@ kratos deployment.`,
 		}
 
 		if err := kratos.List(viper.GetString("listNamespace")); err != nil {
+			fmt.Println(err)
 			os.Exit(1)
 		}
 	},

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/laghoule/kratos/pkg/config"
 	"github.com/laghoule/kratos/pkg/k8s"
 
 	"github.com/pterm/pterm"
@@ -11,19 +12,34 @@ import (
 
 // Kratos contains info for deployment
 type Kratos struct {
-	k8s.Client
+	*k8s.Client
+	*config.Config
 }
 
 // New return a kratos struct
 func New() (*Kratos, error) {
+
 	kclient, err := k8s.New()
 	if err != nil {
 		return nil, err
 	}
 
 	return &Kratos{
-		Client: *kclient,
+		Client: kclient,
 	}, nil
+}
+
+// UseConfig load configuration file
+func (k *Kratos) UseConfig(file string) error {
+	confYAML := &config.Config{}
+
+	if err := confYAML.Load(file); err != nil {
+		return err
+	}
+
+	k.Config = confYAML
+
+	return nil
 }
 
 // Create the deployment of all objects

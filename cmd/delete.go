@@ -16,13 +16,20 @@ var deleteCmd = &cobra.Command{
 	Long: `Delete the deployment, service and ingress of the deployed application. 
 Generated cert-manager secret will not be deleted.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		config := viper.GetString("dConfig")
+		name := viper.GetString("dName")
+		namespace := viper.GetString("dNamespace")
+
 		kratos, err := kratos.New()
 		if err != nil {
 			panic(err)
 		}
 
-		name := viper.GetString("dName")
-		namespace := viper.GetString("dNamespace")
+		if len(config) > 0 {
+			if err := kratos.UseConfig(config); err != nil {
+				panic(err)
+			}
+		}
 
 		if err := kratos.Delete(name, namespace); err != nil {
 			os.Exit(1)
@@ -32,12 +39,16 @@ Generated cert-manager secret will not be deleted.`,
 
 func init() {
 	rootCmd.AddCommand(deleteCmd)
+
+	deleteCmd.Flags().String("config", "", "configuration file")
+
 	deleteCmd.PersistentFlags().String("name", "", "name of the deployment")
 	deleteCmd.MarkFlagRequired("name")
 
 	deleteCmd.PersistentFlags().String("namespace", "", "namespace of the deployment")
 	deleteCmd.MarkFlagRequired("namespace")
 
+	viper.BindPFlag("dConfig", deleteCmd.Flags().Lookup("config"))
 	viper.BindPFlag("dName", deleteCmd.PersistentFlags().Lookup("name"))
 	viper.BindPFlag("dNamespace", deleteCmd.PersistentFlags().Lookup("namespace"))
 }

@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"log"
 	"os"
 
 	"github.com/laghoule/kratos/pkg/kratos"
@@ -18,11 +17,7 @@ var createCmd = &cobra.Command{
 	Cert-manager will create the necessary TLS certificate.`,
 	TraverseChildren: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		kratos, err := kratos.New()
-		if err != nil {
-			log.Fatal(err)
-		}
-
+		config := viper.GetString("cConfig")
 		name := viper.GetString("cName")
 		namespace := viper.GetString("cNamespace")
 		image := viper.GetString("cImage")
@@ -33,6 +28,17 @@ var createCmd = &cobra.Command{
 		clusterIssuer := viper.GetString("cClusterIssuer")
 		hostnames := viper.GetStringSlice("cHostnames")
 
+		kratos, err := kratos.New()
+		if err != nil {
+			panic(err)
+		}
+
+		if len(config) > 0 {
+			if err := kratos.UseConfig(config); err != nil {
+				panic(err)
+			}
+		}
+
 		if err := kratos.Create(name, namespace, image, tag, ingresClass, clusterIssuer, hostnames, replicas, port); err != nil {
 			os.Exit(1)
 		}
@@ -42,10 +48,12 @@ var createCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(createCmd)
 
-	createCmd.Flags().String("name", "", "createment name")
+	createCmd.Flags().String("config", "", "configuration file")
+
+	createCmd.Flags().String("name", "", "deployment name")
 	createCmd.MarkFlagRequired("name")
 
-	createCmd.Flags().String("namespace", "default", "specify a namespace")
+	createCmd.Flags().String("namespace", "default", "deployment namespace")
 
 	createCmd.Flags().String("image", "", "image to create")
 	createCmd.MarkFlagRequired("image")
@@ -61,6 +69,7 @@ func init() {
 	createCmd.Flags().StringArray("hostnames", []string{}, "list of hostname to assign")
 	createCmd.MarkFlagRequired("hostnames")
 
+	viper.BindPFlag("cConfig", createCmd.Flags().Lookup("config"))
 	viper.BindPFlag("cName", createCmd.Flags().Lookup("name"))
 	viper.BindPFlag("cNamespace", createCmd.Flags().Lookup("namespace"))
 	viper.BindPFlag("cImage", createCmd.Flags().Lookup("image"))
