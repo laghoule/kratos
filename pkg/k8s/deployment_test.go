@@ -57,7 +57,7 @@ var (
 
 // TestListNoDeployment test list of no deployment
 func TestListNoDeployment(t *testing.T) {
-	client := newTest()
+	client := testNew()
 
 	listDep, err := client.ListDeployments(namespace)
 	if err != nil {
@@ -69,7 +69,7 @@ func TestListNoDeployment(t *testing.T) {
 
 // TestListDeployment test list of one deployment
 func TestListDeployment(t *testing.T) {
-	client := newTest()
+	client := testNew()
 
 	if err := client.CreateUpdateDeployment(name, namespace, image, tagLatest, replicas, containerHTTP); err != nil {
 		t.Error(err)
@@ -85,7 +85,7 @@ func TestListDeployment(t *testing.T) {
 
 // TestCreateDeployment test creation of deployment
 func TestCreateDeployment(t *testing.T) {
-	client := newTest()
+	client := testNew()
 
 	if err := client.CreateUpdateDeployment(name, namespace, image, tagLatest, replicas, containerHTTP); err != nil {
 		t.Error(err)
@@ -101,7 +101,7 @@ func TestCreateDeployment(t *testing.T) {
 
 // TestUpdateDeployment test update deployment of tag from latest to v1.0.0
 func TestUpdateDeployment(t *testing.T) {
-	client := newTest()
+	client := testNew()
 
 	if err := client.CreateUpdateDeployment(name, namespace, image, tagLatest, replicas, containerHTTP); err != nil {
 		t.Error(err)
@@ -120,7 +120,7 @@ func TestUpdateDeployment(t *testing.T) {
 }
 
 func TestDeleteDeployment(t *testing.T) {
-	client := newTest()
+	client := testNew()
 
 	if err := client.CreateUpdateDeployment(name, namespace, image, tagLatest, replicas, containerHTTP); err != nil {
 		t.Error(err)

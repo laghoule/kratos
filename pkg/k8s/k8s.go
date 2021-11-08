@@ -5,18 +5,23 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"golang.org/x/mod/semver"
+
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
 )
 
 // Client is the Kubernetes client
 type Client struct {
-	Clientset kubernetes.Interface
+	Clientset  kubernetes.Interface
+	RestConfig *rest.Config
 }
 
 const (
-	appLabelName = "app"
+	appLabelName       = "app"
+	requiredK8SVersion = "1.19"
 )
 
 // New return a a Client
@@ -43,5 +48,22 @@ func New() (*Client, error) {
 		return nil, fmt.Errorf("unable to initialize Kubernetes client: %s", err)
 	}
 
-	return &Client{Clientset: clientset}, nil
+	return &Client{
+		Clientset:  clientset,
+		RestConfig: config,
+	}, nil
+}
+
+// CheckVersionDepency check if depency are meet
+func (c *Client) CheckVersionDepency() error {
+	vers, err := c.Clientset.Discovery().ServerVersion()
+	if err != nil {
+		return fmt.Errorf("getting Kubernetes version failed: %s", err)
+	}
+
+	if semver.Compare(requiredK8SVersion, vers.String()) < 0 {
+		return fmt.Errorf("needed Kubernetes version 1.19+ not meet")
+	}
+
+	return nil
 }

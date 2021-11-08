@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/laghoule/kratos/pkg/kratos"
@@ -40,6 +41,7 @@ var createCmd = &cobra.Command{
 		}
 
 		if err := kratos.Create(name, namespace, image, tag, ingresClass, clusterIssuer, hostnames, replicas, port); err != nil {
+			fmt.Println(err)
 			os.Exit(1)
 		}
 	},

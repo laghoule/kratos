@@ -12,9 +12,9 @@ import (
 type Config struct {
 	Name      string `yaml:"name" validate:"required,alphanum"`
 	Namespace string `yaml:"namespace" validate:"required,alphanum"`
-	Deployment
-	Service
-	Ingress
+	*Deployment
+	*Service
+	*Ingress
 }
 
 // Deployment object

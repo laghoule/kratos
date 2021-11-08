@@ -1,6 +1,8 @@
 package k8s
 
 import (
+	"testing"
+
 	"k8s.io/client-go/kubernetes/fake"
 )
 
@@ -18,8 +20,15 @@ const (
 	hostname         = "www.example.com"
 )
 
-func newTest() *Client {
+func testNew() *Client {
 	client := &Client{}
 	client.Clientset = fake.NewSimpleClientset()
 	return client
+}
+
+func TestCheckVersionDepency(t *testing.T) {
+	client := testNew()
+	if err := client.CheckVersionDepency(); err != nil {
+		t.Error(err)
+	}
 }

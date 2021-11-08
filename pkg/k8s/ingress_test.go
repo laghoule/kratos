@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	//"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/assert"
 	netv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -69,7 +68,7 @@ var (
 )
 
 func TestCreateIngress(t *testing.T) {
-	client := newTest()
+	client := testNew()
 
 	err := client.CreateUpdateIngress(name, namespace, ingressClass, clusterIssuer, []string{hostname}, containerHTTP)
 	if err != nil {
@@ -85,7 +84,7 @@ func TestCreateIngress(t *testing.T) {
 }
 
 func TestUpdateIngress(t *testing.T) {
-	client := newTest()
+	client := testNew()
 
 	err := client.CreateUpdateIngress(name, namespace, ingressClass, clusterIssuer, []string{hostname}, containerHTTP)
 	if err != nil {
@@ -106,7 +105,7 @@ func TestUpdateIngress(t *testing.T) {
 }
 
 func TestDeleteIngress(t *testing.T) {
-	client := newTest()
+	client := testNew()
 
 	err := client.CreateUpdateIngress(name, namespace, ingressClass, clusterIssuer, []string{hostname}, containerHTTP)
 	if err != nil {

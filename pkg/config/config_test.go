@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	goodConfig = "testdata/config.yml"
-	badConfig  = "testdata/badconfig.yml"
+	goodConfig = "testdata/goodConfig.yml"
+	badConfig  = "testdata/badConfig.yml"
 
 	name                = "myApp"
 	namespace           = "myNamespace"
@@ -23,13 +23,13 @@ var (
 	configuration = &Config{
 		Name:      name,
 		Namespace: namespace,
-		Deployment: Deployment{
+		Deployment: &Deployment{
 			Replicas: replicas,
 		},
-		Service: Service{
+		Service: &Service{
 			Port: port,
 		},
-		Ingress: Ingress{
+		Ingress: &Ingress{
 			IngressClass:  ingresClass,
 			ClusterIssuer: clusterIssuer,
 			Hostnames:     hostnames,
@@ -50,8 +50,6 @@ func TestLoadConfig(t *testing.T) {
 
 func TestLoadBadConfig(t *testing.T) {
 	config := &Config{}
-
 	err := config.Load(badConfig)
-
 	assert.Error(t, err)
 }

@@ -4,11 +4,19 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/laghoule/kratos/pkg/certmanager"
 	"github.com/laghoule/kratos/pkg/config"
 	"github.com/laghoule/kratos/pkg/k8s"
 
 	"github.com/pterm/pterm"
 )
+
+// Kratosphere is the kratos interface
+type Kratosphere interface {
+	List(namespace string) error
+	Create(name, namespace, image, tag, ingresClass, clusterIssuer string, hostnames []string, replicas, port int32) error
+	Delete(name, namespace string)
+}
 
 // Kratos contains info for deployment
 type Kratos struct {
@@ -18,11 +26,13 @@ type Kratos struct {
 
 // New return a kratos struct
 func New() (*Kratos, error) {
-
 	kclient, err := k8s.New()
 	if err != nil {
 		return nil, err
 	}
+
+	// check if we meet k8s version requirement
+	kclient.CheckVersionDepency()
 
 	return &Kratos{
 		Client: kclient,
@@ -45,6 +55,16 @@ func (k *Kratos) UseConfig(file string) error {
 // Create the deployment of all objects
 func (k *Kratos) Create(name, namespace, image, tag, ingresClass, clusterIssuer string, hostnames []string, replicas, port int32) error {
 	runWithError := false
+
+	// validate clusterIssuer
+	cm, err := certmanager.New(*k.Client)
+	if err != nil {
+		return err
+	}
+	
+	if err := cm.CheckClusterIssuer(k.Client, clusterIssuer); err != nil {
+		return err
+	}
 
 	// deployment
 	spinner, _ := pterm.DefaultSpinner.Start("creating deployment ", name)

@@ -40,7 +40,7 @@ var (
 
 // TestCreateUpdateDeployment test creation of deployment
 func TestCreateUpdateService(t *testing.T) {
-	client := newTest()
+	client := testNew()
 
 	if err := client.CreateUpdateService(name, namespace, containerHTTP); err != nil {
 		t.Error(err)
@@ -56,7 +56,7 @@ func TestCreateUpdateService(t *testing.T) {
 
 // TestCreateDeployment test creation of deployment
 func TestUpdateService(t *testing.T) {
-	client := newTest()
+	client := testNew()
 
 	if err := client.CreateUpdateService(name, namespace, containerHTTP); err != nil {
 		t.Error(err)
@@ -75,7 +75,7 @@ func TestUpdateService(t *testing.T) {
 }
 
 func TestDeleteService(t *testing.T) {
-	client := newTest()
+	client := testNew()
 
 	if err := client.CreateUpdateService(name, namespace, containerHTTP); err != nil {
 		t.Error(err)
