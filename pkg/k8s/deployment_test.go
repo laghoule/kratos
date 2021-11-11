@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/laghoule/kratos/pkg/config"
+
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -70,8 +72,13 @@ func TestListNoDeployment(t *testing.T) {
 // TestListDeployment test list of one deployment
 func TestListDeployment(t *testing.T) {
 	client := testNew()
+	conf := &config.Config{}
 
-	if err := client.CreateUpdateDeployment(name, namespace, image, tagLatest, replicas, containerHTTP); err != nil {
+	if err := conf.Load(goodConfig); err != nil {
+		t.Error(err)
+	}
+
+	if err := client.CreateUpdateDeployment(name, namespace, conf); err != nil {
 		t.Error(err)
 	}
 
@@ -86,8 +93,13 @@ func TestListDeployment(t *testing.T) {
 // TestCreateDeployment test creation of deployment
 func TestCreateDeployment(t *testing.T) {
 	client := testNew()
+	conf := &config.Config{}
 
-	if err := client.CreateUpdateDeployment(name, namespace, image, tagLatest, replicas, containerHTTP); err != nil {
+	if err := conf.Load(goodConfig); err != nil {
+		t.Error(err)
+	}
+
+	if err := client.CreateUpdateDeployment(name, namespace, conf); err != nil {
 		t.Error(err)
 	}
 
@@ -102,12 +114,19 @@ func TestCreateDeployment(t *testing.T) {
 // TestUpdateDeployment test update deployment of tag from latest to v1.0.0
 func TestUpdateDeployment(t *testing.T) {
 	client := testNew()
+	conf := &config.Config{}
 
-	if err := client.CreateUpdateDeployment(name, namespace, image, tagLatest, replicas, containerHTTP); err != nil {
+	if err := conf.Load(goodConfig); err != nil {
 		t.Error(err)
 	}
 
-	if err := client.CreateUpdateDeployment(name, namespace, image, tagV1, replicas, containerHTTP); err != nil {
+	if err := client.CreateUpdateDeployment(name, namespace, conf); err != nil {
+		t.Error(err)
+	}
+
+	conf.Containers[0].Tag = "v1.0.0"
+
+	if err := client.CreateUpdateDeployment(name, namespace, conf); err != nil {
 		t.Error(err)
 	}
 
@@ -121,8 +140,13 @@ func TestUpdateDeployment(t *testing.T) {
 
 func TestDeleteDeployment(t *testing.T) {
 	client := testNew()
+	conf := &config.Config{}
 
-	if err := client.CreateUpdateDeployment(name, namespace, image, tagLatest, replicas, containerHTTP); err != nil {
+	if err := conf.Load(goodConfig); err != nil {
+		t.Error(err)
+	}
+
+	if err := client.CreateUpdateDeployment(name, namespace, conf); err != nil {
 		t.Error(err)
 	}
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/laghoule/kratos/pkg/common"
+	"github.com/laghoule/kratos/pkg/config"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -26,13 +27,26 @@ func (c *Client) ListDeployments(namespace string) ([]appsv1.Deployment, error) 
 }
 
 // CreateUpdateDeployment create or update a deployment
-func (c *Client) CreateUpdateDeployment(name, namespace, image, tag string, replicas, port int32) error {
+func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Config) error {
 	kratosLabel, err := labels.ConvertSelectorToLabelsMap(common.DeployLabel)
 	if err != nil {
 		return nil
 	}
 
-	dep := &appsv1.Deployment{
+	containers := []corev1.Container{}
+	for _, container := range conf.Containers {
+		containers = append(containers, corev1.Container{
+			Name:  container.Name,
+			Image: container.Image + ":" + container.Tag,
+			Ports: []corev1.ContainerPort{
+				{
+					ContainerPort: container.Port,
+				},
+			},
+		})
+	}
+
+	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
@@ -44,7 +58,7 @@ func (c *Client) CreateUpdateDeployment(name, namespace, image, tag string, repl
 			),
 		},
 		Spec: appsv1.DeploymentSpec{
-			Replicas: &replicas,
+			Replicas: &conf.Replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
 					appLabelName: name,
@@ -59,17 +73,7 @@ func (c *Client) CreateUpdateDeployment(name, namespace, image, tag string, repl
 					},
 				},
 				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name:  name,
-							Image: image + ":" + tag,
-							Ports: []corev1.ContainerPort{
-								{
-									ContainerPort: port,
-								},
-							},
-						},
-					},
+					Containers: containers,
 					// TODO service account
 					ServiceAccountName: "",
 				},
@@ -77,11 +81,11 @@ func (c *Client) CreateUpdateDeployment(name, namespace, image, tag string, repl
 		},
 	}
 
-	_, err = c.Clientset.AppsV1().Deployments(namespace).Create(context.Background(), dep, metav1.CreateOptions{})
+	_, err = c.Clientset.AppsV1().Deployments(namespace).Create(context.Background(), deployment, metav1.CreateOptions{})
 	if err != nil {
 		// if deployment exist, we call update
 		if errors.IsAlreadyExists(err) {
-			_, err = c.Clientset.AppsV1().Deployments(namespace).Update(context.Background(), dep, metav1.UpdateOptions{})
+			_, err = c.Clientset.AppsV1().Deployments(namespace).Update(context.Background(), deployment, metav1.UpdateOptions{})
 			if err != nil {
 				return fmt.Errorf("updating deployment failed: %s", err)
 			}

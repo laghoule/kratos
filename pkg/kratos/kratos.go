@@ -25,7 +25,7 @@ type Kratos struct {
 }
 
 // New return a kratos struct
-func New() (*Kratos, error) {
+func New(confFile string) (*Kratos, error) {
 	kclient, err := k8s.New()
 	if err != nil {
 		return nil, err
@@ -34,26 +34,22 @@ func New() (*Kratos, error) {
 	// check if we meet k8s version requirement
 	kclient.CheckVersionDepency()
 
+	// loading configuration
+	confYAML := &config.Config{}
+	if confFile != "" {
+		if err := confYAML.Load(confFile); err != nil {
+			return nil, err
+		}
+	}
+
 	return &Kratos{
 		Client: kclient,
+		Config: confYAML,
 	}, nil
 }
 
-// UseConfig load configuration file
-func (k *Kratos) UseConfig(file string) error {
-	confYAML := &config.Config{}
-
-	if err := confYAML.Load(file); err != nil {
-		return err
-	}
-
-	k.Config = confYAML
-
-	return nil
-}
-
 // Create the deployment of all objects
-func (k *Kratos) Create(name, namespace, image, tag, ingresClass, clusterIssuer string, hostnames []string, replicas, port int32) error {
+func (k *Kratos) Create(name, namespace string) error {
 	runWithError := false
 
 	// validate clusterIssuer
@@ -61,34 +57,37 @@ func (k *Kratos) Create(name, namespace, image, tag, ingresClass, clusterIssuer 
 	if err != nil {
 		return err
 	}
-	
-	if err := cm.CheckClusterIssuer(k.Client, clusterIssuer); err != nil {
+
+	if err := cm.CheckClusterIssuer(k.Client, k.Config.ClusterIssuer); err != nil {
 		return err
 	}
 
 	// deployment
 	spinner, _ := pterm.DefaultSpinner.Start("creating deployment ", name)
-	if err := k.CreateUpdateDeployment(name, namespace, image, tag, replicas, port); err != nil {
+	if err := k.CreateUpdateDeployment(name, namespace, k.Config); err != nil {
 		spinner.Fail(err)
 		runWithError = true
+	} else {
+		spinner.Success()
 	}
-	spinner.Success()
 
 	// service
 	spinner, _ = pterm.DefaultSpinner.Start("creating service ", name)
-	if err := k.CreateUpdateService(name, namespace, port); err != nil {
+	if err := k.CreateUpdateService(name, namespace, k.Config); err != nil {
 		spinner.Fail(err)
 		runWithError = true
+	} else {
+		spinner.Success()
 	}
-	spinner.Success()
 
 	// ingress
 	spinner, _ = pterm.DefaultSpinner.Start("creating ingress ", name)
-	if err := k.CreateUpdateIngress(name, namespace, ingresClass, clusterIssuer, hostnames, port); err != nil {
+	if err := k.CreateUpdateIngress(name, namespace, k.Config); err != nil {
 		spinner.Fail(err)
 		runWithError = true
+	} else {
+		spinner.Success()
 	}
-	spinner.Success()
 
 	if runWithError {
 		return fmt.Errorf("some operations failed")

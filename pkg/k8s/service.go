@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/laghoule/kratos/pkg/common"
+	"github.com/laghoule/kratos/pkg/config"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -14,7 +15,7 @@ import (
 )
 
 // CreateUpdateService create or update a service
-func (c *Client) CreateUpdateService(name, namespace string, port int32) error {
+func (c *Client) CreateUpdateService(name, namespace string, conf *config.Config) error {
 	kratosLabel, err := labels.ConvertSelectorToLabelsMap(common.DeployLabel)
 	if err != nil {
 		return nil
@@ -35,9 +36,9 @@ func (c *Client) CreateUpdateService(name, namespace string, port int32) error {
 			Ports: []corev1.ServicePort{
 				{
 					Name: name,
-					Port: port,
+					Port: conf.Service.Port,
 					TargetPort: intstr.IntOrString{
-						IntVal: port,
+						IntVal: conf.Service.Port,
 					},
 				},
 			},
@@ -51,7 +52,7 @@ func (c *Client) CreateUpdateService(name, namespace string, port int32) error {
 	if err != nil {
 		// if service exist, we call update
 		if errors.IsAlreadyExists(err) {
-			if err := c.updateService(name, namespace, port); err != nil {
+			if err := c.updateService(name, namespace, conf); err != nil {
 				return fmt.Errorf("updating service failed: %s", err)
 			}
 		} else {
@@ -63,7 +64,7 @@ func (c *Client) CreateUpdateService(name, namespace string, port int32) error {
 }
 
 // updateService update an existing service
-func (c *Client) updateService(name, namespace string, port int32) error {
+func (c *Client) updateService(name, namespace string, conf *config.Config) error {
 	kratosLabel, err := labels.ConvertSelectorToLabelsMap(common.DeployLabel)
 	if err != nil {
 		return nil
@@ -91,9 +92,9 @@ func (c *Client) updateService(name, namespace string, port int32) error {
 			Ports: []corev1.ServicePort{
 				{
 					Name: name,
-					Port: port,
+					Port: conf.Service.Port,
 					TargetPort: intstr.IntOrString{
-						IntVal: port,
+						IntVal: conf.Service.Port,
 					},
 				},
 			},

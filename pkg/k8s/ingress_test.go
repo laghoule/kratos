@@ -4,10 +4,16 @@ import (
 	"context"
 	"testing"
 
+	"github.com/laghoule/kratos/pkg/config"
+
 	"github.com/stretchr/testify/assert"
 	netv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+const (
+	goodConfig = "../config/testdata/goodConfig.yml"
 )
 
 var (
@@ -69,8 +75,13 @@ var (
 
 func TestCreateIngress(t *testing.T) {
 	client := testNew()
+	conf := &config.Config{}
 
-	err := client.CreateUpdateIngress(name, namespace, ingressClass, clusterIssuer, []string{hostname}, containerHTTP)
+	if err := conf.Load(goodConfig); err != nil {
+		t.Error(err)
+	}
+
+	err := client.CreateUpdateIngress(name, namespace, conf)
 	if err != nil {
 		t.Error(err)
 	}
@@ -85,13 +96,18 @@ func TestCreateIngress(t *testing.T) {
 
 func TestUpdateIngress(t *testing.T) {
 	client := testNew()
+	conf := &config.Config{}
 
-	err := client.CreateUpdateIngress(name, namespace, ingressClass, clusterIssuer, []string{hostname}, containerHTTP)
+	if err := conf.Load(goodConfig); err != nil {
+		t.Error(err)
+	}
+
+	err := client.CreateUpdateIngress(name, namespace, conf)
 	if err != nil {
 		t.Error(err)
 	}
 
-	err = client.CreateUpdateIngress(name, namespace, ingressClass, clusterIssuer, []string{"example.com"}, containerHTTP)
+	err = client.CreateUpdateIngress(name, namespace, conf)
 	if err != nil {
 		t.Error(err)
 	}
@@ -106,8 +122,13 @@ func TestUpdateIngress(t *testing.T) {
 
 func TestDeleteIngress(t *testing.T) {
 	client := testNew()
+	conf := &config.Config{}
 
-	err := client.CreateUpdateIngress(name, namespace, ingressClass, clusterIssuer, []string{hostname}, containerHTTP)
+	if err := conf.Load(goodConfig); err != nil {
+		t.Error(err)
+	}
+
+	err := client.CreateUpdateIngress(name, namespace, conf)
 	if err != nil {
 		t.Error(err)
 	}

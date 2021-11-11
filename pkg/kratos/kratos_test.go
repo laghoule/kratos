@@ -6,7 +6,7 @@ import (
 	"github.com/laghoule/kratos/pkg/config"
 	"github.com/laghoule/kratos/pkg/k8s"
 
-	"github.com/stretchr/testify/assert"
+	//"github.com/stretchr/testify/assert"
 	"k8s.io/client-go/kubernetes/fake"
 )
 
@@ -14,8 +14,10 @@ const (
 	goodConfig = "../config/testdata/goodConfig.yml"
 	badConfig  = "../config/testdata/badConfig.yml"
 
-	name                = "myApp"
-	namespace           = "myNamespace"
+	name                = "myapp"
+	namespace           = "mynamespace"
+	image               = "myimage"
+	tag                 = "latest"
 	replicas      int32 = 1
 	port          int32 = 80
 	ingresClass         = "nginx"
@@ -23,12 +25,18 @@ const (
 )
 
 var (
-	hostnames     = []config.Hostnames{"example.com", "www.example.com"}
+	hostnames     = []config.Hostnames{"example.com"}
 	configuration = &config.Config{
-		Name:      name,
-		Namespace: namespace,
 		Deployment: &config.Deployment{
 			Replicas: replicas,
+			Containers: []config.Container{
+				{
+					Name:  name,
+					Image: image,
+					Tag:   tag,
+					Port:  port,
+				},
+			},
 		},
 		Service: &config.Service{
 			Port: port,
@@ -51,18 +59,14 @@ func testNew() *Kratos {
 	return kratos
 }
 
-func TestUseGoodConfig(t *testing.T) {
-	client := testNew()
-
-	if err := client.UseConfig(goodConfig); err != nil {
-		t.Error(err)
-	}
-
-	assert.Equal(t, configuration, client.Config)
+func TestCreate(t *testing.T) {
+	// TODO
 }
 
-func TestUseBadConfig(t *testing.T) {
-	client := testNew()
-	err := client.UseConfig(badConfig)
-	assert.Error(t, err)
+func TestList(t *testing.T) {
+	// TODO
+}
+
+func TestDelete(t *testing.T) {
+	// TODO
 }

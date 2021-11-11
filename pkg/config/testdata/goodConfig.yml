@@ -1,7 +1,12 @@
-name: myApp
-namespace: myNamespace
+name: myapp
+namespace: mynamespace
 deployment:
   replicas: 1
+  containers:
+    - name: myapp
+      image: myimage
+      tag: latest
+      port: 80
 service:
   port: 80
 ingress:
@@ -9,5 +14,4 @@ ingress:
   clusterIssuer: letsencrypt
   hostnames:
     - example.com
-    - www.example.com
   port: 80

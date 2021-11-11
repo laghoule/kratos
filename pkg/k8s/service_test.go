@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/laghoule/kratos/pkg/config"
+
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -41,8 +43,13 @@ var (
 // TestCreateUpdateDeployment test creation of deployment
 func TestCreateUpdateService(t *testing.T) {
 	client := testNew()
+	conf := &config.Config{}
 
-	if err := client.CreateUpdateService(name, namespace, containerHTTP); err != nil {
+	if err := conf.Load(goodConfig); err != nil {
+		t.Error(err)
+	}
+
+	if err := client.CreateUpdateService(name, namespace, conf); err != nil {
 		t.Error(err)
 	}
 
@@ -57,12 +64,19 @@ func TestCreateUpdateService(t *testing.T) {
 // TestCreateDeployment test creation of deployment
 func TestUpdateService(t *testing.T) {
 	client := testNew()
+	conf := &config.Config{}
 
-	if err := client.CreateUpdateService(name, namespace, containerHTTP); err != nil {
+	if err := conf.Load(goodConfig); err != nil {
 		t.Error(err)
 	}
 
-	if err := client.updateService(name, namespace, constainerHTTPS); err != nil {
+	if err := client.CreateUpdateService(name, namespace, conf); err != nil {
+		t.Error(err)
+	}
+
+	conf.Service.Port = 443
+
+	if err := client.updateService(name, namespace, conf); err != nil {
 		t.Error(err)
 	}
 
@@ -76,8 +90,13 @@ func TestUpdateService(t *testing.T) {
 
 func TestDeleteService(t *testing.T) {
 	client := testNew()
+	conf := &config.Config{}
 
-	if err := client.CreateUpdateService(name, namespace, containerHTTP); err != nil {
+	if err := conf.Load(goodConfig); err != nil {
+		t.Error(err)
+	}
+
+	if err := client.CreateUpdateService(name, namespace, conf); err != nil {
 		t.Error(err)
 	}
 

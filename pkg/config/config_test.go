@@ -10,21 +10,29 @@ const (
 	goodConfig = "testdata/goodConfig.yml"
 	badConfig  = "testdata/badConfig.yml"
 
-	name                = "myApp"
-	namespace           = "myNamespace"
+	name                = "myapp"
+	namespace           = "mynamespace"
 	replicas      int32 = 1
+	image               = "myimage"
+	tag                 = "latest"
 	port          int32 = 80
 	ingresClass         = "nginx"
 	clusterIssuer       = "letsencrypt"
 )
 
 var (
-	hostnames     = []Hostnames{"example.com", "www.example.com"}
+	hostnames     = []Hostnames{"example.com"}
 	configuration = &Config{
-		Name:      name,
-		Namespace: namespace,
 		Deployment: &Deployment{
 			Replicas: replicas,
+			Containers: []Container{
+				{
+					Name:  name,
+					Image: image,
+					Tag:   tag,
+					Port:  port,
+				},
+			},
 		},
 		Service: &Service{
 			Port: port,
@@ -48,6 +56,7 @@ func TestLoadConfig(t *testing.T) {
 	assert.EqualValues(t, configuration, config)
 }
 
+// TODO recheck badConfig.yml
 func TestLoadBadConfig(t *testing.T) {
 	config := &Config{}
 	err := config.Load(badConfig)

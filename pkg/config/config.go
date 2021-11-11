@@ -10,8 +10,6 @@ import (
 
 // Config of kratos
 type Config struct {
-	Name      string `yaml:"name" validate:"required,alphanum"`
-	Namespace string `yaml:"namespace" validate:"required,alphanum"`
 	*Deployment
 	*Service
 	*Ingress
@@ -19,11 +17,21 @@ type Config struct {
 
 // Deployment object
 type Deployment struct {
-	Replicas int32 `yaml:"replicas,omitempty" validate:"gte=1,lte=100" `
+	Replicas   int32       `yaml:"replicas,omitempty" validate:"gte=0,lte=100" `
+	Containers []Container `yaml:"containers" validate:"required,dive"`
+}
+
+// Container object
+type Container struct {
+	Name  string `yaml:"name" validate:"required,alphanum,lowercase"`
+	Image string `yaml:"image" validate:"required,alphanum"`
+	Tag   string `yaml:"tag" validate:"required,alphanum"`
+	Port  int32  `yaml:"port" validate:"required,gte=1,lte=65535"`
 }
 
 // Service object
 type Service struct {
+	// Fix port
 	Port int32 `yaml:"port" validate:"required,gte=1,lte=65535"`
 }
 
@@ -32,11 +40,17 @@ type Ingress struct {
 	IngressClass  string      `yaml:"ingressClass" validate:"required,alphanum"`
 	ClusterIssuer string      `yaml:"clusterIssuer" validate:"required,alphanum"`
 	Hostnames     []Hostnames `yaml:"hostnames" validate:"required,dive,hostname"`
-	Port          int32       `yaml:"port" validate:"required,gte=1,lte=65535"`
+	// Fix port
+	Port int32 `yaml:"port" validate:"required,gte=1,lte=65535"`
 }
 
 // Hostnames use in ingress object
 type Hostnames string
+
+// String implement the stringer interface
+func (h *Hostnames) String() string {
+	return string(*h)
+}
 
 func validateConfig(config *Config) error {
 	validate := &validator.Validate{}

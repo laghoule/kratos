@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/laghoule/kratos/pkg/common"
+	"github.com/laghoule/kratos/pkg/config"
 
 	netv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -18,7 +19,7 @@ const (
 )
 
 // CreateUpdateIngress create or update an ingress
-func (c *Client) CreateUpdateIngress(name, namespace, ingressClass, clusterIssuer string, hostnames []string, port int32) error {
+func (c *Client) CreateUpdateIngress(name, namespace string, conf *config.Config) error {
 	kratosLabel, err := labels.ConvertSelectorToLabelsMap(common.DeployLabel)
 	if err != nil {
 		return nil
@@ -28,14 +29,14 @@ func (c *Client) CreateUpdateIngress(name, namespace, ingressClass, clusterIssue
 	ingressRules := []netv1.IngressRule{}
 	pathType := netv1.PathTypePrefix
 
-	for _, hostname := range hostnames {
+	for _, hostname := range conf.Hostnames {
 		ingressTLS = append(ingressTLS, netv1.IngressTLS{
-			Hosts:      []string{hostname},
-			SecretName: hostname + "-tls",
+			Hosts:      []string{hostname.String()},
+			SecretName: hostname.String() + "-tls",
 		})
 
 		ingressRules = append(ingressRules, netv1.IngressRule{
-			Host: hostname,
+			Host: hostname.String(),
 			IngressRuleValue: netv1.IngressRuleValue{
 				HTTP: &netv1.HTTPIngressRuleValue{
 					Paths: []netv1.HTTPIngressPath{
@@ -46,7 +47,7 @@ func (c *Client) CreateUpdateIngress(name, namespace, ingressClass, clusterIssue
 								Service: &netv1.IngressServiceBackend{
 									Name: name,
 									Port: netv1.ServiceBackendPort{
-										Number: port,
+										Number: conf.Ingress.Port,
 									},
 								},
 							},
@@ -68,12 +69,12 @@ func (c *Client) CreateUpdateIngress(name, namespace, ingressClass, clusterIssue
 				},
 			),
 			Annotations: map[string]string{
-				clusterIssuerAnnotation: clusterIssuer,
+				clusterIssuerAnnotation: conf.ClusterIssuer,
 				sslRedirectAnnotation:   "true",
 			},
 		},
 		Spec: netv1.IngressSpec{
-			IngressClassName: &ingressClass,
+			IngressClassName: &conf.IngressClass,
 			TLS:              ingressTLS,
 			Rules:            ingressRules,
 		},

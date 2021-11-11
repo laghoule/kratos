@@ -9,15 +9,15 @@ import (
 const (
 	kratosLabelName  = "app.kubernetes.io/managed-by"
 	kratosLabelValue = "kratos"
-	name             = "name"
-	namespace        = "default"
-	image            = "test"
+	name             = "myapp"
+	namespace        = "mynamespace"
+	image            = "myimage"
 	tagLatest        = "latest"
 	tagV1            = "v1.0.0"
 	containerHTTP    = 80
 	constainerHTTPS  = 443
 	clusterIssuer    = "letsencrypt"
-	hostname         = "www.example.com"
+	hostname         = "example.com"
 )
 
 func testNew() *Client {
