@@ -13,7 +13,7 @@ import (
 // createCmd represents the create command
 var createCmd = &cobra.Command{
 	Use:   "create",
-	Short: "Deploy an application in an namespace",
+	Short: "Deploy an application in an namespace.",
 	Long: `Create deployment, service and ingress for k8s application. 
 Cert-manager will create the necessary TLS certificate.`,
 	TraverseChildren: true,

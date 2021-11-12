@@ -10,9 +10,10 @@ var cfgFile string
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "kratos",
-	Short: "Easy deployment tool for Kubernetes",
+	Short: "Easy deployment tool for Kubernetes.",
 	Long: `Alternative to helm to deploy simple container, without the pain of
-	managing Kubernetes yaml template.`,
+managing Kubernetes yaml template.`,
+	CompletionOptions: cobra.CompletionOptions{DisableDefaultCmd: true},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

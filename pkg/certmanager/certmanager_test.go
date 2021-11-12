@@ -35,6 +35,7 @@ func TestCheckClusterIssuer(t *testing.T) {
 	err := cmClient.CheckClusterIssuer(&k8s.Client{}, goodName)
 	if err != nil {
 		t.Error(err)
+		return
 	}
 
 }

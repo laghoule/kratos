@@ -18,10 +18,11 @@ const (
 	port          int32 = 80
 	ingresClass         = "nginx"
 	clusterIssuer       = "letsencrypt"
+	hostname            = "example.com"
 )
 
 var (
-	hostnames     = []Hostnames{"example.com"}
+	hostnames     = []Hostnames{hostname}
 	configuration = &Config{
 		Deployment: &Deployment{
 			Replicas: replicas,
@@ -34,14 +35,10 @@ var (
 				},
 			},
 		},
-		Service: &Service{
-			Port: port,
-		},
 		Ingress: &Ingress{
 			IngressClass:  ingresClass,
 			ClusterIssuer: clusterIssuer,
 			Hostnames:     hostnames,
-			Port:          port,
 		},
 	}
 )
@@ -51,6 +48,7 @@ func TestLoadConfig(t *testing.T) {
 
 	if err := config.Load(goodConfig); err != nil {
 		t.Error(err)
+		return
 	}
 
 	assert.EqualValues(t, configuration, config)

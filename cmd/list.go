@@ -13,7 +13,7 @@ import (
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List application of managed kratos deployment",
+	Short: "List application of managed kratos deployment.",
 	Long: `List application by namespace, or cluster wide of managed
 kratos deployment.`,
 	Run: func(cmd *cobra.Command, args []string) {

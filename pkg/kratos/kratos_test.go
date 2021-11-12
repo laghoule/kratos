@@ -1,10 +1,12 @@
 package kratos
 
 import (
+	"os"
 	"testing"
 
 	"github.com/laghoule/kratos/pkg/config"
 	"github.com/laghoule/kratos/pkg/k8s"
+	"github.com/stretchr/testify/assert"
 
 	//"github.com/stretchr/testify/assert"
 	"k8s.io/client-go/kubernetes/fake"
@@ -38,14 +40,10 @@ var (
 				},
 			},
 		},
-		Service: &config.Service{
-			Port: port,
-		},
 		Ingress: &config.Ingress{
 			IngressClass:  ingresClass,
 			ClusterIssuer: clusterIssuer,
 			Hostnames:     hostnames,
-			Port:          port,
 		},
 	}
 )
@@ -57,6 +55,25 @@ func testNew() *Kratos {
 	}
 	kratos.Clientset = fake.NewSimpleClientset()
 	return kratos
+}
+
+func TestCreateInit(t *testing.T) {
+	kratos := testNew()
+	kratos.CreateInit("/tmp/init.yaml")
+
+	expected, err := os.ReadFile("testdata/init.yaml")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	result, err := os.ReadFile("/tmp/init.yaml")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	assert.Equal(t, expected, result)
 }
 
 func TestCreate(t *testing.T) {

@@ -47,7 +47,7 @@ func (c *Client) CreateUpdateIngress(name, namespace string, conf *config.Config
 								Service: &netv1.IngressServiceBackend{
 									Name: name,
 									Port: netv1.ServiceBackendPort{
-										Number: conf.Ingress.Port,
+										Number: conf.Containers[0].Port,
 									},
 								},
 							},

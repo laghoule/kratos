@@ -11,7 +11,6 @@ import (
 // Config of kratos
 type Config struct {
 	*Deployment
-	*Service
 	*Ingress
 }
 
@@ -24,15 +23,9 @@ type Deployment struct {
 // Container object
 type Container struct {
 	Name  string `yaml:"name" validate:"required,alphanum,lowercase"`
-	Image string `yaml:"image" validate:"required,alphanum"`
-	Tag   string `yaml:"tag" validate:"required,alphanum"`
+	Image string `yaml:"image" validate:"required,ascii"`
+	Tag   string `yaml:"tag" validate:"required,ascii"`
 	Port  int32  `yaml:"port" validate:"required,gte=1,lte=65535"`
-}
-
-// Service object
-type Service struct {
-	// Fix port
-	Port int32 `yaml:"port" validate:"required,gte=1,lte=65535"`
 }
 
 // Ingress object
@@ -40,8 +33,6 @@ type Ingress struct {
 	IngressClass  string      `yaml:"ingressClass" validate:"required,alphanum"`
 	ClusterIssuer string      `yaml:"clusterIssuer" validate:"required,alphanum"`
 	Hostnames     []Hostnames `yaml:"hostnames" validate:"required,dive,hostname"`
-	// Fix port
-	Port int32 `yaml:"port" validate:"required,gte=1,lte=65535"`
 }
 
 // Hostnames use in ingress object
@@ -61,6 +52,30 @@ func validateConfig(config *Config) error {
 	}
 
 	return nil
+}
+
+// CreateInit return an sample config
+func CreateInit() *Config {
+	return &Config{
+		Deployment: &Deployment{
+			Replicas: 1,
+			Containers: []Container{
+				{
+					Name:  "example",
+					Image: "nginx",
+					Tag:   "latest",
+					Port:  8080,
+				},
+			},
+		},
+		Ingress: &Ingress{
+			IngressClass:  "nginx",
+			ClusterIssuer: "letsencrypt",
+			Hostnames: []Hostnames{
+				"www.example.com",
+			},
+		},
+	}
 }
 
 // Load configuration of the specified file

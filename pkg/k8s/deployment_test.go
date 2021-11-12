@@ -76,15 +76,18 @@ func TestListDeployment(t *testing.T) {
 
 	if err := conf.Load(goodConfig); err != nil {
 		t.Error(err)
+		return
 	}
 
 	if err := client.CreateUpdateDeployment(name, namespace, conf); err != nil {
 		t.Error(err)
+		return
 	}
 
 	listDep, err := client.ListDeployments(namespace)
 	if err != nil {
 		t.Error(err)
+		return
 	}
 
 	assert.NotEmpty(t, listDep)
@@ -97,15 +100,18 @@ func TestCreateDeployment(t *testing.T) {
 
 	if err := conf.Load(goodConfig); err != nil {
 		t.Error(err)
+		return
 	}
 
 	if err := client.CreateUpdateDeployment(name, namespace, conf); err != nil {
 		t.Error(err)
+		return
 	}
 
 	dep, err := client.Clientset.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		t.Error(err)
+		return
 	}
 
 	assert.Equal(t, deployment, dep)
@@ -118,21 +124,25 @@ func TestUpdateDeployment(t *testing.T) {
 
 	if err := conf.Load(goodConfig); err != nil {
 		t.Error(err)
+		return
 	}
 
 	if err := client.CreateUpdateDeployment(name, namespace, conf); err != nil {
 		t.Error(err)
+		return
 	}
 
 	conf.Containers[0].Tag = "v1.0.0"
 
 	if err := client.CreateUpdateDeployment(name, namespace, conf); err != nil {
 		t.Error(err)
+		return
 	}
 
 	dep, err := client.Clientset.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		t.Error(err)
+		return
 	}
 
 	assert.Equal(t, image+":"+tagV1, dep.Spec.Template.Spec.Containers[0].Image)
@@ -144,26 +154,31 @@ func TestDeleteDeployment(t *testing.T) {
 
 	if err := conf.Load(goodConfig); err != nil {
 		t.Error(err)
+		return
 	}
 
 	if err := client.CreateUpdateDeployment(name, namespace, conf); err != nil {
 		t.Error(err)
+		return
 	}
 
 	dep, err := client.Clientset.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		t.Error(err)
+		return
 	}
 
 	assert.NotEmpty(t, dep)
 
 	if err := client.DeleteDeployment(name, namespace); err != nil {
 		t.Error(err)
+		return
 	}
 
 	dep, err = client.Clientset.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil && !errors.IsNotFound(err) {
 		t.Error(err)
+		return
 	}
 
 	assert.True(t, errors.IsNotFound(err))

@@ -79,16 +79,19 @@ func TestCreateIngress(t *testing.T) {
 
 	if err := conf.Load(goodConfig); err != nil {
 		t.Error(err)
+		return
 	}
 
 	err := client.CreateUpdateIngress(name, namespace, conf)
 	if err != nil {
 		t.Error(err)
+		return
 	}
 
 	ing, err := client.Clientset.NetworkingV1().Ingresses(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		t.Error(err)
+		return
 	}
 
 	assert.Equal(t, ingress, ing)
@@ -100,21 +103,25 @@ func TestUpdateIngress(t *testing.T) {
 
 	if err := conf.Load(goodConfig); err != nil {
 		t.Error(err)
+		return
 	}
 
 	err := client.CreateUpdateIngress(name, namespace, conf)
 	if err != nil {
 		t.Error(err)
+		return
 	}
 
 	err = client.CreateUpdateIngress(name, namespace, conf)
 	if err != nil {
 		t.Error(err)
+		return
 	}
 
 	ing, err := client.Clientset.NetworkingV1().Ingresses(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		t.Error(err)
+		return
 	}
 
 	assert.Equal(t, "example.com", ing.Spec.Rules[0].Host)
@@ -126,27 +133,32 @@ func TestDeleteIngress(t *testing.T) {
 
 	if err := conf.Load(goodConfig); err != nil {
 		t.Error(err)
+		return
 	}
 
 	err := client.CreateUpdateIngress(name, namespace, conf)
 	if err != nil {
 		t.Error(err)
+		return
 	}
 
 	ing, err := client.Clientset.NetworkingV1().Ingresses(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		t.Error(err)
+		return
 	}
 
 	assert.NotEmpty(t, ing)
 
 	if err := client.DeleteIngress(name, namespace); err != nil {
 		t.Error(err)
+		return
 	}
 
 	ing, err = client.Clientset.NetworkingV1().Ingresses(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil && !errors.IsNotFound(err) {
 		t.Error(err)
+		return
 	}
 
 	assert.True(t, errors.IsNotFound(err))

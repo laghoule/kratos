@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/laghoule/kratos/pkg/kratos"
@@ -12,7 +13,7 @@ import (
 // deleteCmd represents the delete command
 var deleteCmd = &cobra.Command{
 	Use:   "delete",
-	Short: "Delete a deployment in a namespace",
+	Short: "Delete a deployment in a namespace.",
 	Long: `Delete the deployment, service and ingress of the deployed application. 
 Generated cert-manager secret will not be deleted.`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -25,6 +26,7 @@ Generated cert-manager secret will not be deleted.`,
 		}
 
 		if err := kratos.Delete(name, namespace); err != nil {
+			fmt.Println(err)
 			os.Exit(1)
 		}
 	},

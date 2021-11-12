@@ -47,15 +47,18 @@ func TestCreateUpdateService(t *testing.T) {
 
 	if err := conf.Load(goodConfig); err != nil {
 		t.Error(err)
+		return
 	}
 
 	if err := client.CreateUpdateService(name, namespace, conf); err != nil {
 		t.Error(err)
+		return
 	}
 
 	svc, err := client.Clientset.CoreV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		t.Error(err)
+		return
 	}
 
 	assert.Equal(t, service, svc)
@@ -68,21 +71,25 @@ func TestUpdateService(t *testing.T) {
 
 	if err := conf.Load(goodConfig); err != nil {
 		t.Error(err)
+		return
 	}
 
 	if err := client.CreateUpdateService(name, namespace, conf); err != nil {
 		t.Error(err)
+		return
 	}
 
-	conf.Service.Port = 443
+	conf.Containers[0].Port = 443
 
 	if err := client.updateService(name, namespace, conf); err != nil {
 		t.Error(err)
+		return
 	}
 
 	svc, err := client.Clientset.CoreV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		t.Error(err)
+		return
 	}
 
 	assert.Equal(t, int32(443), svc.Spec.Ports[0].Port)
@@ -94,26 +101,31 @@ func TestDeleteService(t *testing.T) {
 
 	if err := conf.Load(goodConfig); err != nil {
 		t.Error(err)
+		return
 	}
 
 	if err := client.CreateUpdateService(name, namespace, conf); err != nil {
 		t.Error(err)
+		return
 	}
 
 	svc, err := client.Clientset.CoreV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		t.Error(err)
+		return
 	}
 
 	assert.NotEmpty(t, svc)
 
 	if err := client.DeleteService(name, namespace); err != nil {
 		t.Error(err)
+		return
 	}
 
 	svc, err = client.Clientset.CoreV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil && !errors.IsNotFound(err) {
 		t.Error(err)
+		return
 	}
 
 	assert.True(t, errors.IsNotFound(err))

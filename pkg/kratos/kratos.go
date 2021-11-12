@@ -2,6 +2,7 @@ package kratos
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/laghoule/kratos/pkg/certmanager"
@@ -9,6 +10,7 @@ import (
 	"github.com/laghoule/kratos/pkg/k8s"
 
 	"github.com/pterm/pterm"
+	"gopkg.in/yaml.v3"
 )
 
 // Kratosphere is the kratos interface
@@ -63,7 +65,7 @@ func (k *Kratos) Create(name, namespace string) error {
 	}
 
 	// deployment
-	spinner, _ := pterm.DefaultSpinner.Start("creating deployment ", name)
+	spinner, _ := pterm.DefaultSpinner.Start("creating deployment")
 	if err := k.CreateUpdateDeployment(name, namespace, k.Config); err != nil {
 		spinner.Fail(err)
 		runWithError = true
@@ -72,7 +74,7 @@ func (k *Kratos) Create(name, namespace string) error {
 	}
 
 	// service
-	spinner, _ = pterm.DefaultSpinner.Start("creating service ", name)
+	spinner, _ = pterm.DefaultSpinner.Start("creating service")
 	if err := k.CreateUpdateService(name, namespace, k.Config); err != nil {
 		spinner.Fail(err)
 		runWithError = true
@@ -81,7 +83,7 @@ func (k *Kratos) Create(name, namespace string) error {
 	}
 
 	// ingress
-	spinner, _ = pterm.DefaultSpinner.Start("creating ingress ", name)
+	spinner, _ = pterm.DefaultSpinner.Start("creating ingress")
 	if err := k.CreateUpdateIngress(name, namespace, k.Config); err != nil {
 		spinner.Fail(err)
 		runWithError = true
@@ -151,6 +153,20 @@ func (k *Kratos) Delete(name, namespace string) error {
 
 	if runWithError {
 		return fmt.Errorf("some operations failed")
+	}
+
+	return nil
+}
+
+// CreateInit create a configuration file
+func (k *Kratos) CreateInit(file string) error {
+	b, err := yaml.Marshal(config.CreateInit())
+	if err != nil {
+		fmt.Errorf("marshaling yaml failed: %s", err)
+	}
+
+	if err := os.WriteFile(file, b, 0666); err != nil {
+		return fmt.Errorf("writing yaml init file failed: %s", err)
 	}
 
 	return nil
