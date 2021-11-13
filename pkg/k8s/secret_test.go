@@ -12,7 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 )
 
-func testSecret() *corev1.Secret {
+func createSecret() *corev1.Secret {
 	kratosLabel, err := labels.ConvertSelectorToLabelsMap(common.DeployLabel)
 	if err != nil {
 		return nil
@@ -36,8 +36,8 @@ func testSecret() *corev1.Secret {
 }
 
 func TestCreateSecret(t *testing.T) {
-	c := testNew()
-	s := testSecret()
+	c := new()
+	s := createSecret()
 
 	if err := c.CreateUpdateSecret(s, namespace); err != nil {
 		t.Error(err)
@@ -54,8 +54,8 @@ func TestCreateSecret(t *testing.T) {
 }
 
 func TestUpdateSecret(t *testing.T) {
-	c := testNew()
-	s := testSecret()
+	c := new()
+	s := createSecret()
 
 	if err := c.CreateUpdateSecret(s, namespace); err != nil {
 		t.Error(err)
@@ -85,8 +85,8 @@ func TestUpdateSecret(t *testing.T) {
 }
 
 func TestDeleteSecret(t *testing.T) {
-	c := testNew()
-	s := testSecret()
+	c := new()
+	s := createSecret()
 
 	if err := c.CreateUpdateSecret(s, namespace); err != nil {
 		t.Error(err)

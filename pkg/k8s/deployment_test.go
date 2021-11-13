@@ -59,19 +59,19 @@ var (
 
 // TestListNoDeployment test list of no deployment
 func TestListNoDeployment(t *testing.T) {
-	client := testNew()
+	c := new()
 
-	listDep, err := client.ListDeployments(namespace)
+	list, err := c.ListDeployments(namespace)
 	if err != nil {
 		return
 	}
 
-	assert.Empty(t, listDep)
+	assert.Empty(t, list)
 }
 
 // TestListDeployment test list of one deployment
 func TestListDeployment(t *testing.T) {
-	client := testNew()
+	c := new()
 	conf := &config.Config{}
 
 	if err := conf.Load(goodConfig); err != nil {
@@ -79,23 +79,23 @@ func TestListDeployment(t *testing.T) {
 		return
 	}
 
-	if err := client.CreateUpdateDeployment(name, namespace, conf); err != nil {
+	if err := c.CreateUpdateDeployment(name, namespace, conf); err != nil {
 		t.Error(err)
 		return
 	}
 
-	listDep, err := client.ListDeployments(namespace)
+	list, err := c.ListDeployments(namespace)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	assert.NotEmpty(t, listDep)
+	assert.NotEmpty(t, list)
 }
 
 // TestCreateDeployment test creation of deployment
 func TestCreateDeployment(t *testing.T) {
-	client := testNew()
+	c := new()
 	conf := &config.Config{}
 
 	if err := conf.Load(goodConfig); err != nil {
@@ -103,12 +103,12 @@ func TestCreateDeployment(t *testing.T) {
 		return
 	}
 
-	if err := client.CreateUpdateDeployment(name, namespace, conf); err != nil {
+	if err := c.CreateUpdateDeployment(name, namespace, conf); err != nil {
 		t.Error(err)
 		return
 	}
 
-	dep, err := client.Clientset.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	dep, err := c.Clientset.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -119,7 +119,7 @@ func TestCreateDeployment(t *testing.T) {
 
 // TestUpdateDeployment test update deployment of tag from latest to v1.0.0
 func TestUpdateDeployment(t *testing.T) {
-	client := testNew()
+	c := new()
 	conf := &config.Config{}
 
 	if err := conf.Load(goodConfig); err != nil {
@@ -127,19 +127,19 @@ func TestUpdateDeployment(t *testing.T) {
 		return
 	}
 
-	if err := client.CreateUpdateDeployment(name, namespace, conf); err != nil {
+	if err := c.CreateUpdateDeployment(name, namespace, conf); err != nil {
 		t.Error(err)
 		return
 	}
 
 	conf.Containers[0].Tag = "v1.0.0"
 
-	if err := client.CreateUpdateDeployment(name, namespace, conf); err != nil {
+	if err := c.CreateUpdateDeployment(name, namespace, conf); err != nil {
 		t.Error(err)
 		return
 	}
 
-	dep, err := client.Clientset.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	dep, err := c.Clientset.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -149,7 +149,7 @@ func TestUpdateDeployment(t *testing.T) {
 }
 
 func TestDeleteDeployment(t *testing.T) {
-	client := testNew()
+	c := new()
 	conf := &config.Config{}
 
 	if err := conf.Load(goodConfig); err != nil {
@@ -157,12 +157,12 @@ func TestDeleteDeployment(t *testing.T) {
 		return
 	}
 
-	if err := client.CreateUpdateDeployment(name, namespace, conf); err != nil {
+	if err := c.CreateUpdateDeployment(name, namespace, conf); err != nil {
 		t.Error(err)
 		return
 	}
 
-	dep, err := client.Clientset.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	dep, err := c.Clientset.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -170,12 +170,12 @@ func TestDeleteDeployment(t *testing.T) {
 
 	assert.NotEmpty(t, dep)
 
-	if err := client.DeleteDeployment(name, namespace); err != nil {
+	if err := c.DeleteDeployment(name, namespace); err != nil {
 		t.Error(err)
 		return
 	}
 
-	dep, err = client.Clientset.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	dep, err = c.Clientset.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil && !errors.IsNotFound(err) {
 		t.Error(err)
 		return

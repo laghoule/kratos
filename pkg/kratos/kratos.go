@@ -18,7 +18,7 @@ import (
 
 const (
 	kratosSuffixConfig = "-kratos-config"
-	kratosConfigKey    = "config"
+	secretConfigKey    = "config"
 )
 
 // Kratosphere is the kratos interface
@@ -58,19 +58,28 @@ func New(confFile string) (*Kratos, error) {
 	}, nil
 }
 
-// Create the deployment of all objects
-func (k *Kratos) Create(name, namespace string) error {
-	runWithError := false
-
+func (k *Kratos) isDependencyMeet() (bool, error) {
 	// validate clusterIssuer
 	cm, err := certmanager.New(*k.Client)
 	if err != nil {
-		return err
+		return false, err
 	}
 
-	if err := cm.CheckClusterIssuer(k.Client, k.Config.ClusterIssuer); err != nil {
-		return err
+	if !cm.IsClusterIssuerExist(k.Client, k.Config.ClusterIssuer) {
+		return false, fmt.Errorf("clusterIssuer %s not found", k.Config.ClusterIssuer)
 	}
+
+	// validate ingressClass
+	if !k.Client.IsIngressClassExist(k.ClusterIssuer) {
+		return false, fmt.Errorf("ingressClass %s not found", k.ClusterIssuer)
+	}
+
+	return true, nil
+}
+
+// Create the deployment of all objects
+func (k *Kratos) Create(name, namespace string) error {
+	runWithError := false
 
 	// deployment
 	spinner, _ := pterm.DefaultSpinner.Start("creating deployment")
@@ -99,7 +108,7 @@ func (k *Kratos) Create(name, namespace string) error {
 		spinner.Success()
 	}
 
-	// save config in secret
+	// configuration
 	spinner, _ = pterm.DefaultSpinner.Start("saving configuration")
 	if err := k.saveConfigFile(name+kratosSuffixConfig, namespace); err != nil {
 		spinner.Fail(err)
@@ -145,7 +154,7 @@ func (k *Kratos) Delete(name, namespace string) error {
 	runWithError := false
 
 	// ingress
-	spinner, _ := pterm.DefaultSpinner.Start("deleting ingress ", name)
+	spinner, _ := pterm.DefaultSpinner.Start("deleting ingress ")
 	if err := k.DeleteIngress(name, namespace); err != nil {
 		pterm.Error.Println(err)
 		runWithError = true
@@ -153,7 +162,7 @@ func (k *Kratos) Delete(name, namespace string) error {
 	spinner.Success()
 
 	// service
-	spinner, _ = pterm.DefaultSpinner.Start("deleting service ", name)
+	spinner, _ = pterm.DefaultSpinner.Start("deleting service ")
 	if err := k.DeleteService(name, namespace); err != nil {
 		pterm.Error.Println(err)
 		runWithError = true
@@ -161,8 +170,16 @@ func (k *Kratos) Delete(name, namespace string) error {
 	spinner.Success()
 
 	// deployment
-	spinner, _ = pterm.DefaultSpinner.Start("deleting deployment ", name)
+	spinner, _ = pterm.DefaultSpinner.Start("deleting deployment ")
 	if err := k.DeleteDeployment(name, namespace); err != nil {
+		pterm.Error.Println(err)
+		runWithError = true
+	}
+	spinner.Success()
+
+	// configuration
+	spinner, _ = pterm.DefaultSpinner.Start("deleting configuration ")
+	if err := k.DeleteSecret(name+kratosSuffixConfig, namespace); err != nil {
 		pterm.Error.Println(err)
 		runWithError = true
 	}
@@ -211,7 +228,7 @@ func createSecretString(name, namespace, data string) *corev1.Secret {
 			Namespace: namespace,
 		},
 		StringData: map[string]string{
-			kratosConfigKey: data,
+			secretConfigKey: data,
 		},
 	}
 }

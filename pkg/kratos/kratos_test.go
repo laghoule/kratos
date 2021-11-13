@@ -9,14 +9,15 @@ import (
 	"github.com/laghoule/kratos/pkg/k8s"
 	"github.com/stretchr/testify/assert"
 
-	//"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 )
 
 const (
-	goodConfig = "../config/testdata/goodConfig.yml"
-	badConfig  = "../config/testdata/badConfig.yml"
+	goodConfig        = "../config/testdata/goodConfig.yml"
+	badConfig         = "../config/testdata/badConfig.yml"
+	generatedInitFile = "/tmp/init.yaml"
+	testdataInitFile  = "testdata/init.yaml"
 
 	name                = "myapp"
 	namespace           = "mynamespace"
@@ -26,11 +27,12 @@ const (
 	port          int32 = 80
 	ingresClass         = "nginx"
 	clusterIssuer       = "letsencrypt"
+	configString        = "my config"
+	hostname            = "example.com"
 )
 
-var (
-	hostnames     = []config.Hostnames{"example.com"}
-	configuration = &config.Config{
+func createConf() *config.Config {
+	return &config.Config{
 		Deployment: &config.Deployment{
 			Replicas: replicas,
 			Containers: []config.Container{
@@ -45,12 +47,12 @@ var (
 		Ingress: &config.Ingress{
 			IngressClass:  ingresClass,
 			ClusterIssuer: clusterIssuer,
-			Hostnames:     hostnames,
+			Hostnames:     []config.Hostnames{hostname},
 		},
 	}
-)
+}
 
-func testNew() *Kratos {
+func new() *Kratos {
 	kratos := &Kratos{
 		Client: &k8s.Client{},
 		Config: &config.Config{},
@@ -60,16 +62,16 @@ func testNew() *Kratos {
 }
 
 func TestCreateInit(t *testing.T) {
-	kratos := testNew()
-	kratos.CreateInit("/tmp/init.yaml")
+	kratos := new()
+	kratos.CreateInit(generatedInitFile)
 
-	expected, err := os.ReadFile("testdata/init.yaml")
+	expected, err := os.ReadFile(testdataInitFile)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	result, err := os.ReadFile("/tmp/init.yaml")
+	result, err := os.ReadFile(generatedInitFile)
 	if err != nil {
 		t.Error(err)
 		return
@@ -79,8 +81,8 @@ func TestCreateInit(t *testing.T) {
 }
 
 func TestSaveConfigFile(t *testing.T) {
-	c := testNew()
-	c.Config = configuration
+	c := new()
+	c.Config = createConf()
 
 	if err := c.saveConfigFile(name+kratosSuffixConfig, namespace); err != nil {
 		t.Error(err)
@@ -93,13 +95,17 @@ func TestSaveConfigFile(t *testing.T) {
 		return
 	}
 
-	// TODO not enough for test
+	// TODO not enough for this test
 	assert.Equal(t, name+kratosSuffixConfig, s.Name)
 }
 
 func TestSreateSecretString(t *testing.T) {
-	s := createSecretString(name, namespace, "my config")
-	assert.Equal(t, "my config", s.StringData[kratosConfigKey])
+	s := createSecretString(name, namespace, configString)
+	assert.Equal(t, configString, s.StringData[secretConfigKey])
+}
+
+func TestIsDependencyMeet(t *testing.T) {
+	// TODO
 }
 
 func TestCreate(t *testing.T) {

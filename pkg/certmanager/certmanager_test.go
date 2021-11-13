@@ -31,17 +31,22 @@ func testNew() *Certmanager {
 
 func TestCheckClusterIssuer(t *testing.T) {
 	cmClient := testNew()
+	found := false
 
-	err := cmClient.CheckClusterIssuer(&k8s.Client{}, goodName)
-	if err != nil {
-		t.Error(err)
-		return
+	if cmClient.IsClusterIssuerExist(&k8s.Client{}, goodName) {
+		found = true
 	}
 
+	assert.True(t, found)
 }
 
 func TestCheckBadClusterIssuer(t *testing.T) {
 	cmClient := testNew()
-	err := cmClient.CheckClusterIssuer(&k8s.Client{}, badName)
-	assert.Error(t, err)
+	found := false
+
+	if cmClient.IsClusterIssuerExist(&k8s.Client{}, badName) {
+		found = true
+	}
+
+	assert.False(t, found)
 }

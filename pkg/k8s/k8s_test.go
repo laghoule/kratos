@@ -20,15 +20,15 @@ const (
 	hostname         = "example.com"
 )
 
-func testNew() *Client {
-	client := &Client{}
-	client.Clientset = fake.NewSimpleClientset()
-	return client
+func new() *Client {
+	c := &Client{}
+	c.Clientset = fake.NewSimpleClientset()
+	return c
 }
 
 func TestCheckVersionDepency(t *testing.T) {
-	client := testNew()
-	if err := client.CheckVersionDepency(); err != nil {
+	c := new()
+	if err := c.CheckVersionDepency(); err != nil {
 		t.Error(err)
 	}
 }

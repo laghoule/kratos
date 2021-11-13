@@ -73,8 +73,19 @@ var (
 	}
 )
 
+func createIngressClass() *netv1.IngressClass {
+	return &netv1.IngressClass{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+		Spec: netv1.IngressClassSpec{
+			Controller: ingressClass,
+		},
+	}
+}
+
 func TestCreateIngress(t *testing.T) {
-	client := testNew()
+	c := new()
 	conf := &config.Config{}
 
 	if err := conf.Load(goodConfig); err != nil {
@@ -82,13 +93,13 @@ func TestCreateIngress(t *testing.T) {
 		return
 	}
 
-	err := client.CreateUpdateIngress(name, namespace, conf)
+	err := c.CreateUpdateIngress(name, namespace, conf)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	ing, err := client.Clientset.NetworkingV1().Ingresses(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	ing, err := c.Clientset.NetworkingV1().Ingresses(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -98,7 +109,7 @@ func TestCreateIngress(t *testing.T) {
 }
 
 func TestUpdateIngress(t *testing.T) {
-	client := testNew()
+	c := new()
 	conf := &config.Config{}
 
 	if err := conf.Load(goodConfig); err != nil {
@@ -106,19 +117,19 @@ func TestUpdateIngress(t *testing.T) {
 		return
 	}
 
-	err := client.CreateUpdateIngress(name, namespace, conf)
+	err := c.CreateUpdateIngress(name, namespace, conf)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = client.CreateUpdateIngress(name, namespace, conf)
+	err = c.CreateUpdateIngress(name, namespace, conf)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	ing, err := client.Clientset.NetworkingV1().Ingresses(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	ing, err := c.Clientset.NetworkingV1().Ingresses(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -128,7 +139,7 @@ func TestUpdateIngress(t *testing.T) {
 }
 
 func TestDeleteIngress(t *testing.T) {
-	client := testNew()
+	c := new()
 	conf := &config.Config{}
 
 	if err := conf.Load(goodConfig); err != nil {
@@ -136,13 +147,13 @@ func TestDeleteIngress(t *testing.T) {
 		return
 	}
 
-	err := client.CreateUpdateIngress(name, namespace, conf)
+	err := c.CreateUpdateIngress(name, namespace, conf)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	ing, err := client.Clientset.NetworkingV1().Ingresses(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	ing, err := c.Clientset.NetworkingV1().Ingresses(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -150,16 +161,44 @@ func TestDeleteIngress(t *testing.T) {
 
 	assert.NotEmpty(t, ing)
 
-	if err := client.DeleteIngress(name, namespace); err != nil {
+	if err := c.DeleteIngress(name, namespace); err != nil {
 		t.Error(err)
 		return
 	}
 
-	ing, err = client.Clientset.NetworkingV1().Ingresses(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	ing, err = c.Clientset.NetworkingV1().Ingresses(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil && !errors.IsNotFound(err) {
 		t.Error(err)
 		return
 	}
 
 	assert.True(t, errors.IsNotFound(err))
+}
+
+func TestIsIngressClassExist(t *testing.T) {
+	c := new()
+	conf := &config.Config{
+		Ingress: &config.Ingress{},
+	}
+
+	conf.ClusterIssuer = clusterIssuer
+	class := createIngressClass()
+
+	_, err := c.Clientset.NetworkingV1().IngressClasses().Create(context.Background(), class, metav1.CreateOptions{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	list, err := c.Clientset.NetworkingV1().IngressClasses().List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	assert.Len(t, list.Items, 1)
+
+	found := c.IsIngressClassExist(name)
+
+	assert.True(t, found)
 }
