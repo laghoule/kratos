@@ -83,7 +83,6 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 
 	_, err = c.Clientset.AppsV1().Deployments(namespace).Create(context.Background(), deployment, metav1.CreateOptions{})
 	if err != nil {
-		// if deployment exist, we call update
 		if errors.IsAlreadyExists(err) {
 			_, err = c.Clientset.AppsV1().Deployments(namespace).Update(context.Background(), deployment, metav1.UpdateOptions{})
 			if err != nil {

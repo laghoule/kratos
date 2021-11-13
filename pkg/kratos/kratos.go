@@ -11,6 +11,14 @@ import (
 
 	"github.com/pterm/pterm"
 	"gopkg.in/yaml.v3"
+
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+const (
+	kratosSuffixConfig = "-kratos-config"
+	kratosConfigKey    = "config"
 )
 
 // Kratosphere is the kratos interface
@@ -91,6 +99,15 @@ func (k *Kratos) Create(name, namespace string) error {
 		spinner.Success()
 	}
 
+	// save config in secret
+	spinner, _ = pterm.DefaultSpinner.Start("saving configuration")
+	if err := k.saveConfigFile(name+kratosSuffixConfig, namespace); err != nil {
+		spinner.Fail(err)
+		runWithError = true
+	} else {
+		spinner.Success()
+	}
+
 	if runWithError {
 		return fmt.Errorf("some operations failed")
 	}
@@ -158,11 +175,11 @@ func (k *Kratos) Delete(name, namespace string) error {
 	return nil
 }
 
-// CreateInit create a configuration file
+// CreateInit create sample configuration file
 func (k *Kratos) CreateInit(file string) error {
 	b, err := yaml.Marshal(config.CreateInit())
 	if err != nil {
-		fmt.Errorf("marshaling yaml failed: %s", err)
+		return fmt.Errorf("marshaling yaml failed: %s", err)
 	}
 
 	if err := os.WriteFile(file, b, 0666); err != nil {
@@ -170,4 +187,31 @@ func (k *Kratos) CreateInit(file string) error {
 	}
 
 	return nil
+}
+
+func (k *Kratos) saveConfigFile(name, namespace string) error {
+	b, err := yaml.Marshal(k.Config)
+	if err != nil {
+		return fmt.Errorf("saving configuration to kubernetes secret failed: %s", err)
+	}
+
+	secret := createSecretString(name, namespace, string(b))
+
+	if err := k.Client.CreateUpdateSecret(secret, namespace); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func createSecretString(name, namespace, data string) *corev1.Secret {
+	return &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		StringData: map[string]string{
+			kratosConfigKey: data,
+		},
+	}
 }

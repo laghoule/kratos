@@ -1,6 +1,7 @@
 package kratos
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	//"github.com/stretchr/testify/assert"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 )
 
@@ -73,7 +75,31 @@ func TestCreateInit(t *testing.T) {
 		return
 	}
 
-	assert.Equal(t, expected, result)
+	assert.Equal(t, string(expected), string(result))
+}
+
+func TestSaveConfigFile(t *testing.T) {
+	c := testNew()
+	c.Config = configuration
+
+	if err := c.saveConfigFile(name+kratosSuffixConfig, namespace); err != nil {
+		t.Error(err)
+		return
+	}
+
+	s, err := c.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), name+kratosSuffixConfig, metav1.GetOptions{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	// TODO not enough for test
+	assert.Equal(t, name+kratosSuffixConfig, s.Name)
+}
+
+func TestSreateSecretString(t *testing.T) {
+	s := createSecretString(name, namespace, "my config")
+	assert.Equal(t, "my config", s.StringData[kratosConfigKey])
 }
 
 func TestCreate(t *testing.T) {
