@@ -13,8 +13,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-var (
-	service = &corev1.Service{
+func createService() *corev1.Service {
+	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
@@ -38,7 +38,7 @@ var (
 			},
 		},
 	}
-)
+}
 
 // TestCreateUpdateDeployment test creation of deployment
 func TestCreateUpdateService(t *testing.T) {
@@ -61,7 +61,7 @@ func TestCreateUpdateService(t *testing.T) {
 		return
 	}
 
-	assert.Equal(t, service, svc)
+	assert.Equal(t, createService(), svc)
 }
 
 // TestCreateDeployment test creation of deployment

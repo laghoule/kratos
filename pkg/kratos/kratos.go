@@ -1,6 +1,7 @@
 package kratos
 
 import (
+	"path/filepath"
 	"fmt"
 	"os"
 	"strconv"
@@ -19,6 +20,7 @@ import (
 const (
 	kratosSuffixConfig = "-kratos-config"
 	secretConfigKey    = "config"
+	fileMode = 0666
 )
 
 // Kratosphere is the kratos interface
@@ -110,7 +112,7 @@ func (k *Kratos) Create(name, namespace string) error {
 
 	// configuration
 	spinner, _ = pterm.DefaultSpinner.Start("saving configuration")
-	if err := k.saveConfigFile(name+kratosSuffixConfig, namespace); err != nil {
+	if err := k.saveConfigFileToSecret(name+kratosSuffixConfig, namespace); err != nil {
 		spinner.Fail(err)
 		runWithError = true
 	} else {
@@ -199,14 +201,14 @@ func (k *Kratos) CreateInit(file string) error {
 		return fmt.Errorf("marshaling yaml failed: %s", err)
 	}
 
-	if err := os.WriteFile(file, b, 0666); err != nil {
+	if err := os.WriteFile(file, b, fileMode); err != nil {
 		return fmt.Errorf("writing yaml init file failed: %s", err)
 	}
 
 	return nil
 }
 
-func (k *Kratos) saveConfigFile(name, namespace string) error {
+func (k *Kratos) saveConfigFileToSecret(name, namespace string) error {
 	b, err := yaml.Marshal(k.Config)
 	if err != nil {
 		return fmt.Errorf("saving configuration to kubernetes secret failed: %s", err)
@@ -231,4 +233,18 @@ func createSecretString(name, namespace, data string) *corev1.Secret {
 			secretConfigKey: data,
 		},
 	}
+}
+
+// SaveConfigFileToDisk get config from secret and write it to disk
+func (k *Kratos) SaveConfigFileToDisk(name, namespace, destination string) error {
+	secret, err := k.Client.GetSecret(name+kratosSuffixConfig, namespace)
+	if err != nil {
+		return err
+	}
+
+	if err := os.WriteFile(filepath.Join(destination, name)+".yaml", []byte(secret.Data[secretConfigKey]), fileMode); err != nil {
+		return fmt.Errorf("writing yaml init file failed: %s", err)
+	}
+
+	return nil
 }

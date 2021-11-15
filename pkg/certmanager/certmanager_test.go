@@ -16,21 +16,21 @@ const (
 	badName  = "notletsencrypt"
 )
 
-var (
-	clusterIssuer = &cmv1.ClusterIssuer{
+func createClusterIssuer() *cmv1.ClusterIssuer {
+	return &cmv1.ClusterIssuer{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: goodName,
 		},
 	}
-)
+}
 
-func testNew() *Certmanager {
-	cmSet := fake.NewSimpleClientset(clusterIssuer)
+func new() *Certmanager {
+	cmSet := fake.NewSimpleClientset(createClusterIssuer())
 	return &Certmanager{Interface: cmSet}
 }
 
 func TestCheckClusterIssuer(t *testing.T) {
-	cmClient := testNew()
+	cmClient := new()
 	found := false
 
 	if cmClient.IsClusterIssuerExist(&k8s.Client{}, goodName) {
@@ -41,7 +41,7 @@ func TestCheckClusterIssuer(t *testing.T) {
 }
 
 func TestCheckBadClusterIssuer(t *testing.T) {
-	cmClient := testNew()
+	cmClient := new()
 	found := false
 
 	if cmClient.IsClusterIssuerExist(&k8s.Client{}, badName) {

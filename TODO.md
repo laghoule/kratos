@@ -1,7 +1,5 @@
 # Todo
 
-* Rename testNew, testSecret, etc -> New, createSecret, etc...
-
 * Refactor cmd for:
 ```
 kratos deployment create

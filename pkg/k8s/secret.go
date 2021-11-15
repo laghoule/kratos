@@ -9,7 +9,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// CreateUpdateSecret a secret
+// CreateUpdateSecret a secret to namespace
 func (c *Client) CreateUpdateSecret(secret *corev1.Secret, namespace string) error {
 	_, err := c.Clientset.CoreV1().Secrets(namespace).Create(context.Background(), secret, metav1.CreateOptions{})
 	if err != nil {
@@ -26,11 +26,21 @@ func (c *Client) CreateUpdateSecret(secret *corev1.Secret, namespace string) err
 	return nil
 }
 
-// DeleteSecret a secret
+// DeleteSecret delete a secret from a namespace
 func (c *Client) DeleteSecret(name, namespace string) error {
 	if err := c.Clientset.CoreV1().Secrets(namespace).Delete(context.Background(), name, metav1.DeleteOptions{}); err != nil {
 		return fmt.Errorf("deleting secret %s failed: %s", name, err)
 	}
 
 	return nil
+}
+
+// GetSecret get a secret from a namespace
+func (c *Client) GetSecret(name, namespace string) (*corev1.Secret, error) {
+	secret, err := c.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("getting secret %s failed: %s", name, err)
+	}
+
+	return secret, nil
 }

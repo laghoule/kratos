@@ -117,6 +117,6 @@ func (c *Client) DeleteService(name, namespace string) error {
 	if err := c.Clientset.CoreV1().Services(namespace).Delete(context.Background(), name, metav1.DeleteOptions{}); err != nil {
 		return fmt.Errorf("delete service failed: %s", err)
 	}
-
+	
 	return nil
 }

@@ -21,9 +21,8 @@ const (
 	hostname            = "example.com"
 )
 
-var (
-	hostnames     = []Hostnames{hostname}
-	configuration = &Config{
+func createConf() *Config {
+	return &Config{
 		Deployment: &Deployment{
 			Replicas: replicas,
 			Containers: []Container{
@@ -38,10 +37,10 @@ var (
 		Ingress: &Ingress{
 			IngressClass:  ingresClass,
 			ClusterIssuer: clusterIssuer,
-			Hostnames:     hostnames,
+			Hostnames:     []Hostnames{hostname},
 		},
 	}
-)
+}
 
 func TestLoadConfig(t *testing.T) {
 	config := &Config{}
@@ -51,7 +50,7 @@ func TestLoadConfig(t *testing.T) {
 		return
 	}
 
-	assert.EqualValues(t, configuration, config)
+	assert.EqualValues(t, createConf(), config)
 }
 
 // TODO recheck badConfig.yml

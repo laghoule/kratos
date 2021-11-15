@@ -3,6 +3,7 @@ package kratos
 import (
 	"context"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/laghoule/kratos/pkg/config"
@@ -16,7 +17,7 @@ import (
 const (
 	goodConfig        = "../config/testdata/goodConfig.yml"
 	badConfig         = "../config/testdata/badConfig.yml"
-	generatedInitFile = "/tmp/init.yaml"
+	generatedInitFile = "init.yaml"
 	testdataInitFile  = "testdata/init.yaml"
 
 	name                = "myapp"
@@ -71,7 +72,7 @@ func TestCreateInit(t *testing.T) {
 		return
 	}
 
-	result, err := os.ReadFile(generatedInitFile)
+	result, err := os.ReadFile(filepath.Join(os.TempDir(), generatedInitFile))
 	if err != nil {
 		t.Error(err)
 		return
@@ -84,7 +85,7 @@ func TestSaveConfigFile(t *testing.T) {
 	c := new()
 	c.Config = createConf()
 
-	if err := c.saveConfigFile(name+kratosSuffixConfig, namespace); err != nil {
+	if err := c.saveConfigFileToSecret(name+kratosSuffixConfig, namespace); err != nil {
 		t.Error(err)
 		return
 	}
@@ -102,6 +103,43 @@ func TestSaveConfigFile(t *testing.T) {
 func TestSreateSecretString(t *testing.T) {
 	s := createSecretString(name, namespace, configString)
 	assert.Equal(t, configString, s.StringData[secretConfigKey])
+}
+
+func TestSaveConfigFileToDisk(t *testing.T) {
+	c := new()
+	c.Config = createConf()
+
+	if err := c.saveConfigFileToSecret(name+kratosSuffixConfig, namespace); err != nil {
+		t.Error(err)
+		return
+	}
+
+	list, err := c.Clientset.CoreV1().Secrets(namespace).List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	assert.Len(t, list.Items, 1)
+
+	if err := c.SaveConfigFileToDisk(name, namespace, os.TempDir()); err != nil {
+		t.Error(err)
+		return
+	}
+
+	result, err := os.ReadFile(filepath.Join(os.TempDir(), generatedInitFile))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	expected, err := os.ReadFile(testdataInitFile)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	assert.Equal(t, expected, result)
 }
 
 func TestIsDependencyMeet(t *testing.T) {

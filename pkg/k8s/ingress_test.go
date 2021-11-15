@@ -16,26 +16,25 @@ const (
 	goodConfig = "../config/testdata/goodConfig.yml"
 )
 
-var (
-	ingressClass = "nginx"
-
-	pathType = netv1.PathTypePrefix
-
-	ingressTLS = []netv1.IngressTLS{
+func createInressTLS() []netv1.IngressTLS {
+	return []netv1.IngressTLS{
 		{
 			Hosts:      []string{hostname},
 			SecretName: hostname + "-tls",
 		},
 	}
+}
 
-	ingressRules = []netv1.IngressRule{
+func createIngressRules() []netv1.IngressRule {
+	var pathType = netv1.PathTypePrefix
+	return []netv1.IngressRule{
 		{
 			Host: hostname,
 			IngressRuleValue: netv1.IngressRuleValue{
 				HTTP: &netv1.HTTPIngressRuleValue{
 					Paths: []netv1.HTTPIngressPath{
 						{
-							Path:     "/",
+							Path:     path,
 							PathType: &pathType,
 							Backend: netv1.IngressBackend{
 								Service: &netv1.IngressServiceBackend{
@@ -51,8 +50,11 @@ var (
 			},
 		},
 	}
+}
 
-	ingress = &netv1.Ingress{
+func createIngress() *netv1.Ingress {
+	ingressClass := "nginx"
+	return &netv1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
@@ -67,13 +69,14 @@ var (
 		},
 		Spec: netv1.IngressSpec{
 			IngressClassName: &ingressClass,
-			TLS:              ingressTLS,
-			Rules:            ingressRules,
+			TLS:              createInressTLS(),
+			Rules:            createIngressRules(),
 		},
 	}
-)
+}
 
 func createIngressClass() *netv1.IngressClass {
+	ingressClass := "nginx"
 	return &netv1.IngressClass{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
@@ -105,7 +108,7 @@ func TestCreateIngress(t *testing.T) {
 		return
 	}
 
-	assert.Equal(t, ingress, ing)
+	assert.Equal(t, createIngress(), ing)
 }
 
 func TestUpdateIngress(t *testing.T) {

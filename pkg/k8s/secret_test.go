@@ -93,24 +93,50 @@ func TestDeleteSecret(t *testing.T) {
 		return
 	}
 
-	secretList, err := c.Clientset.CoreV1().Secrets(namespace).List(context.Background(), metav1.ListOptions{})
+	list, err := c.Clientset.CoreV1().Secrets(namespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	assert.Len(t, secretList.Items, 1)
+	assert.Len(t, list.Items, 1)
 
 	if err := c.DeleteSecret(s.Name, namespace); err != nil {
 		t.Error(err)
 		return
 	}
 
-	secretList, err = c.Clientset.CoreV1().Secrets(namespace).List(context.Background(), metav1.ListOptions{})
+	list, err = c.Clientset.CoreV1().Secrets(namespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	assert.Len(t, secretList.Items, 0)
+	assert.Len(t, list.Items, 0)
+}
+
+func TestGetSecret(t *testing.T) {
+	c := new()
+	s := createSecret()
+
+	if err := c.CreateUpdateSecret(s, namespace); err != nil {
+		t.Error(err)
+		return
+	}
+
+	list, err := c.Clientset.CoreV1().Secrets(namespace).List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	assert.Len(t, list.Items, 1)
+
+	secret, err := c.GetSecret(name, namespace)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	assert.Equal(t, s, secret)
 }

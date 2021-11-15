@@ -1,0 +1,12 @@
+deployment:
+    replicas: 1
+    containers:
+        - name: example
+          image: nginx
+          tag: latest
+          port: 8080
+ingress:
+    ingressClass: nginx
+    clusterIssuer: letsencrypt
+    hostnames:
+        - www.example.com

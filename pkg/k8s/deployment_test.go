@@ -13,9 +13,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var (
-	replicas   int32 = 1
-	deployment       = &appsv1.Deployment{
+func createDeployment() *appsv1.Deployment {
+	var replicas int32 = 1
+	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
@@ -55,7 +55,7 @@ var (
 			},
 		},
 	}
-)
+}
 
 // TestListNoDeployment test list of no deployment
 func TestListNoDeployment(t *testing.T) {
@@ -114,7 +114,7 @@ func TestCreateDeployment(t *testing.T) {
 		return
 	}
 
-	assert.Equal(t, deployment, dep)
+	assert.Equal(t, createDeployment(), dep)
 }
 
 // TestUpdateDeployment test update deployment of tag from latest to v1.0.0
