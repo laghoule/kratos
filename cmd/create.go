@@ -27,6 +27,11 @@ Cert-manager will create the necessary TLS certificate.`,
 			panic(err)
 		}
 
+		if err := kratos.IsDependencyMeet(); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
 		if err := kratos.Create(name, namespace); err != nil {
 			fmt.Println(err)
 			os.Exit(1)

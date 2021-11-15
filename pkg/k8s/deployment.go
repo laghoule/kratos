@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/laghoule/kratos/pkg/common"
 	"github.com/laghoule/kratos/pkg/config"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -17,7 +16,7 @@ import (
 // ListDeployments list deployment of k8dep labels
 func (c *Client) ListDeployments(namespace string) ([]appsv1.Deployment, error) {
 	list, err := c.Clientset.AppsV1().Deployments(namespace).List(context.Background(), metav1.ListOptions{
-		LabelSelector: common.DeployLabel,
+		LabelSelector: config.DeployLabel,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("error getting list of deployment: %s", err)
@@ -28,7 +27,7 @@ func (c *Client) ListDeployments(namespace string) ([]appsv1.Deployment, error) 
 
 // CreateUpdateDeployment create or update a deployment
 func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Config) error {
-	kratosLabel, err := labels.ConvertSelectorToLabelsMap(common.DeployLabel)
+	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
 	if err != nil {
 		return nil
 	}

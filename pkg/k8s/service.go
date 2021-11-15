@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/laghoule/kratos/pkg/common"
 	"github.com/laghoule/kratos/pkg/config"
 
 	corev1 "k8s.io/api/core/v1"
@@ -16,7 +15,7 @@ import (
 
 // CreateUpdateService create or update a service
 func (c *Client) CreateUpdateService(name, namespace string, conf *config.Config) error {
-	kratosLabel, err := labels.ConvertSelectorToLabelsMap(common.DeployLabel)
+	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
 	if err != nil {
 		return nil
 	}
@@ -65,7 +64,7 @@ func (c *Client) CreateUpdateService(name, namespace string, conf *config.Config
 
 // updateService update an existing service
 func (c *Client) updateService(name, namespace string, conf *config.Config) error {
-	kratosLabel, err := labels.ConvertSelectorToLabelsMap(common.DeployLabel)
+	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
 	if err != nil {
 		return nil
 	}
@@ -117,6 +116,6 @@ func (c *Client) DeleteService(name, namespace string) error {
 	if err := c.Clientset.CoreV1().Services(namespace).Delete(context.Background(), name, metav1.DeleteOptions{}); err != nil {
 		return fmt.Errorf("delete service failed: %s", err)
 	}
-	
+
 	return nil
 }

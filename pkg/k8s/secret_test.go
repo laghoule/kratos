@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/laghoule/kratos/pkg/common"
+	"github.com/laghoule/kratos/pkg/config"
 
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
@@ -13,7 +13,7 @@ import (
 )
 
 func createSecret() *corev1.Secret {
-	kratosLabel, err := labels.ConvertSelectorToLabelsMap(common.DeployLabel)
+	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
 	if err != nil {
 		return nil
 	}

@@ -21,7 +21,7 @@ type Client struct {
 
 const (
 	appLabelName       = "app"
-	requiredK8SVersion = "1.19"
+	requiredK8SVersion = "v1.19.0"
 )
 
 // New return a a Client
@@ -61,8 +61,8 @@ func (c *Client) CheckVersionDepency() error {
 		return fmt.Errorf("getting Kubernetes version failed: %s", err)
 	}
 
-	if semver.Compare(requiredK8SVersion, vers.String()) < 0 {
-		return fmt.Errorf("needed Kubernetes version 1.19+ not meet")
+	if semver.Compare(vers.String(), requiredK8SVersion) < 0 {
+		return fmt.Errorf("minimal Kubernetes version %s not meet", requiredK8SVersion)
 	}
 
 	return nil
