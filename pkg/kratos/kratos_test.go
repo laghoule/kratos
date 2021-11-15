@@ -64,7 +64,7 @@ func new() *Kratos {
 
 func TestCreateInit(t *testing.T) {
 	kratos := new()
-	kratos.CreateInit(generatedInitFile)
+	kratos.CreateInit(filepath.Join(os.TempDir(), generatedInitFile))
 
 	expected, err := os.ReadFile(testdataInitFile)
 	if err != nil {
