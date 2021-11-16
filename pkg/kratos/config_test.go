@@ -52,9 +52,10 @@ func TestSaveConfigFile(t *testing.T) {
 	assert.Equal(t, name+kratosSuffixConfig, s.Name)
 }
 
+// TODO: FIXME
 func TestSaveConfigFileToDisk(t *testing.T) {
 	c := new()
-	c.Config = createConf()
+	c.Config.Load(testdataInitFile)
 
 	if err := c.saveConfigFileToSecret(name+kratosSuffixConfig, namespace); err != nil {
 		t.Error(err)
@@ -74,7 +75,7 @@ func TestSaveConfigFileToDisk(t *testing.T) {
 		return
 	}
 
-	result, err := os.ReadFile(filepath.Join(os.TempDir(), generatedInitFile))
+	result, err := os.ReadFile(filepath.Join(os.TempDir(), name+".yaml"))
 	if err != nil {
 		t.Error(err)
 		return
@@ -86,7 +87,7 @@ func TestSaveConfigFileToDisk(t *testing.T) {
 		return
 	}
 
-	assert.Equal(t, expected, result)
+	assert.Equal(t, string(expected), string(result))
 }
 
 func TestCreateSecretString(t *testing.T) {

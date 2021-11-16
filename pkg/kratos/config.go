@@ -67,8 +67,18 @@ func (k *Kratos) SaveConfigFileToDisk(name, namespace, destination string) error
 		return err
 	}
 
-	if err := os.WriteFile(filepath.Join(destination, name)+".yaml", []byte(secret.Data[secretConfigKey]), fileMode); err != nil {
-		return fmt.Errorf("writing yaml init file failed: %s", err)
+	if _, ok := secret.Data[secretConfigKey]; ok {
+		if err := os.WriteFile(filepath.Join(destination, name)+".yaml", []byte(secret.Data[secretConfigKey]), fileMode); err != nil {
+			return fmt.Errorf("writing yaml init file failed: %s", err)
+		}
+	} else {
+		if _, ok := secret.StringData[secretConfigKey]; ok {
+			if err := os.WriteFile(filepath.Join(destination, name)+".yaml", []byte(secret.StringData[secretConfigKey]), fileMode); err != nil {
+				return fmt.Errorf("writing yaml init file failed: %s", err)
+			}
+		} else {
+			return fmt.Errorf("unexpected missing data in secret %s", secret.Name)
+		}
 	}
 
 	return nil
