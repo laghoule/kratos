@@ -36,7 +36,7 @@ func (k *Kratos) Delete(name, namespace string) error {
 
 	// configuration
 	spinner, _ = pterm.DefaultSpinner.Start("deleting configuration ")
-	if err := k.DeleteSecret(name+kratosSuffixConfig, namespace); err != nil {
+	if err := k.DeleteSecret(name+configSuffix, namespace); err != nil {
 		pterm.Error.Println(err)
 		runWithError = true
 	}

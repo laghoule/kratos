@@ -17,7 +17,7 @@ var listCmd = &cobra.Command{
 	Long: `List application by namespace, or cluster wide of managed
 kratos deployment.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		kratos, err := kratos.New("")
+		kratos, err := kratos.New("", viper.GetString("kubeconfig"))
 		if err != nil {
 			panic(err)
 		}
@@ -31,6 +31,6 @@ kratos deployment.`,
 
 func init() {
 	rootCmd.AddCommand(listCmd)
-	listCmd.PersistentFlags().String("namespace", "", "specify a namespace")
-	viper.BindPFlag("listNamespace", listCmd.PersistentFlags().Lookup("namespace"))
+	listCmd.Flags().StringP("namespace", "n", "", "specify a namespace")
+	viper.BindPFlag("listNamespace", listCmd.Flags().Lookup("namespace"))
 }

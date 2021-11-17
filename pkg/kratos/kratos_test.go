@@ -30,8 +30,6 @@ const (
 	hostname            = "example.com"
 )
 
-
-
 func new() *Kratos {
 	kratos := &Kratos{
 		Client: &k8s.Client{},

@@ -14,9 +14,10 @@ import (
 )
 
 const (
-	kratosSuffixConfig = "-kratos-config"
-	secretConfigKey    = "config"
-	fileMode           = 0666
+	configSuffix = "-kratos-config"
+	configKey    = "config"
+	fileMode     = 0666
+	yamlExt      = ".yaml"
 )
 
 // CreateInit create sample configuration file
@@ -33,13 +34,14 @@ func (k *Kratos) CreateInit(file string) error {
 	return nil
 }
 
-func (k *Kratos) saveConfigFileToSecret(name, namespace string) error {
+// saveConfigToSecret save configuration in secret DataString
+func (k *Kratos) saveConfigToSecret(name, namespace string) error {
 	b, err := yaml.Marshal(k.Config)
 	if err != nil {
 		return fmt.Errorf("saving configuration to kubernetes secret failed: %s", err)
 	}
 
-	secret := createSecretString(name, namespace, string(b))
+	secret := createSecretDataString(name, namespace, string(b))
 
 	if err := k.Client.CreateUpdateSecret(secret, namespace); err != nil {
 		return err
@@ -48,32 +50,33 @@ func (k *Kratos) saveConfigFileToSecret(name, namespace string) error {
 	return nil
 }
 
-func createSecretString(name, namespace, data string) *corev1.Secret {
+// createSecretDataString return a secret object with data in StringData field
+func createSecretDataString(name, namespace, data string) *corev1.Secret {
 	return &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 		},
 		StringData: map[string]string{
-			secretConfigKey: data,
+			configKey: data,
 		},
 	}
 }
 
-// SaveConfigFileToDisk get config from secret and write it to disk
-func (k *Kratos) SaveConfigFileToDisk(name, namespace, destination string) error {
-	secret, err := k.Client.GetSecret(name+kratosSuffixConfig, namespace)
+// SaveConfigToDisk get config from secret and write it to disk
+func (k *Kratos) SaveConfigToDisk(name, namespace, destination string) error {
+	secret, err := k.Client.GetSecret(name+configSuffix, namespace)
 	if err != nil {
 		return err
 	}
 
-	if _, ok := secret.Data[secretConfigKey]; ok {
-		if err := os.WriteFile(filepath.Join(destination, name)+".yaml", []byte(secret.Data[secretConfigKey]), fileMode); err != nil {
+	if _, ok := secret.Data[configKey]; ok {
+		if err := os.WriteFile(filepath.Join(destination, name)+yamlExt, []byte(secret.Data[configKey]), fileMode); err != nil {
 			return fmt.Errorf("writing yaml init file failed: %s", err)
 		}
 	} else {
-		if _, ok := secret.StringData[secretConfigKey]; ok {
-			if err := os.WriteFile(filepath.Join(destination, name)+".yaml", []byte(secret.StringData[secretConfigKey]), fileMode); err != nil {
+		if _, ok := secret.StringData[configKey]; ok {
+			if err := os.WriteFile(filepath.Join(destination, name)+yamlExt, []byte(secret.StringData[configKey]), fileMode); err != nil {
 				return fmt.Errorf("writing yaml init file failed: %s", err)
 			}
 		} else {

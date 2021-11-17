@@ -11,6 +11,3 @@ krator config init
 ```
 
 * Support of rollback via history of config?
-
-* Support flag --kubeconfig
-

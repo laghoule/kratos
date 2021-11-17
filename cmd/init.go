@@ -16,7 +16,7 @@ var initCmd = &cobra.Command{
 	Short: "Create an empty configuration file.",
 	Long: `Initialise a configuration file with all available options.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		kratos, err := kratos.New("")
+		kratos, err := kratos.New("", viper.GetString("kubeconfig"))
 		if err != nil {
 			panic(err)
 		}
@@ -30,7 +30,7 @@ var initCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(initCmd)
-	initCmd.PersistentFlags().String("name", "", "name of the configuration file")
+	initCmd.Flags().String("name", "", "name of the configuration file")
 	initCmd.MarkFlagRequired("name")
-	viper.BindPFlag("initName", initCmd.PersistentFlags().Lookup("name"))
+	viper.BindPFlag("initName", initCmd.Flags().Lookup("name"))
 }

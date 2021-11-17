@@ -22,7 +22,7 @@ Cert-manager will create the necessary TLS certificate.`,
 		name := viper.GetString("cName")
 		namespace := viper.GetString("cNamespace")
 
-		kratos, err := kratos.New(config)
+		kratos, err := kratos.New(config, viper.GetString("kubeconfig"))
 		if err != nil {
 			panic(err)
 		}
@@ -42,13 +42,13 @@ Cert-manager will create the necessary TLS certificate.`,
 func init() {
 	rootCmd.AddCommand(createCmd)
 
-	createCmd.Flags().String("config", "", "configuration file")
+	createCmd.Flags().StringP("config", "c", "", "configuration file")
 	createCmd.MarkFlagRequired("config")
 
 	createCmd.Flags().String("name", "", "deployment name")
 	createCmd.MarkFlagRequired("name")
 
-	createCmd.Flags().String("namespace", "default", "deployment namespace")
+	createCmd.Flags().StringP("namespace", "n", "default", "deployment namespace")
 	createCmd.MarkFlagRequired("namespace")
 
 	viper.BindPFlag("cConfig", createCmd.Flags().Lookup("config"))

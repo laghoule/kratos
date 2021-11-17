@@ -3,6 +3,10 @@
 ## Config
 
 ```yaml
+common:
+  labels: {}
+  annotations: {}
+
 deployment:
   labels: {}
   annotations: {}
@@ -12,6 +16,13 @@ deployment:
       image: laghoule/patate-poil
       tag: v1.0.1
       port: 80
+      resources:
+        requests:
+          cpu: 25m
+          memory: 32Mi
+        limits:
+          cpu: 50m
+          memory: 64Mi
 
 configmaps:
   labels: {}
@@ -40,6 +51,8 @@ ingress:
     - www.example.com
 ```
 
-## Development map
+## Roadmap
+
+### V0.1.0
 
 ### v1.0.0

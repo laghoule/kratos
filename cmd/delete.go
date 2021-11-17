@@ -20,7 +20,7 @@ Generated cert-manager secret will not be deleted.`,
 		name := viper.GetString("dName")
 		namespace := viper.GetString("dNamespace")
 
-		kratos, err := kratos.New("")
+		kratos, err := kratos.New("", viper.GetString("kubeconfig"))
 		if err != nil {
 			panic(err)
 		}
@@ -35,12 +35,12 @@ Generated cert-manager secret will not be deleted.`,
 func init() {
 	rootCmd.AddCommand(deleteCmd)
 
-	deleteCmd.PersistentFlags().String("name", "", "name of the deployment")
+	deleteCmd.Flags().String("name", "", "name of the deployment")
 	deleteCmd.MarkFlagRequired("name")
 
-	deleteCmd.PersistentFlags().String("namespace", "", "namespace of the deployment")
+	deleteCmd.Flags().StringP("namespace", "n", "", "namespace of the deployment")
 	deleteCmd.MarkFlagRequired("namespace")
 
-	viper.BindPFlag("dName", deleteCmd.PersistentFlags().Lookup("name"))
-	viper.BindPFlag("dNamespace", deleteCmd.PersistentFlags().Lookup("namespace"))
+	viper.BindPFlag("dName", deleteCmd.Flags().Lookup("name"))
+	viper.BindPFlag("dNamespace", deleteCmd.Flags().Lookup("namespace"))
 }

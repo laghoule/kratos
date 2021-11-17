@@ -39,7 +39,7 @@ func (k *Kratos) Create(name, namespace string) error {
 
 	// configuration
 	spinner, _ = pterm.DefaultSpinner.Start("saving configuration")
-	if err := k.saveConfigFileToSecret(name+kratosSuffixConfig, namespace); err != nil {
+	if err := k.saveConfigToSecret(name+configSuffix, namespace); err != nil {
 		spinner.Fail(err)
 		runWithError = true
 	} else {

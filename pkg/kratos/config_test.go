@@ -9,6 +9,7 @@ import (
 	"github.com/laghoule/kratos/pkg/config"
 
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/yaml.v3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -37,27 +38,33 @@ func TestSaveConfigFile(t *testing.T) {
 	c := new()
 	c.Config = createConf()
 
-	if err := c.saveConfigFileToSecret(name+kratosSuffixConfig, namespace); err != nil {
-		t.Error(err)
-		return
-	}
-
-	s, err := c.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), name+kratosSuffixConfig, metav1.GetOptions{})
+	b, err := yaml.Marshal(c.Config)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	// TODO not enough for this test
-	assert.Equal(t, name+kratosSuffixConfig, s.Name)
+	expected := createSecretDataString(name+configSuffix, namespace, string(b))
+
+	if err := c.saveConfigToSecret(name+configSuffix, namespace); err != nil {
+		t.Error(err)
+		return
+	}
+
+	result, err := c.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), name+configSuffix, metav1.GetOptions{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	assert.Equal(t, expected, result)
 }
 
-// TODO: FIXME
 func TestSaveConfigFileToDisk(t *testing.T) {
 	c := new()
 	c.Config.Load(testdataInitFile)
 
-	if err := c.saveConfigFileToSecret(name+kratosSuffixConfig, namespace); err != nil {
+	if err := c.saveConfigToSecret(name+configSuffix, namespace); err != nil {
 		t.Error(err)
 		return
 	}
@@ -70,12 +77,12 @@ func TestSaveConfigFileToDisk(t *testing.T) {
 
 	assert.Len(t, list.Items, 1)
 
-	if err := c.SaveConfigFileToDisk(name, namespace, os.TempDir()); err != nil {
+	if err := c.SaveConfigToDisk(name, namespace, os.TempDir()); err != nil {
 		t.Error(err)
 		return
 	}
 
-	result, err := os.ReadFile(filepath.Join(os.TempDir(), name+".yaml"))
+	result, err := os.ReadFile(filepath.Join(os.TempDir(), name+yamlExt))
 	if err != nil {
 		t.Error(err)
 		return
@@ -91,6 +98,6 @@ func TestSaveConfigFileToDisk(t *testing.T) {
 }
 
 func TestCreateSecretString(t *testing.T) {
-	s := createSecretString(name, namespace, configString)
-	assert.Equal(t, configString, s.StringData[secretConfigKey])
+	s := createSecretDataString(name, namespace, configString)
+	assert.Equal(t, configString, s.StringData[configKey])
 }
