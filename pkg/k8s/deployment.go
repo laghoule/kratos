@@ -9,8 +9,14 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+)
+
+const (
+	resCPU    = "cpu"
+	resMemory = "memory"
 )
 
 // ListDeployments list deployment of k8dep labels
@@ -25,6 +31,32 @@ func (c *Client) ListDeployments(namespace string) ([]appsv1.Deployment, error) 
 	return list.Items, nil
 }
 
+// formatResources format the resource from container configurations
+func formatResources(container config.Container) corev1.ResourceRequirements {
+	req := corev1.ResourceRequirements{
+		Requests: corev1.ResourceList{},
+		Limits:   corev1.ResourceList{},
+	}
+
+	// requests
+	if container.Resources.Request.CPU != "" {
+		req.Requests[resCPU] = resource.MustParse(container.Resources.Request.CPU)
+	}
+	if container.Resources.Request.Memory != "" {
+		req.Requests[resMemory] = resource.MustParse(container.Resources.Request.Memory)
+	}
+
+	// limits
+	if container.Resources.Limits.CPU != "" {
+		req.Limits[resCPU] = resource.MustParse(container.Resources.Limits.CPU)
+	}
+	if container.Resources.Limits.Memory != "" {
+		req.Requests[resMemory] = resource.MustParse(container.Resources.Limits.Memory)
+	}
+
+	return req
+}
+
 // CreateUpdateDeployment create or update a deployment
 func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Config) error {
 	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
@@ -33,6 +65,7 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 	}
 
 	containers := []corev1.Container{}
+
 	for _, container := range conf.Containers {
 		containers = append(containers, corev1.Container{
 			Name:  container.Name,
@@ -42,6 +75,7 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 					ContainerPort: container.Port,
 				},
 			},
+			Resources: formatResources(container),
 		})
 	}
 

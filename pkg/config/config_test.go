@@ -31,6 +31,7 @@ func createConf() *Config {
 					Image: image,
 					Tag:   tag,
 					Port:  port,
+					Resources: Resources{},
 				},
 			},
 		},

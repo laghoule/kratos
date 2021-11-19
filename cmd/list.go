@@ -19,7 +19,8 @@ kratos deployment.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		kratos, err := kratos.New("", viper.GetString("kubeconfig"))
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			os.Exit(1)
 		}
 
 		if err := kratos.List(viper.GetString("listNamespace")); err != nil {

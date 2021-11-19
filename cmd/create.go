@@ -24,7 +24,8 @@ Cert-manager will create the necessary TLS certificate.`,
 
 		kratos, err := kratos.New(config, viper.GetString("kubeconfig"))
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			os.Exit(1)
 		}
 
 		if err := kratos.IsDependencyMeet(); err != nil {

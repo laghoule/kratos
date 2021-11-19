@@ -22,7 +22,8 @@ Generated cert-manager secret will not be deleted.`,
 
 		kratos, err := kratos.New("", viper.GetString("kubeconfig"))
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			os.Exit(1)
 		}
 
 		if err := kratos.Delete(name, namespace); err != nil {

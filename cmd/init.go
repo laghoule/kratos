@@ -18,7 +18,8 @@ var initCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		kratos, err := kratos.New("", viper.GetString("kubeconfig"))
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			os.Exit(1)
 		}
 
 		if err := kratos.CreateInit(viper.GetString("initName")); err != nil {

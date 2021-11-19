@@ -6,6 +6,7 @@ import (
 
 	validator "github.com/go-playground/validator/v10"
 	"gopkg.in/yaml.v3"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 const (
@@ -27,10 +28,24 @@ type Deployment struct {
 
 // Container object
 type Container struct {
-	Name  string `yaml:"name" validate:"required,alphanum,lowercase"`
-	Image string `yaml:"image" validate:"required,ascii"`
-	Tag   string `yaml:"tag" validate:"required,ascii"`
-	Port  int32  `yaml:"port" validate:"required,gte=1,lte=65535"`
+	Name      string    `yaml:"name" validate:"required,alphanum,lowercase"`
+	Image     string    `yaml:"image" validate:"required,ascii"`
+	Tag       string    `yaml:"tag" validate:"required,ascii"`
+	Port      int32     `yaml:"port" validate:"required,gte=1,lte=65535"`
+	Resources Resources `yaml:"resources,omitempty"`
+}
+
+// Resources objext
+type Resources struct {
+	Limits  ResourceType `yaml:"limits,omitempty"`
+	Request ResourceType `yaml:"requests,omitempty"`
+}
+
+// ResourceType object
+type ResourceType struct {
+	// todo add validate
+	CPU    string `yaml:"cpu,omitempty"`
+	Memory string `yaml:"memory,omitempty"`
 }
 
 // Ingress object
@@ -51,6 +66,24 @@ func (h *Hostnames) String() string {
 func validateConfig(config *Config) error {
 	validate := &validator.Validate{}
 	validate = validator.New()
+
+	for _, container := range config.Containers {
+		resources := map[string]string{
+			"requests cpu":    container.Resources.Request.CPU,
+			"requests memory": container.Resources.Request.Memory,
+			"limits cpu":      container.Resources.Limits.CPU,
+			"limits memory":   container.Resources.Limits.Memory,
+		}
+		for rsName, rsValue := range resources {
+			if rsValue == "" {
+				continue
+			}
+			_, err := resource.ParseQuantity(rsValue)
+			if err != nil {
+				return fmt.Errorf("validating configuration resources failed: %s\ncontainer: %s -> %s: %s", err, container.Name, rsName, rsValue)
+			}
+		}
+	}
 
 	if err := validate.Struct(config); err != nil {
 		return fmt.Errorf("validation of config failed: %s", err)

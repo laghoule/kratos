@@ -49,6 +49,10 @@ func createDeployment() *appsv1.Deployment {
 									ContainerPort: containerHTTP,
 								},
 							},
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{},
+								Limits:   corev1.ResourceList{},
+							},
 						},
 					},
 				},
