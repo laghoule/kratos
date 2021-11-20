@@ -13,8 +13,8 @@ import (
 // getCmd represents the get command
 var getCmd = &cobra.Command{
 	Use:   "get",
-	Short: "Get retreive a configuration of a kratos deployment.",
-	Long:  `Get download the saved configuration of a kratos deployment.`,
+	Short: "Retreive a configuration of a kratos deployment.",
+	Long:  `Download the saved configuration of a kratos deployment.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		name := viper.GetString("gName")
 		namespace := viper.GetString("gNamespace")

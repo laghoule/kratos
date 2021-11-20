@@ -2,7 +2,18 @@
 
 ## Yet another deployment tools
 
-Kratos is simple, but with simplicity come less flexibility, so if you want a full fledge deploying tools, this is propably not for you. But, if you have build some simple container, maybe a nginx with your html5 website, this may be the perfect simple alternative to custom Kubernetes YAML, or the build of helm templates.
+Kratos is simple, but with simplicity come less flexibility, so if you want a full fledge deploying tools, this is propably not for you. But, if you have some simple container, maybe a nginx with your html5 website, this may be the perfect alternative to custom Kubernetes YAML, or the build of helm templates.
+
+### Use case
+
+I was having a little html5 demo container that I wanted to host on my Kubernetes cluster. To deploy on the cluster I have 2 options at hand (ok, I haven't search for others options beside these two):
+
+* Helm template packaging
+* Kubernetes yaml files
+
+These solutions are not difficult (if you are familiar with Kubernetes), but time consuming.
+
+So Kratos is born from this use case.
 
 ## Prerequisite
 
@@ -21,7 +32,7 @@ Usage:
 Available Commands:
   create      Deploy an application in an namespace.
   delete      Delete a deployment in a namespace.
-  get         Get retreive a configuration of a kratos deployment.
+  get         Retreive a configuration of a kratos deployment.
   help        Help about any command
   init        Create an empty configuration file.
   list        List application of managed kratos deployment.
@@ -50,7 +61,9 @@ kratos create --name myapp --namespace mynamespace --config myappconfig.yaml
 
 ## Config
 
-| Values | Description | Mandatory |
+### Values definition
+
+| Values | Descriptions | Mandatory |
 |--------|-------------|---------|
 | common.labels| Labels common to all Kubernetes objects | no |
 | common.annotations | Annotation common to all Kubernetes objects | no |
@@ -65,6 +78,26 @@ kratos create --name myapp --namespace mynamespace --config myappconfig.yaml
 | containers.resources.requests.memory | Request this amount of RAM | no |
 | containers.resources.limits.cpu | Max amount of CPU | no |
 | containers.resources.limites.memory | Max amount of RAM | no |
+| configmaps | List of configmaps | no |
+| configmaps.labels | Configmaps labels | no |
+| configmaps.annotations | Configmaps annotations | no |
+| configmaps.name | Name of the configmap | yes |
+| configmaps.mountPath | Path of the mount point in the pod | yes |
+| configmaps.data | Contents of the configmap | yes |
+| secrets | List of secrets | no |
+| secrets.labels | Secrets labels | no |
+| secrets.annotation | Secrets annotations | no |
+| secrets.name | Name of the secret | yes |
+| secrets.mountPath | Path of the mount point in the pod | yes |
+| secrets.data | Contents of the secret | yes |
+| ingress.labels | Ingress labels | no |
+| ingress.annotations | Ingress annotations | no |
+| ingress.ingressClass | Name of the ingressClass to use | yes |
+| ingress.clusterIssuer | Name of the clusterIssuer to use | yes |
+| ingress.hostnames | List of hostnames associate with this deployment | yes |
+
+
+### Example of a full features configuration:
 
 ```yaml
 common:
@@ -108,6 +141,25 @@ secrets:
 ingress:
   labels: {}
   annotations: {}
+  ingressClass: nginx
+  clusterIssuer: letsencrypt
+  hostnames:
+    - example.com
+    - www.example.com
+```
+
+### Example of a minimal configuration
+
+```yaml
+deployment:
+  replicas: 1
+  port: 80
+  containers:
+    - name: pacman
+      image: laghoule/patate-poil
+      tag: v1.0.1
+
+ingress:
   ingressClass: nginx
   clusterIssuer: letsencrypt
   hostnames:
