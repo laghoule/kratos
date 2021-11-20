@@ -14,8 +14,7 @@ import (
 var deleteCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "Delete a deployment in a namespace.",
-	Long: `Delete the deployment, service and ingress of the deployed application. 
-Generated cert-manager secret will not be deleted.`,
+	Long:  `Delete the deployment, service and ingress of the deployed application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		name := viper.GetString("dName")
 		namespace := viper.GetString("dNamespace")

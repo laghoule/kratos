@@ -32,7 +32,7 @@ type Common struct {
 type Deployment struct {
 	Labels      map[string]string `yaml:"labels,omitempty"`
 	Annotations map[string]string `yaml:"annotations,omitempty"`
-	Replicas    int32             `yaml:"replicas,omitempty" validate:"gte=0,lte=100" `
+	Replicas    int32             `yaml:"replicas,omitempty" validate:"required,gte=0,lte=100" `
 	Containers  []Container       `yaml:"containers" validate:"required,dive"`
 }
 

@@ -11,3 +11,5 @@ krator config init
 ```
 
 * Support of rollback via history of config?
+
+* Network port of container: deployment.container.port -> deployment.port

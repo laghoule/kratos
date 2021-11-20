@@ -9,12 +9,11 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "kratos",
-	Short: "Easy deployment tool for Kubernetes.",
-	Long: `Alternative to helm to deploy simple container, without the pain of
-managing Kubernetes yaml template.`,
+	Use:               "kratos",
+	Short:             "Easy deployment tool for Kubernetes.",
+	Long:              `Alternative to helm for deploying simple container, without the pain of managing Kubernetes yaml templates.`,
 	CompletionOptions: cobra.CompletionOptions{DisableDefaultCmd: true},
-	TraverseChildren: true,
+	TraverseChildren:  true,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

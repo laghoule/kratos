@@ -14,7 +14,7 @@ import (
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Create an empty configuration file.",
-	Long: `Initialise a configuration file with all available options.`,
+	Long:  `Initialise a configuration file with all available options.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		kratos, err := kratos.New("", viper.GetString("kubeconfig"))
 		if err != nil {

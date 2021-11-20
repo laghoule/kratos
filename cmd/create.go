@@ -14,8 +14,7 @@ import (
 var createCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Deploy an application in an namespace.",
-	Long: `Create deployment, service and ingress for k8s application. 
-Cert-manager will create the necessary TLS certificate.`,
+	Long: `Create and update deployment, service and ingress for simple k8s application.`,
 	TraverseChildren: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		config := viper.GetString("cConfig")
