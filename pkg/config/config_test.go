@@ -27,10 +27,10 @@ func createConf() *Config {
 			Replicas: replicas,
 			Containers: []Container{
 				{
-					Name:  name,
-					Image: image,
-					Tag:   tag,
-					Port:  port,
+					Name:      name,
+					Image:     image,
+					Tag:       tag,
+					Port:      port,
 					Resources: Resources{},
 				},
 			},

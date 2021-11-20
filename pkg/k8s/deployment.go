@@ -12,6 +12,9 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+
+	"github.com/imdario/mergo"
+	"github.com/jinzhu/copier"
 )
 
 const (
@@ -61,7 +64,28 @@ func formatResources(container config.Container) corev1.ResourceRequirements {
 func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Config) error {
 	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
 	if err != nil {
-		return nil
+		return fmt.Errorf("converting label failed: %s", err)
+	}
+
+	// merge common & deployments labels
+	if err := mergo.Map(&conf.Deployment.Labels, conf.Common.Labels); err != nil {
+		return fmt.Errorf("merging deployment labels failed: %s", err)
+	}
+
+	// deep copy of map for podLabels
+	podLabels := map[string]string{}
+	if err := copier.Copy(&podLabels, &conf.Deployment.Labels); err != nil {
+		return fmt.Errorf("copying deployment labels values failed: %s", err)
+	}
+
+	// merge kratosLabels & deploymentLabels
+	if err := mergo.Map(&conf.Deployment.Labels, map[string]string(kratosLabel)); err != nil {
+		return fmt.Errorf("merging deployment labels failed: %s", err)
+	}
+
+	// merge common & deployments annotations
+	if err := mergo.Map(&conf.Deployment.Annotations, conf.Common.Annotations); err != nil {
+		return fmt.Errorf("merging deployment annotations failed: %s", err)
 	}
 
 	containers := []corev1.Container{}
@@ -81,10 +105,11 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
+			Name:        name,
+			Namespace:   namespace,
+			Annotations: conf.Deployment.Annotations,
 			Labels: labels.Merge(
-				kratosLabel,
+				conf.Deployment.Labels,
 				labels.Set{
 					appLabelName: name,
 				},
@@ -99,11 +124,15 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      name,
-					Namespace: namespace,
-					Labels: map[string]string{
-						appLabelName: name,
-					},
+					Name:        name,
+					Namespace:   namespace,
+					Annotations: conf.Deployment.Annotations,
+					Labels: labels.Merge(
+						podLabels,
+						labels.Set{
+							appLabelName: name,
+						},
+					),
 				},
 				Spec: corev1.PodSpec{
 					Containers: containers,

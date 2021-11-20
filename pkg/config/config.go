@@ -7,6 +7,7 @@ import (
 	validator "github.com/go-playground/validator/v10"
 	"gopkg.in/yaml.v3"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/util/validation"
 )
 
 const (
@@ -16,14 +17,23 @@ const (
 
 // Config of kratos
 type Config struct {
+	Common Common `yaml:"common,omitempty"`
 	*Deployment
 	*Ingress
 }
 
+// Common object
+type Common struct {
+	Labels      map[string]string `yaml:"labels,omitempty"`
+	Annotations map[string]string `yaml:"annotations,omitempty"`
+}
+
 // Deployment object
 type Deployment struct {
-	Replicas   int32       `yaml:"replicas,omitempty" validate:"gte=0,lte=100" `
-	Containers []Container `yaml:"containers" validate:"required,dive"`
+	Labels      map[string]string `yaml:"labels,omitempty"`
+	Annotations map[string]string `yaml:"annotations,omitempty"`
+	Replicas    int32             `yaml:"replicas,omitempty" validate:"gte=0,lte=100" `
+	Containers  []Container       `yaml:"containers" validate:"required,dive"`
 }
 
 // Container object
@@ -43,16 +53,17 @@ type Resources struct {
 
 // ResourceType object
 type ResourceType struct {
-	// todo add validate
 	CPU    string `yaml:"cpu,omitempty"`
 	Memory string `yaml:"memory,omitempty"`
 }
 
 // Ingress object
 type Ingress struct {
-	IngressClass  string      `yaml:"ingressClass" validate:"required,alphanum"`
-	ClusterIssuer string      `yaml:"clusterIssuer" validate:"required,alphanum"`
-	Hostnames     []Hostnames `yaml:"hostnames" validate:"required,dive,hostname"`
+	Labels        map[string]string `yaml:"labels,omitempty"`
+	Annotations   map[string]string `yaml:"annotations,omitempty"`
+	IngressClass  string            `yaml:"ingressClass" validate:"required,alphanum"`
+	ClusterIssuer string            `yaml:"clusterIssuer" validate:"required,alphanum"`
+	Hostnames     []Hostnames       `yaml:"hostnames" validate:"required,dive,hostname"`
 }
 
 // Hostnames use in ingress object
@@ -63,10 +74,63 @@ func (h *Hostnames) String() string {
 	return string(*h)
 }
 
+func labelsValidation(labels map[string]string) error {
+	for name := range labels {
+		errors := validation.IsValidLabelValue(name)
+		if len(errors) > 0 {
+			return fmt.Errorf("validation of labels %s failed: %s", name, errors[len(errors)-1])
+		}
+	}
+	return nil
+}
+
 func validateConfig(config *Config) error {
 	validate := &validator.Validate{}
 	validate = validator.New()
 
+	// validate common labels
+	// TODO add test
+	if err := labelsValidation(config.Common.Labels); err != nil {
+		return err
+	}
+
+	// validate deployment labels
+	// TODO add test
+	if err := labelsValidation(config.Deployment.Labels); err != nil {
+		return err
+	}
+
+	// validate ingress labels
+	// TODO add test
+	if err := labelsValidation(config.Ingress.Labels); err != nil {
+		return err
+	}
+
+	// common labels must be uniq
+	// TODO repeated statement, must recheck
+	// TODO Add test
+	for name := range config.Common.Labels {
+		if _, found := config.Deployment.Labels[name]; found {
+			return fmt.Errorf("common labels %q cannot be duplicated in deployment labels", name)
+		}
+		if _, found := config.Ingress.Labels[name]; found {
+			return fmt.Errorf("common labels %q cannot be duplicated in ingress labels", name)
+		}
+	}
+
+	// common annotations must be uniq
+	// TODO repeated statement, must recheck
+	// TODO Add test
+	for name := range config.Common.Annotations {
+		if _, found := config.Deployment.Annotations[name]; found {
+			return fmt.Errorf("common annotations %q cannot be duplicated in deployment annotations", name)
+		}
+		if _, found := config.Ingress.Annotations[name]; found {
+			return fmt.Errorf("common annotations %q cannot be duplicated in ingress annotations", name)
+		}
+	}
+
+	// validate resource limits/requests
 	for _, container := range config.Containers {
 		resources := map[string]string{
 			"requests cpu":    container.Resources.Request.CPU,
@@ -80,13 +144,13 @@ func validateConfig(config *Config) error {
 			}
 			_, err := resource.ParseQuantity(rsValue)
 			if err != nil {
-				return fmt.Errorf("validating configuration resources failed: %s\ncontainer: %s -> %s: %s", err, container.Name, rsName, rsValue)
+				return fmt.Errorf("validation of configuration resources failed: %s\ncontainer: %s -> %s: %s", err, container.Name, rsName, rsValue)
 			}
 		}
 	}
 
 	if err := validate.Struct(config); err != nil {
-		return fmt.Errorf("validation of config failed: %s", err)
+		return fmt.Errorf("validation of configuration failed: %s", err)
 	}
 
 	return nil

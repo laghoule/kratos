@@ -4,7 +4,9 @@ go 1.17
 
 require (
 	github.com/go-playground/validator/v10 v10.9.0
+	github.com/imdario/mergo v0.3.12
 	github.com/jetstack/cert-manager v1.6.1
+	github.com/jinzhu/copier v0.3.2
 	github.com/pterm/pterm v0.12.33
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.9.0
@@ -31,7 +33,6 @@ require (
 	github.com/googleapis/gnostic v0.5.5 // indirect
 	github.com/gookit/color v1.5.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
