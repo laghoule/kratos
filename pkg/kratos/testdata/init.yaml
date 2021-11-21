@@ -1,11 +1,24 @@
+common:
+    labels:
+        commonlabel: value
+    annotations:
+        commonannotation: value
 deployment:
+    labels:
+        label: value
+    annotations:
+        annotation: value
     replicas: 1
+    port: 8080
     containers:
         - name: example
           image: nginx
           tag: latest
-          port: 8080
 ingress:
+    labels:
+        label: value
+    annotations:
+        annotation: value
     ingressClass: nginx
     clusterIssuer: letsencrypt
     hostnames:

@@ -22,20 +22,34 @@ const (
 )
 
 func createConf() *Config {
+	commonLabels := map[string]string{"environment": "dev"}
+	commonAnnotations := map[string]string{"branch": "dev"}
+	depLabels := map[string]string{"app": "myapp"}
+	depAnnotations := map[string]string{"revision": "22"}
+	ingLabels := map[string]string{"cloudflare": "enabled"}
+	ingAnnotation := map[string]string{"hsts": "true"}
 	return &Config{
-		Deployment: &Deployment{
-			Replicas: replicas,
+		Common: Common{
+			Labels:      commonLabels,
+			Annotations: commonAnnotations,
+		},
+		Deployment: Deployment{
+			Labels:      depLabels,
+			Annotations: depAnnotations,
+			Replicas:    replicas,
+			Port:        port,
 			Containers: []Container{
 				{
 					Name:      name,
 					Image:     image,
 					Tag:       tag,
-					Port:      port,
 					Resources: Resources{},
 				},
 			},
 		},
-		Ingress: &Ingress{
+		Ingress: Ingress{
+			Labels:        ingLabels,
+			Annotations:   ingAnnotation,
 			IngressClass:  ingresClass,
 			ClusterIssuer: clusterIssuer,
 			Hostnames:     []Hostnames{hostname},

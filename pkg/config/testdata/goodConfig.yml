@@ -1,15 +1,27 @@
-name: myapp
-namespace: mynamespace
+common:
+  labels:
+    environment: dev
+  annotations:
+    branch: dev
+
 deployment:
+  labels:
+    app: myapp
+  annotations:
+    revision: 22
   replicas: 1
+  port: 80
   containers:
     - name: myapp
       image: myimage
       tag: latest
-      port: 80
+
 ingress:
+  labels:
+    cloudflare: enabled
+  annotations:
+    hsts: true
   ingressClass: nginx
   clusterIssuer: letsencrypt
   hostnames:
     - example.com
-  port: 80

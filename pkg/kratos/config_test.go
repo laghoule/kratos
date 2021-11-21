@@ -15,18 +15,18 @@ import (
 
 func createConf() *config.Config {
 	return &config.Config{
-		Deployment: &config.Deployment{
+		Deployment: config.Deployment{
 			Replicas: replicas,
+			Port:     port,
 			Containers: []config.Container{
 				{
 					Name:  name,
 					Image: image,
 					Tag:   tag,
-					Port:  port,
 				},
 			},
 		},
-		Ingress: &config.Ingress{
+		Ingress: config.Ingress{
 			IngressClass:  ingresClass,
 			ClusterIssuer: clusterIssuer,
 			Hostnames:     []config.Hostnames{hostname},

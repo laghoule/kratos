@@ -15,14 +15,27 @@ import (
 
 func createDeployment() *appsv1.Deployment {
 	var replicas int32 = 1
+	depLabels := map[string]string{
+		kratosLabelName: kratosLabelValue,
+		appLabelName:    name,
+		"environment":   "dev",
+		"app":           "myapp",
+	}
+	podLabels := map[string]string{
+		appLabelName:  name,
+		"environment": "dev",
+		"app":         "myapp",
+	}
+	annotations := map[string]string{
+		"branch":   "dev",
+		"revision": "22",
+	}
 	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels: map[string]string{
-				kratosLabelName: kratosLabelValue,
-				appLabelName:    name,
-			},
+			Name:        name,
+			Namespace:   namespace,
+			Labels:      depLabels,
+			Annotations: annotations,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Replicas: &replicas,
@@ -33,11 +46,10 @@ func createDeployment() *appsv1.Deployment {
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      name,
-					Namespace: namespace,
-					Labels: map[string]string{
-						appLabelName: name,
-					},
+					Name:        name,
+					Namespace:   namespace,
+					Labels:      podLabels,
+					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{

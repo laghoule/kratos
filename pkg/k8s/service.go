@@ -35,9 +35,9 @@ func (c *Client) CreateUpdateService(name, namespace string, conf *config.Config
 			Ports: []corev1.ServicePort{
 				{
 					Name: name,
-					Port: conf.Containers[0].Port,
+					Port: conf.Deployment.Port,
 					TargetPort: intstr.IntOrString{
-						IntVal: conf.Containers[0].Port,
+						IntVal: conf.Deployment.Port,
 					},
 				},
 			},
@@ -91,9 +91,9 @@ func (c *Client) updateService(name, namespace string, conf *config.Config) erro
 			Ports: []corev1.ServicePort{
 				{
 					Name: name,
-					Port: conf.Containers[0].Port,
+					Port: conf.Deployment.Port,
 					TargetPort: intstr.IntOrString{
-						IntVal: conf.Containers[0].Port,
+						IntVal: conf.Deployment.Port,
 					},
 				},
 			},

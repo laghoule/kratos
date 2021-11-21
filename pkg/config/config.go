@@ -18,8 +18,8 @@ const (
 // Config of kratos
 type Config struct {
 	Common Common `yaml:"common,omitempty"`
-	*Deployment
-	*Ingress
+	Deployment
+	Ingress
 }
 
 // Common object
@@ -33,6 +33,7 @@ type Deployment struct {
 	Labels      map[string]string `yaml:"labels,omitempty"`
 	Annotations map[string]string `yaml:"annotations,omitempty"`
 	Replicas    int32             `yaml:"replicas,omitempty" validate:"required,gte=0,lte=100" `
+	Port        int32             `yaml:"port" validate:"required,gte=1,lte=65535"`
 	Containers  []Container       `yaml:"containers" validate:"required,dive"`
 }
 
@@ -41,7 +42,6 @@ type Container struct {
 	Name      string    `yaml:"name" validate:"required,alphanum,lowercase"`
 	Image     string    `yaml:"image" validate:"required,ascii"`
 	Tag       string    `yaml:"tag" validate:"required,ascii"`
-	Port      int32     `yaml:"port" validate:"required,gte=1,lte=65535"`
 	Resources Resources `yaml:"resources,omitempty"`
 }
 
@@ -159,18 +159,38 @@ func validateConfig(config *Config) error {
 // CreateInit return an sample config
 func CreateInit() *Config {
 	return &Config{
-		Deployment: &Deployment{
+		Common: Common{
+			Labels: map[string]string{
+				"commonlabel": "value",
+			},
+			Annotations: map[string]string{
+				"commonannotation": "value",
+			},
+		},
+		Deployment: Deployment{
+			Labels: map[string]string{
+				"label": "value",
+			},
+			Annotations: map[string]string{
+				"annotation": "value",
+			},
 			Replicas: 1,
+			Port:     8080,
 			Containers: []Container{
 				{
 					Name:  "example",
 					Image: "nginx",
 					Tag:   "latest",
-					Port:  8080,
 				},
 			},
 		},
-		Ingress: &Ingress{
+		Ingress: Ingress{
+			Labels: map[string]string{
+				"label": "value",
+			},
+			Annotations: map[string]string{
+				"annotation": "value",
+			},
 			IngressClass:  "nginx",
 			ClusterIssuer: "letsencrypt",
 			Hostnames: []Hostnames{

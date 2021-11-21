@@ -1,5 +1,6 @@
 deployment:
   replicas: 1
+
 ingress:
   ingressClass: nginx
   clusterIssuer: letsencrypt

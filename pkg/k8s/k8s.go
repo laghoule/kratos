@@ -18,7 +18,8 @@ type Client struct {
 }
 
 const (
-	appLabelName       = "app"
+	// TODO rename this
+	appLabelName       = "kratos/deployment"
 	requiredK8SVersion = "v1.19.0"
 )
 

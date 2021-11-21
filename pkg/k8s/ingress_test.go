@@ -61,10 +61,14 @@ func createIngress() *netv1.Ingress {
 			Labels: map[string]string{
 				kratosLabelName: kratosLabelValue,
 				appLabelName:    name,
+				"cloudflare":    "enabled",
+				"environment":   "dev",
 			},
 			Annotations: map[string]string{
 				clusterIssuerAnnotation: clusterIssuer,
 				sslRedirectAnnotation:   "true",
+				"branch":                "dev",
+				"hsts":                  "true",
 			},
 		},
 		Spec: netv1.IngressSpec{
@@ -181,7 +185,7 @@ func TestDeleteIngress(t *testing.T) {
 func TestIsIngressClassExist(t *testing.T) {
 	c := new()
 	conf := &config.Config{
-		Ingress: &config.Ingress{},
+		Ingress: config.Ingress{},
 	}
 
 	conf.ClusterIssuer = clusterIssuer

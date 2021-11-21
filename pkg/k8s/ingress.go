@@ -10,6 +10,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+
+	"github.com/imdario/mergo"
 )
 
 const (
@@ -22,6 +24,31 @@ func (c *Client) CreateUpdateIngress(name, namespace string, conf *config.Config
 	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
 	if err != nil {
 		return nil
+	}
+
+	// merge common & ingress labels
+	if err := mergo.Map(&conf.Ingress.Labels, conf.Common.Labels); err != nil {
+		return fmt.Errorf("merging ingress labels failed: %s", err)
+	}
+
+	// merge kratosLabels & ingress labels
+	if err := mergo.Map(&conf.Ingress.Labels, map[string]string(kratosLabel)); err != nil {
+		return fmt.Errorf("merging ingress labels failed: %s", err)
+	}
+
+	// merge common & ingress annotations
+	if err := mergo.Map(&conf.Ingress.Annotations, conf.Common.Annotations); err != nil {
+		return fmt.Errorf("merging ingress annotations failed: %s", err)
+	}
+
+	sslAnnotations := map[string]string{
+		clusterIssuerAnnotation: conf.ClusterIssuer,
+		sslRedirectAnnotation:   "true",
+	}
+
+	// merge ingress annotations & sslAnnotations
+	if err := mergo.Map(&conf.Ingress.Annotations, sslAnnotations); err != nil {
+		return fmt.Errorf("merging ingress annotations failed: %s", err)
 	}
 
 	ingressTLS := []netv1.IngressTLS{}
@@ -46,7 +73,7 @@ func (c *Client) CreateUpdateIngress(name, namespace string, conf *config.Config
 								Service: &netv1.IngressServiceBackend{
 									Name: name,
 									Port: netv1.ServiceBackendPort{
-										Number: conf.Containers[0].Port,
+										Number: conf.Deployment.Port,
 									},
 								},
 							},
@@ -62,15 +89,12 @@ func (c *Client) CreateUpdateIngress(name, namespace string, conf *config.Config
 			Name:      name,
 			Namespace: namespace,
 			Labels: labels.Merge(
-				kratosLabel,
+				conf.Ingress.Labels,
 				labels.Set{
 					appLabelName: name,
 				},
 			),
-			Annotations: map[string]string{
-				clusterIssuerAnnotation: conf.ClusterIssuer,
-				sslRedirectAnnotation:   "true",
-			},
+			Annotations: conf.Ingress.Annotations,
 		},
 		Spec: netv1.IngressSpec{
 			IngressClassName: &conf.IngressClass,

@@ -78,7 +78,7 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 		return fmt.Errorf("copying deployment labels values failed: %s", err)
 	}
 
-	// merge kratosLabels & deploymentLabels
+	// merge kratosLabels & deployment labels
 	if err := mergo.Map(&conf.Deployment.Labels, map[string]string(kratosLabel)); err != nil {
 		return fmt.Errorf("merging deployment labels failed: %s", err)
 	}
@@ -96,7 +96,7 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 			Image: container.Image + ":" + container.Tag,
 			Ports: []corev1.ContainerPort{
 				{
-					ContainerPort: container.Port,
+					ContainerPort: conf.Deployment.Port,
 				},
 			},
 			Resources: formatResources(container),

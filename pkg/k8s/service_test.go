@@ -79,7 +79,7 @@ func TestUpdateService(t *testing.T) {
 		return
 	}
 
-	conf.Containers[0].Port = 443
+	conf.Deployment.Port = 443
 
 	if err := c.updateService(name, namespace, conf); err != nil {
 		t.Error(err)
