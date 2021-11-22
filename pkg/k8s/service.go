@@ -11,6 +11,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
+
+	"github.com/imdario/mergo"
+	"github.com/jinzhu/copier"
 )
 
 // CreateUpdateService create or update a service
@@ -69,6 +72,24 @@ func (c *Client) updateService(name, namespace string, conf *config.Config) erro
 		return nil
 	}
 
+	// deep copy of map for svcLabels
+	svcLabels := map[string]string{}
+	if err := copier.Copy(&svcLabels, &conf.Common.Labels); err != nil {
+		return fmt.Errorf("copying common labels values failed: %s", err)
+	}
+
+	// TODO create a func for merge
+
+	// merge kratosLabel & service labels
+	if err := mergo.Map(&svcLabels, kratosLabel); err != nil {
+		return fmt.Errorf("merging common labels failed: %s", err)
+	}
+
+	// merge common & service labels
+	if err := mergo.Map(&svcLabels, conf.Common.Labels); err != nil {
+		return fmt.Errorf("merging common labels failed: %s", err)
+	}
+
 	svcInfo, err := c.Clientset.CoreV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("getting service informations failed: %s", err)
@@ -79,11 +100,12 @@ func (c *Client) updateService(name, namespace string, conf *config.Config) erro
 			Name:      name,
 			Namespace: namespace,
 			Labels: labels.Merge(
-				kratosLabel,
+				svcLabels,
 				labels.Set{
 					appLabelName: name,
 				},
 			),
+			Annotations:     conf.Common.Annotations,
 			ResourceVersion: svcInfo.ResourceVersion,
 		},
 		Spec: corev1.ServiceSpec{

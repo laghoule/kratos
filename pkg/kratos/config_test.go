@@ -15,6 +15,14 @@ import (
 
 func createConf() *config.Config {
 	return &config.Config{
+		Common: config.Common{
+			Labels: map[string]string{
+				"app": "myapp",
+			},
+			Annotations: map[string]string{
+				"branch": "dev",
+			},
+		},
 		Deployment: config.Deployment{
 			Replicas: replicas,
 			Port:     port,
@@ -44,7 +52,7 @@ func TestSaveConfigFile(t *testing.T) {
 		return
 	}
 
-	expected := createSecretDataString(name+configSuffix, namespace, string(b))
+	expected := c.createSecretDataString(name+configSuffix, namespace, string(b))
 
 	if err := c.saveConfigToSecret(name+configSuffix, namespace); err != nil {
 		t.Error(err)
@@ -98,6 +106,7 @@ func TestSaveConfigFileToDisk(t *testing.T) {
 }
 
 func TestCreateSecretString(t *testing.T) {
-	s := createSecretDataString(name, namespace, configString)
+	c := new()
+	s := c.createSecretDataString(name, namespace, configString)
 	assert.Equal(t, configString, s.StringData[configKey])
 }
