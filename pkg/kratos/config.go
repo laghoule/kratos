@@ -54,9 +54,9 @@ func (k *Kratos) saveConfigToSecret(name, namespace string) error {
 func (k *Kratos) createSecretDataString(name, namespace, data string) *corev1.Secret {
 	return &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels: k.Config.Common.Labels,
+			Name:        name,
+			Namespace:   namespace,
+			Labels:      k.Config.Common.Labels,
 			Annotations: k.Config.Common.Annotations,
 		},
 		StringData: map[string]string{

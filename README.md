@@ -45,14 +45,17 @@ Use "kratos [command] --help" for more information about a command.
 ```
 
 ### Initialize a configuration file
+
 You need to create a configuration file, you can build it from scratch, or use the `init` command:
 
 ```bash
 kratos init --name myappconfig.yaml
 ```
+
 You can now just `fill` the configuration with your own config values. It's very similar to helm values.yaml file.
 
 ### Deploy your application
+
 With your configuration ready, you can now deploy to Kubernetes:
 
 ```bash
@@ -96,8 +99,7 @@ kratos create --name myapp --namespace mynamespace --config myappconfig.yaml
 | ingress.clusterIssuer | Name of the clusterIssuer to use | yes |
 | ingress.hostnames | List of hostnames associate with this deployment | yes |
 
-
-### Example of a full features configuration:
+### Example of a full features configuration
 
 ```yaml
 common:

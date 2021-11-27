@@ -14,6 +14,13 @@ deployment:
         - name: example
           image: nginx
           tag: latest
+          resources:
+            requests:
+                cpu: 25m
+                memory: 32Mi
+            limits:
+                cpu: 50m
+                memory: 64Mi
 ingress:
     labels:
         label: value

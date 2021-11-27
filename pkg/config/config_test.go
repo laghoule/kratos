@@ -50,7 +50,7 @@ func createConf() *Config {
 					Image: image,
 					Tag:   tag,
 					Resources: Resources{
-						Request: ResourceType{
+						Requests: ResourceType{
 							CPU:    "25m",
 							Memory: "32Mi",
 						},

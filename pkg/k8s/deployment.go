@@ -42,11 +42,11 @@ func formatResources(container config.Container) corev1.ResourceRequirements {
 	}
 
 	// requests
-	if container.Resources.Request.CPU != "" {
-		req.Requests[resCPU] = resource.MustParse(container.Resources.Request.CPU)
+	if container.Resources.Requests.CPU != "" {
+		req.Requests[resCPU] = resource.MustParse(container.Resources.Requests.CPU)
 	}
-	if container.Resources.Request.Memory != "" {
-		req.Requests[resMemory] = resource.MustParse(container.Resources.Request.Memory)
+	if container.Resources.Requests.Memory != "" {
+		req.Requests[resMemory] = resource.MustParse(container.Resources.Requests.Memory)
 	}
 
 	// limits

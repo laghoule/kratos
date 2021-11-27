@@ -47,8 +47,8 @@ type Container struct {
 
 // Resources objext
 type Resources struct {
-	Limits  ResourceType `yaml:"limits,omitempty"`
-	Request ResourceType `yaml:"requests,omitempty"`
+	Requests ResourceType `yaml:"requests,omitempty"`
+	Limits   ResourceType `yaml:"limits,omitempty"`
 }
 
 // ResourceType object
@@ -125,8 +125,8 @@ func validateConfig(config *Config) error {
 	// validate resource limits/requests
 	for _, container := range config.Containers {
 		resources := map[string]string{
-			"requests cpu":    container.Resources.Request.CPU,
-			"requests memory": container.Resources.Request.Memory,
+			"requests cpu":    container.Resources.Requests.CPU,
+			"requests memory": container.Resources.Requests.Memory,
 			"limits cpu":      container.Resources.Limits.CPU,
 			"limits memory":   container.Resources.Limits.Memory,
 		}
@@ -173,6 +173,16 @@ func CreateInit() *Config {
 					Name:  "example",
 					Image: "nginx",
 					Tag:   "latest",
+					Resources: Resources{
+						Requests: ResourceType{
+							CPU:    "25m",
+							Memory: "32Mi",
+						},
+						Limits: ResourceType{
+							CPU:    "50m",
+							Memory: "64Mi",
+						},
+					},
 				},
 			},
 		},
