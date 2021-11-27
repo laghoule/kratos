@@ -35,6 +35,7 @@ jobs:
         project_path: "."
         binary_name: "kratos"
         extra_files: LICENSE README.md
+        retry: 10
   docker:
     runs-on: ubuntu-latest
     needs: test-before-release
