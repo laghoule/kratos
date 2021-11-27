@@ -121,6 +121,23 @@ deployment:
           cpu: 50m
           memory: 64Mi
 
+cronjobs:
+  labels: {}
+  annotations: {}
+  shedule: 0 0 * * *
+  retryOnError: 1
+  containers:
+    - name: myjobs
+      image: laghoule/crunchdata
+      tag: v1.0.0
+      resources:
+        requests:
+          cpu: 25m
+          memory: 32Mi
+        limits:
+          cpu: 50m
+          memory: 64Mi
+
 configmaps:
   labels: {}
   annotations: {}
@@ -150,6 +167,8 @@ ingress:
 
 ### Example of a minimal configuration
 
+#### Deployment
+
 ```yaml
 deployment:
   replicas: 1
@@ -165,4 +184,15 @@ ingress:
   hostnames:
     - example.com
     - www.example.com
+```
+
+#### Cronjobs
+
+```yaml
+cronjobs:
+  shedule: 0 0 * * *
+  containers:
+    - name: myjobs
+      image: laghoule/crunchdata
+      tag: v1.0.0
 ```

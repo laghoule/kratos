@@ -88,27 +88,21 @@ func validateConfig(config *Config) error {
 	validate := &validator.Validate{}
 	validate = validator.New()
 
-	// validate common labels
-	// TODO add test
 	if err := labelsValidation(config.Common.Labels); err != nil {
 		return err
 	}
 
 	// validate deployment labels
-	// TODO add test
 	if err := labelsValidation(config.Deployment.Labels); err != nil {
 		return err
 	}
 
 	// validate ingress labels
-	// TODO add test
 	if err := labelsValidation(config.Ingress.Labels); err != nil {
 		return err
 	}
 
 	// common labels must be uniq
-	// TODO repeated statement, must recheck
-	// TODO Add test
 	for name := range config.Common.Labels {
 		if _, found := config.Deployment.Labels[name]; found {
 			return fmt.Errorf("common labels %q cannot be duplicated in deployment labels", name)
@@ -119,8 +113,6 @@ func validateConfig(config *Config) error {
 	}
 
 	// common annotations must be uniq
-	// TODO repeated statement, must recheck
-	// TODO Add test
 	for name := range config.Common.Annotations {
 		if _, found := config.Deployment.Annotations[name]; found {
 			return fmt.Errorf("common annotations %q cannot be duplicated in deployment annotations", name)

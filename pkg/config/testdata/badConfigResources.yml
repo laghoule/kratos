@@ -1,0 +1,16 @@
+deployment:
+  replicas: 1
+  port: 80
+  containers:
+    - name: myapp
+      image: myimage
+      tag: latest
+      resources:
+        requests:
+          cpu: 25f
+
+ingress:
+  ingressClass: nginx
+  clusterIssuer: letsencrypt
+  hostnames:
+    - example.com

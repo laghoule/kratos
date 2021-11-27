@@ -1,0 +1,17 @@
+common:
+  labels:
+    environment/test: dev
+
+deployment:
+  replicas: 1
+  port: 80
+  containers:
+    - name: myapp
+      image: myimage
+      tag: latest
+
+ingress:
+  ingressClass: nginx
+  clusterIssuer: letsencrypt
+  hostnames:
+    - example.com

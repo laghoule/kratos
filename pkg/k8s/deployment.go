@@ -54,7 +54,7 @@ func formatResources(container config.Container) corev1.ResourceRequirements {
 		req.Limits[resCPU] = resource.MustParse(container.Resources.Limits.CPU)
 	}
 	if container.Resources.Limits.Memory != "" {
-		req.Requests[resMemory] = resource.MustParse(container.Resources.Limits.Memory)
+		req.Limits[resMemory] = resource.MustParse(container.Resources.Limits.Memory)
 	}
 
 	return req

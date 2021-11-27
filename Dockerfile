@@ -7,7 +7,7 @@ FROM dep AS build
 WORKDIR /src/
 RUN CGO_ENABLED=0 GOOS=linux go build -o kratos .
 
-FROM alpine:3.14
+FROM alpine:3.15
 COPY --from=build /src/kratos /usr/bin/
 ENTRYPOINT ["/usr/bin/kratos"]
 CMD ["-h"]
