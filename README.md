@@ -147,6 +147,9 @@ configmaps:
     mountPath: /etc/cfg
     data: |
       my configuration data
+    containers:
+      - pacman
+      - myjobs
 
 secrets:
   labels: {}
@@ -156,6 +159,8 @@ secrets:
     data: |
       usename: patate
       password: poil
+    containers:
+      - myjobs
 
 ingress:
   labels: {}
