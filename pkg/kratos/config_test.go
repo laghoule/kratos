@@ -15,7 +15,7 @@ import (
 
 func createConf() *config.Config {
 	return &config.Config{
-		Common: config.Common{
+		Common: &config.Common{
 			Labels: map[string]string{
 				"app": "myapp",
 			},
@@ -23,7 +23,7 @@ func createConf() *config.Config {
 				"branch": "dev",
 			},
 		},
-		Deployment: config.Deployment{
+		Deployment: &config.Deployment{
 			Replicas: replicas,
 			Port:     port,
 			Containers: []config.Container{
@@ -31,13 +31,18 @@ func createConf() *config.Config {
 					Name:  name,
 					Image: image,
 					Tag:   tag,
+					Resources: &config.Resources{
+						Requests: &config.ResourceType{},
+						Limits:   &config.ResourceType{},
+					},
 				},
 			},
 		},
-		Ingress: config.Ingress{
+		Cronjob: &config.Cronjob{},
+		Ingress: &config.Ingress{
 			IngressClass:  ingresClass,
 			ClusterIssuer: clusterIssuer,
-			Hostnames:     []config.Hostnames{hostname},
+			Hostnames:     []string{hostname},
 		},
 	}
 }

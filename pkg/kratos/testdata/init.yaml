@@ -3,6 +3,24 @@ common:
         commonlabel: value
     annotations:
         commonannotation: value
+cronjob:
+    labels:
+        label: value
+    annotations:
+        annotation: value
+    schedule: 0 0 * * *
+    retry: 3
+    container:
+        name: example
+        image: cronjobsimage
+        tag: latest
+        resources:
+            requests:
+                cpu: 25m
+                memory: 32Mi
+            limits:
+                cpu: 50m
+                memory: 64Mi
 deployment:
     labels:
         label: value

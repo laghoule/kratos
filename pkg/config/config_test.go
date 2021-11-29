@@ -35,11 +35,11 @@ func createConf() *Config {
 	ingLabels := map[string]string{"cloudflare": "enabled"}
 	ingAnnotation := map[string]string{"hsts": "true"}
 	return &Config{
-		Common: Common{
+		Common: &Common{
 			Labels:      commonLabels,
 			Annotations: commonAnnotations,
 		},
-		Deployment: Deployment{
+		Deployment: &Deployment{
 			Labels:      depLabels,
 			Annotations: depAnnotations,
 			Replicas:    replicas,
@@ -49,12 +49,12 @@ func createConf() *Config {
 					Name:  name,
 					Image: image,
 					Tag:   tag,
-					Resources: Resources{
-						Requests: ResourceType{
+					Resources: &Resources{
+						Requests: &ResourceType{
 							CPU:    "25m",
 							Memory: "32Mi",
 						},
-						Limits: ResourceType{
+						Limits: &ResourceType{
 							CPU:    "50m",
 							Memory: "64Mi",
 						},
@@ -62,12 +62,22 @@ func createConf() *Config {
 				},
 			},
 		},
-		Ingress: Ingress{
+		Cronjob: &Cronjob{
+			Labels:      map[string]string{},
+			Annotations: map[string]string{},
+			Container: &Container{
+				Resources: &Resources{
+					Requests: &ResourceType{},
+					Limits:   &ResourceType{},
+				},
+			},
+		},
+		Ingress: &Ingress{
 			Labels:        ingLabels,
 			Annotations:   ingAnnotation,
 			IngressClass:  ingresClass,
 			ClusterIssuer: clusterIssuer,
-			Hostnames:     []Hostnames{hostname},
+			Hostnames:     []string{hostname},
 		},
 	}
 }

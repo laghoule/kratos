@@ -90,7 +90,7 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 
 	containers := []corev1.Container{}
 
-	for _, container := range conf.Containers {
+	for _, container := range conf.Deployment.Containers {
 		containers = append(containers, corev1.Container{
 			Name:  container.Name,
 			Image: container.Image + ":" + container.Tag,

@@ -57,12 +57,12 @@ func (c *Client) CreateUpdateIngress(name, namespace string, conf *config.Config
 
 	for _, hostname := range conf.Hostnames {
 		ingressTLS = append(ingressTLS, netv1.IngressTLS{
-			Hosts:      []string{hostname.String()},
-			SecretName: hostname.String() + "-tls",
+			Hosts:      []string{hostname},
+			SecretName: hostname + "-tls",
 		})
 
 		ingressRules = append(ingressRules, netv1.IngressRule{
-			Host: hostname.String(),
+			Host: hostname,
 			IngressRuleValue: netv1.IngressRuleValue{
 				HTTP: &netv1.HTTPIngressRuleValue{
 					Paths: []netv1.HTTPIngressPath{

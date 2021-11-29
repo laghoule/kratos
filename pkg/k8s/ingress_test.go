@@ -185,7 +185,7 @@ func TestDeleteIngress(t *testing.T) {
 func TestIsIngressClassExist(t *testing.T) {
 	c := new()
 	conf := &config.Config{
-		Ingress: config.Ingress{},
+		Ingress: &config.Ingress{},
 	}
 
 	conf.ClusterIssuer = clusterIssuer

@@ -70,29 +70,44 @@ kratos create --name myapp --namespace mynamespace --config myappconfig.yaml
 |--------|-------------|---------|
 | common.labels| Labels common to all Kubernetes objects | no |
 | common.annotations | Annotation common to all Kubernetes objects | no |
-| deployment.labels | Deployment & Pod labels | no |
+| deployment.labels | Deployment & pod labels | no |
+| deployment.annotations | Deployment & pod annotations | no |
 | deployment.replicas | Numbers of pod replicas | yes |
-| deployment.port | Port to use for communication with pod | yes
-| containers | List of containers in the pods | yes |
-| containers.name | Name of the containers | yes |
-| containers.image | Name of the Docker image | yes |
-| containers.tag | Tag version of the image | yes |
-| containers.resources.requests.cpu | Request this amount of CPU | no |
-| containers.resources.requests.memory | Request this amount of RAM | no |
-| containers.resources.limits.cpu | Max amount of CPU | no |
-| containers.resources.limites.memory | Max amount of RAM | no |
+| deployment.port | Port to use for communication with pod | yes |
+| deployment.containers | List of containers in the pods | yes |
+| deployment.containers.name | Name of the containers | yes |
+| deployment.containers.image | Name of the Docker image | yes |
+| deployment.containers.tag | Tag version of the image | yes |
+| deployment.containers.resources.requests.cpu | Request this amount of CPU | no |
+| deployment.containers.resources.requests.memory | Request this amount of RAM | no |
+| deployment.containers.resources.limits.cpu | Max amount of CPU | no |
+| deployment.containers.resources.limites.memory | Max amount of RAM | no |
+| cronjobs.labels | Cronjobs labels | no |
+| cronjobs.annotations | Cronjobs annotation | no |
+| cronjobs.schedule | Cronjobs schedule definition | yes |
+| cronjobs.retry | Number of retry if jobs fail | no |
+| cronjobs.container | container definition | yes |
+| cronjobs.container.name | Name of the containers | yes |
+| cronjobs.container.image | Name of the Docker image | yes |
+| cronjobs.container.tag | Tag version of the image | yes |
+| cronjobs.container.resources.requests.cpu | Request this amount of CPU | no |
+| cronjobs.container.resources.requests.memory | Request this amount of RAM | no |
+| cronjobs.container.resources.limits.cpu | Max amount of CPU | no |
+| cronjobs.container.resources.limites.memory | Max amount of RAM | no |
 | configmaps | List of configmaps | no |
 | configmaps.labels | Configmaps labels | no |
 | configmaps.annotations | Configmaps annotations | no |
 | configmaps.name | Name of the configmap | yes |
 | configmaps.mountPath | Path of the mount point in the pod | yes |
 | configmaps.data | Contents of the configmap | yes |
+| configmaps.containers | List of containers to expose the configmap | no |
 | secrets | List of secrets | no |
 | secrets.labels | Secrets labels | no |
 | secrets.annotation | Secrets annotations | no |
 | secrets.name | Name of the secret | yes |
 | secrets.mountPath | Path of the mount point in the pod | yes |
 | secrets.data | Contents of the secret | yes |
+| secrets.containers | List of containers to expose the secret | no |
 | ingress.labels | Ingress labels | no |
 | ingress.annotations | Ingress annotations | no |
 | ingress.ingressClass | Name of the ingressClass to use | yes |
@@ -123,22 +138,22 @@ deployment:
           cpu: 50m
           memory: 64Mi
 
-cronjobs:
+cronjob:
   labels: {}
   annotations: {}
   shedule: 0 0 * * *
-  retryOnError: 1
-  containers:
-    - name: myjobs
-      image: laghoule/crunchdata
-      tag: v1.0.0
-      resources:
-        requests:
-          cpu: 25m
-          memory: 32Mi
-        limits:
-          cpu: 50m
-          memory: 64Mi
+  retry: 1
+  container:
+    name: myjobs
+    image: laghoule/crunchdata
+    tag: v1.0.0
+    resources:
+      requests:
+        cpu: 25m
+        memory: 32Mi
+      limits:
+        cpu: 50m
+        memory: 64Mi
 
 configmaps:
   labels: {}
@@ -196,10 +211,10 @@ ingress:
 #### Cronjobs
 
 ```yaml
-cronjobs:
+cronjob:
   shedule: 0 0 * * *
-  containers:
-    - name: myjobs
-      image: laghoule/crunchdata
-      tag: v1.0.0
+  container:
+    name: myjobs
+    image: laghoule/crunchdata
+    tag: v1.0.0
 ```
