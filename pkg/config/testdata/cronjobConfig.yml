@@ -1,0 +1,24 @@
+common:
+  labels:
+    environment: dev
+  annotations:
+    branch: dev
+
+cronjob:
+  labels:
+    type: long
+  annotations:
+    revision: 22
+  schedule: 0 0 * * *
+  retry: 3
+  container:
+    name: myapp
+    image: myimage
+    tag: latest
+    resources:
+      requests:
+        cpu: 25m
+        memory: 32Mi
+      limits:
+        cpu: 50m
+        memory: 64Mi

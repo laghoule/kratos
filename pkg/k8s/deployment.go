@@ -34,6 +34,7 @@ func (c *Client) ListDeployments(namespace string) ([]appsv1.Deployment, error) 
 	return list.Items, nil
 }
 
+// TODO move this function to `k8s.go`
 // formatResources format the resource from container configurations
 func formatResources(container config.Container) corev1.ResourceRequirements {
 	req := corev1.ResourceRequirements{

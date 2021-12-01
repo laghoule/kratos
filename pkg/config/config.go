@@ -124,18 +124,40 @@ func (c *Config) ensureNoNil() {
 	}
 
 	// deployment
-	for i, container := range c.Deployment.Containers {
-		if container.Resources == nil {
-			c.Deployment.Containers[i].Resources = &Resources{}
-			continue
+	if c.Deployment == nil {
+		c.Deployment = &Deployment{
+			Labels:      map[string]string{},
+			Annotations: map[string]string{},
+			Containers: []Container{
+				{
+					Resources: &Resources{
+						Requests: &ResourceType{},
+						Limits:   &ResourceType{},
+					},
+				},
+			},
 		}
-		if container.Resources.Requests == nil {
-			c.Deployment.Containers[i].Resources.Requests = &ResourceType{}
-			continue
+	} else {
+		for i, container := range c.Deployment.Containers {
+			if container.Resources == nil {
+				c.Deployment.Containers[i].Resources = &Resources{}
+				continue
+			}
+			if container.Resources.Requests == nil {
+				c.Deployment.Containers[i].Resources.Requests = &ResourceType{}
+			}
+			if container.Resources.Limits == nil {
+				c.Deployment.Containers[i].Resources.Limits = &ResourceType{}
+			}
 		}
-		if container.Resources.Limits == nil {
-			c.Deployment.Containers[i].Resources.Limits = &ResourceType{}
-			continue
+	}
+
+	// ingress
+	if c.Ingress == nil {
+		c.Ingress = &Ingress{
+			Labels:      map[string]string{},
+			Annotations: map[string]string{},
+			Hostnames:   []string{},
 		}
 	}
 }
@@ -274,7 +296,7 @@ func CreateInit() *Config {
 			Retry:    3,
 			Container: &Container{
 				Name:  "example",
-				Image: "cronjobsimage",
+				Image: "cronjobimage",
 				Tag:   "latest",
 				Resources: &Resources{
 					Requests: &ResourceType{

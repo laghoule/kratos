@@ -12,10 +12,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const (
-	goodConfig = "../config/testdata/goodConfig.yml"
-)
-
 func createInressTLS() []netv1.IngressTLS {
 	return []netv1.IngressTLS{
 		{
@@ -91,11 +87,13 @@ func createIngressClass() *netv1.IngressClass {
 	}
 }
 
+// TODO merge create & update test
+
 func TestCreateIngress(t *testing.T) {
 	c := new()
 	conf := &config.Config{}
 
-	if err := conf.Load(goodConfig); err != nil {
+	if err := conf.Load(deploymentConfig); err != nil {
 		t.Error(err)
 		return
 	}
@@ -119,7 +117,7 @@ func TestUpdateIngress(t *testing.T) {
 	c := new()
 	conf := &config.Config{}
 
-	if err := conf.Load(goodConfig); err != nil {
+	if err := conf.Load(deploymentConfig); err != nil {
 		t.Error(err)
 		return
 	}
@@ -149,7 +147,7 @@ func TestDeleteIngress(t *testing.T) {
 	c := new()
 	conf := &config.Config{}
 
-	if err := conf.Load(goodConfig); err != nil {
+	if err := conf.Load(deploymentConfig); err != nil {
 		t.Error(err)
 		return
 	}

@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	goodConfig                 = "testdata/goodConfig.yml"
+	deploymentConfig           = "testdata/deploymentConfig.yml"
 	badConfigResources         = "testdata/badConfigResources.yml"
 	badConfigDeployment        = "testdata/badConfigDeployment.yml"
 	badConfigDeploymentLabels  = "testdata/badConfigDeploymentLabels.yml"
@@ -85,13 +85,15 @@ func createConf() *Config {
 func TestLoadConfig(t *testing.T) {
 	config := &Config{}
 
-	if err := config.Load(goodConfig); err != nil {
+	if err := config.Load(deploymentConfig); err != nil {
 		t.Error(err)
 		return
 	}
 
 	assert.EqualValues(t, createConf(), config)
 }
+
+// TODO add TestLoadConfigCronjob
 
 func TestLoadConfigDeployment(t *testing.T) {
 	config := &Config{}

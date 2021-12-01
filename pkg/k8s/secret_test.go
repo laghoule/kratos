@@ -35,6 +35,8 @@ func createSecret() *corev1.Secret {
 	}
 }
 
+// TODO merge create & update test
+
 func TestCreateSecret(t *testing.T) {
 	c := new()
 	s := createSecret()

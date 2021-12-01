@@ -40,12 +40,14 @@ func createService() *corev1.Service {
 	}
 }
 
+// TODO merge create & update test
+
 // TestCreateUpdateDeployment test creation of deployment
 func TestCreateUpdateService(t *testing.T) {
 	c := new()
 	conf := &config.Config{}
 
-	if err := conf.Load(goodConfig); err != nil {
+	if err := conf.Load(deploymentConfig); err != nil {
 		t.Error(err)
 		return
 	}
@@ -69,7 +71,7 @@ func TestUpdateService(t *testing.T) {
 	c := new()
 	conf := &config.Config{}
 
-	if err := conf.Load(goodConfig); err != nil {
+	if err := conf.Load(deploymentConfig); err != nil {
 		t.Error(err)
 		return
 	}
@@ -99,7 +101,7 @@ func TestDeleteService(t *testing.T) {
 	c := new()
 	conf := &config.Config{}
 
-	if err := conf.Load(goodConfig); err != nil {
+	if err := conf.Load(deploymentConfig); err != nil {
 		t.Error(err)
 		return
 	}

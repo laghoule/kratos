@@ -8,18 +8,23 @@ import (
 )
 
 const (
-	kratosLabelName         = "app.kubernetes.io/managed-by"
-	kratosLabelValue        = "kratos"
-	name                    = "myapp"
-	namespace               = "mynamespace"
-	image                   = "myimage"
-	tagLatest               = "latest"
-	tagV1                   = "v1.0.0"
-	containerHTTP           = 80
-	constainerHTTPS         = 443
-	clusterIssuer           = "letsencrypt"
-	hostname                = "example.com"
-	path                    = "/"
+	kratosLabelName  = "app.kubernetes.io/managed-by"
+	kratosLabelValue = "kratos"
+	name             = "myapp"
+	namespace        = "mynamespace"
+	image            = "myimage"
+	tagLatest        = "latest"
+	tagV1            = "v1.0.0"
+	containerHTTP    = 80
+	constainerHTTPS  = 443
+	clusterIssuer    = "letsencrypt"
+	hostname         = "example.com"
+	path             = "/"
+	environment      = "dev"
+	schedule         = "0 0 * * *"
+
+	deploymentConfig = "../config/testdata/deploymentConfig.yml"
+	cronjobConfig = "../config/testdata/cronjobConfig.yml"
 )
 
 func new() *Client {

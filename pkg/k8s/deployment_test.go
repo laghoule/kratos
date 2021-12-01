@@ -19,16 +19,16 @@ func createDeployment() *appsv1.Deployment {
 	depLabels := map[string]string{
 		kratosLabelName: kratosLabelValue,
 		appLabelName:    name,
-		"environment":   "dev",
-		"app":           "myapp",
+		"environment":   environment,
+		"app":           name,
 	}
 	podLabels := map[string]string{
 		appLabelName:  name,
-		"environment": "dev",
-		"app":         "myapp",
+		"environment": environment,
+		"app":         name,
 	}
 	annotations := map[string]string{
-		"branch":   "dev",
+		"branch":   environment,
 		"revision": "22",
 	}
 	return &appsv1.Deployment{
@@ -97,7 +97,7 @@ func TestListDeployment(t *testing.T) {
 	c := new()
 	conf := &config.Config{}
 
-	if err := conf.Load(goodConfig); err != nil {
+	if err := conf.Load(deploymentConfig); err != nil {
 		t.Error(err)
 		return
 	}
@@ -116,12 +116,14 @@ func TestListDeployment(t *testing.T) {
 	assert.NotEmpty(t, list)
 }
 
+// TODO merge create & update test
+
 // TestCreateDeployment test creation of deployment
 func TestCreateDeployment(t *testing.T) {
 	c := new()
 	conf := &config.Config{}
 
-	if err := conf.Load(goodConfig); err != nil {
+	if err := conf.Load(deploymentConfig); err != nil {
 		t.Error(err)
 		return
 	}
@@ -145,7 +147,7 @@ func TestUpdateDeployment(t *testing.T) {
 	c := new()
 	conf := &config.Config{}
 
-	if err := conf.Load(goodConfig); err != nil {
+	if err := conf.Load(deploymentConfig); err != nil {
 		t.Error(err)
 		return
 	}
@@ -175,7 +177,7 @@ func TestDeleteDeployment(t *testing.T) {
 	c := new()
 	conf := &config.Config{}
 
-	if err := conf.Load(goodConfig); err != nil {
+	if err := conf.Load(deploymentConfig); err != nil {
 		t.Error(err)
 		return
 	}
