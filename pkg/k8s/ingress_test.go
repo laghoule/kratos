@@ -12,6 +12,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// createIngressTLS return a list of IngressTLS object
 func createInressTLS() []netv1.IngressTLS {
 	return []netv1.IngressTLS{
 		{
@@ -21,6 +22,7 @@ func createInressTLS() []netv1.IngressTLS {
 	}
 }
 
+// createIngressRules return an ingressRule object
 func createIngressRules() []netv1.IngressRule {
 	var pathType = netv1.PathTypePrefix
 	return []netv1.IngressRule{
@@ -48,6 +50,7 @@ func createIngressRules() []netv1.IngressRule {
 	}
 }
 
+// createIngress return an ingress object
 func createIngress() *netv1.Ingress {
 	ingressClass := "nginx"
 	return &netv1.Ingress{
@@ -75,6 +78,7 @@ func createIngress() *netv1.Ingress {
 	}
 }
 
+// createIngress return an ingressClass object
 func createIngressClass() *netv1.IngressClass {
 	ingressClass := "nginx"
 	return &netv1.IngressClass{
@@ -87,9 +91,8 @@ func createIngressClass() *netv1.IngressClass {
 	}
 }
 
-// TODO merge create & update test
-
-func TestCreateIngress(t *testing.T) {
+// TestCreateUpdateIngress test the creation and update of an ingress
+func TestCreateUpdateIngress(t *testing.T) {
 	c := new()
 	conf := &config.Config{}
 
@@ -98,6 +101,7 @@ func TestCreateIngress(t *testing.T) {
 		return
 	}
 
+	// create
 	err := c.CreateUpdateIngress(name, namespace, conf)
 	if err != nil {
 		t.Error(err)
@@ -111,38 +115,25 @@ func TestCreateIngress(t *testing.T) {
 	}
 
 	assert.Equal(t, createIngress(), ing)
-}
 
-func TestUpdateIngress(t *testing.T) {
-	c := new()
-	conf := &config.Config{}
-
-	if err := conf.Load(deploymentConfig); err != nil {
-		t.Error(err)
-		return
-	}
-
-	err := c.CreateUpdateIngress(name, namespace, conf)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
+	// update
+	conf.Ingress.Hostnames[0] = "www.example.com"
 	err = c.CreateUpdateIngress(name, namespace, conf)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	ing, err := c.Clientset.NetworkingV1().Ingresses(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	ing, err = c.Clientset.NetworkingV1().Ingresses(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	assert.Equal(t, "example.com", ing.Spec.Rules[0].Host)
+	assert.Equal(t, "www.example.com", ing.Spec.Rules[0].Host)
 }
 
+// TestDeleteIngress test removing of ingress
 func TestDeleteIngress(t *testing.T) {
 	c := new()
 	conf := &config.Config{}
@@ -180,6 +171,7 @@ func TestDeleteIngress(t *testing.T) {
 	assert.True(t, errors.IsNotFound(err))
 }
 
+// TestIsIngressClassExist test if an ingressClass exist
 func TestIsIngressClassExist(t *testing.T) {
 	c := new()
 	conf := &config.Config{

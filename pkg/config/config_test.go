@@ -7,6 +7,7 @@ import (
 )
 
 const (
+	cronjobConfig              = "testdata/cronjobConfig.yml"
 	deploymentConfig           = "testdata/deploymentConfig.yml"
 	badConfigResources         = "testdata/badConfigResources.yml"
 	badConfigDeployment        = "testdata/badConfigDeployment.yml"
@@ -25,12 +26,15 @@ const (
 	ingresClass         = "nginx"
 	clusterIssuer       = "letsencrypt"
 	hostname            = "example.com"
+	schedule            = "0 0 * * *"
+	retry         int32 = 3
+	environment         = "dev"
 )
 
-func createConf() *Config {
-	commonLabels := map[string]string{"environment": "dev"}
-	commonAnnotations := map[string]string{"branch": "dev"}
-	depLabels := map[string]string{"app": "myapp"}
+func createDeploymentConf() *Config {
+	commonLabels := map[string]string{"environment": environment}
+	commonAnnotations := map[string]string{"branch": environment}
+	depLabels := map[string]string{"app": name}
 	depAnnotations := map[string]string{"revision": "22"}
 	ingLabels := map[string]string{"cloudflare": "enabled"}
 	ingAnnotation := map[string]string{"hsts": "true"}
@@ -82,6 +86,59 @@ func createConf() *Config {
 	}
 }
 
+func createCronjobConf() *Config {
+	commonLabels := map[string]string{"environment": environment}
+	commonAnnotations := map[string]string{"branch": environment}
+	return &Config{
+		Common: &Common{
+			Labels:      commonLabels,
+			Annotations: commonAnnotations,
+		},
+		Deployment: &Deployment{
+			Labels:      map[string]string{},
+			Annotations: map[string]string{},
+			Containers: []Container{
+				{
+					Resources: &Resources{
+						Requests: &ResourceType{},
+						Limits:   &ResourceType{},
+					},
+				},
+			},
+		},
+		Cronjob: &Cronjob{
+			Labels: map[string]string{
+				"type": "long",
+			},
+			Annotations: map[string]string{
+				"revision": "22",
+			},
+			Schedule: schedule,
+			Retry:    retry,
+			Container: &Container{
+				Name:  name,
+				Image: image,
+				Tag:   tag,
+				Resources: &Resources{
+					Requests: &ResourceType{
+						CPU:    "25m",
+						Memory: "32Mi",
+					},
+					Limits: &ResourceType{
+						CPU:    "50m",
+						Memory: "64Mi",
+					},
+				},
+			},
+		},
+		Ingress: &Ingress{
+			Labels:      map[string]string{},
+			Annotations: map[string]string{},
+			Hostnames:   []string{},
+		},
+	}
+}
+
 func TestLoadConfig(t *testing.T) {
 	config := &Config{}
 
@@ -90,10 +147,18 @@ func TestLoadConfig(t *testing.T) {
 		return
 	}
 
-	assert.EqualValues(t, createConf(), config)
+	assert.EqualValues(t, createDeploymentConf(), config)
 }
 
-// TODO add TestLoadConfigCronjob
+func TestLoadConfigCronjob(t *testing.T) {
+	config := &Config{}
+	if err := config.Load(cronjobConfig); err != nil {
+		t.Error(err)
+		return
+	}
+
+	assert.EqualValues(t, createCronjobConf(), config)
+}
 
 func TestLoadConfigDeployment(t *testing.T) {
 	config := &Config{}

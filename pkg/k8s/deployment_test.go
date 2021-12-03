@@ -116,10 +116,8 @@ func TestListDeployment(t *testing.T) {
 	assert.NotEmpty(t, list)
 }
 
-// TODO merge create & update test
-
-// TestCreateDeployment test creation of deployment
-func TestCreateDeployment(t *testing.T) {
+// TestCreateUpdateDeployment test creation of deployment
+func TestCreateUpdateDeployment(t *testing.T) {
 	c := new()
 	conf := &config.Config{}
 
@@ -128,6 +126,7 @@ func TestCreateDeployment(t *testing.T) {
 		return
 	}
 
+	// create
 	if err := c.CreateUpdateDeployment(name, namespace, conf); err != nil {
 		t.Error(err)
 		return
@@ -140,31 +139,15 @@ func TestCreateDeployment(t *testing.T) {
 	}
 
 	assert.Equal(t, createDeployment(), dep)
-}
 
-// TestUpdateDeployment test update deployment of tag from latest to v1.0.0
-func TestUpdateDeployment(t *testing.T) {
-	c := new()
-	conf := &config.Config{}
-
-	if err := conf.Load(deploymentConfig); err != nil {
-		t.Error(err)
-		return
-	}
-
-	if err := c.CreateUpdateDeployment(name, namespace, conf); err != nil {
-		t.Error(err)
-		return
-	}
-
+	// update
 	conf.Containers[0].Tag = "v1.0.0"
-
 	if err := c.CreateUpdateDeployment(name, namespace, conf); err != nil {
 		t.Error(err)
 		return
 	}
 
-	dep, err := c.Clientset.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	dep, err = c.Clientset.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -173,6 +156,7 @@ func TestUpdateDeployment(t *testing.T) {
 	assert.Equal(t, image+":"+tagV1, dep.Spec.Template.Spec.Containers[0].Image)
 }
 
+// TestDeleteDeployment test delete of deployment
 func TestDeleteDeployment(t *testing.T) {
 	c := new()
 	conf := &config.Config{}

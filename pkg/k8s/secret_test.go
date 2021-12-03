@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 )
 
+// createSecret return a secret object
 func createSecret() *corev1.Secret {
 	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
 	if err != nil {
@@ -35,12 +36,12 @@ func createSecret() *corev1.Secret {
 	}
 }
 
-// TODO merge create & update test
-
-func TestCreateSecret(t *testing.T) {
+// TestCreateUpdateSecret test the creation and update of a secret
+func TestCreateUpdateSecret(t *testing.T) {
 	c := new()
 	s := createSecret()
 
+	// create
 	if err := c.CreateUpdateSecret(s, namespace); err != nil {
 		t.Error(err)
 		return
@@ -53,25 +54,9 @@ func TestCreateSecret(t *testing.T) {
 	}
 
 	assert.Equal(t, s, secret)
-}
 
-func TestUpdateSecret(t *testing.T) {
-	c := new()
-	s := createSecret()
-
-	if err := c.CreateUpdateSecret(s, namespace); err != nil {
-		t.Error(err)
-		return
-	}
-
-	secret, err := c.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), s.Name, metav1.GetOptions{})
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
+	// update
 	secret.StringData["mykey"] = "my updated secret data"
-
 	if err := c.CreateUpdateSecret(secret, namespace); err != nil {
 		t.Error(err)
 		return
@@ -86,6 +71,7 @@ func TestUpdateSecret(t *testing.T) {
 	assert.Equal(t, "my updated secret data", secret.StringData["mykey"])
 }
 
+// TestDeleteSecret test delete of a secret
 func TestDeleteSecret(t *testing.T) {
 	c := new()
 	s := createSecret()
@@ -117,6 +103,7 @@ func TestDeleteSecret(t *testing.T) {
 	assert.Len(t, list.Items, 0)
 }
 
+// TestGetSecret test getting a secret
 func TestGetSecret(t *testing.T) {
 	c := new()
 	s := createSecret()

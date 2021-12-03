@@ -13,6 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
+// createService return a service object
 func createService() *corev1.Service {
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -40,9 +41,7 @@ func createService() *corev1.Service {
 	}
 }
 
-// TODO merge create & update test
-
-// TestCreateUpdateDeployment test creation of deployment
+// TestCreateUpdateDeployment test creation and update of a service
 func TestCreateUpdateService(t *testing.T) {
 	c := new()
 	conf := &config.Config{}
@@ -52,6 +51,7 @@ func TestCreateUpdateService(t *testing.T) {
 		return
 	}
 
+	// create
 	if err := c.CreateUpdateService(name, namespace, conf); err != nil {
 		t.Error(err)
 		return
@@ -64,31 +64,15 @@ func TestCreateUpdateService(t *testing.T) {
 	}
 
 	assert.Equal(t, createService(), svc)
-}
 
-// TestCreateDeployment test creation of deployment
-func TestUpdateService(t *testing.T) {
-	c := new()
-	conf := &config.Config{}
-
-	if err := conf.Load(deploymentConfig); err != nil {
-		t.Error(err)
-		return
-	}
-
+	// update
+	conf.Deployment.Port = 443
 	if err := c.CreateUpdateService(name, namespace, conf); err != nil {
 		t.Error(err)
 		return
 	}
 
-	conf.Deployment.Port = 443
-
-	if err := c.updateService(name, namespace, conf); err != nil {
-		t.Error(err)
-		return
-	}
-
-	svc, err := c.Clientset.CoreV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	svc, err = c.Clientset.CoreV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -97,6 +81,7 @@ func TestUpdateService(t *testing.T) {
 	assert.Equal(t, int32(443), svc.Spec.Ports[0].Port)
 }
 
+// TestDeleteService test delete of a service
 func TestDeleteService(t *testing.T) {
 	c := new()
 	conf := &config.Config{}
