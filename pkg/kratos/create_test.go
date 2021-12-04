@@ -9,15 +9,15 @@ import (
 )
 
 func TestCreate(t *testing.T) {
-	c := new()
-	c.Config = createConf()
+	k := new()
+	k.Config = createConf()
 
-	if err := c.Create(name, namespace); err != nil {
+	if err := k.Create(name, namespace); err != nil {
 		t.Error(err)
 		return
 	}
 
-	depList, err := c.Clientset.AppsV1().Deployments(namespace).List(context.Background(), metav1.ListOptions{})
+	depList, err := k.Clientset.AppsV1().Deployments(namespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -26,7 +26,7 @@ func TestCreate(t *testing.T) {
 	assert.Len(t, depList.Items, 1)
 	assert.Equal(t, name, depList.Items[0].Name)
 
-	svcList, err := c.Clientset.CoreV1().Services(namespace).List(context.Background(), metav1.ListOptions{})
+	svcList, err := k.Clientset.CoreV1().Services(namespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -35,7 +35,7 @@ func TestCreate(t *testing.T) {
 	assert.Len(t, svcList.Items, 1)
 	assert.Equal(t, name, svcList.Items[0].Name)
 
-	ingList, err := c.Clientset.NetworkingV1().Ingresses(namespace).List(context.Background(), metav1.ListOptions{})
+	ingList, err := k.Clientset.NetworkingV1().Ingresses(namespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -44,7 +44,7 @@ func TestCreate(t *testing.T) {
 	assert.Len(t, ingList.Items, 1)
 	assert.Equal(t, name, ingList.Items[0].Name)
 
-	secList, err := c.Clientset.CoreV1().Secrets(namespace).List(context.Background(), metav1.ListOptions{})
+	secList, err := k.Clientset.CoreV1().Secrets(namespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		t.Error(err)
 		return

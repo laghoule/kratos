@@ -150,99 +150,99 @@ func createCronjobConfMinimal() *Config {
 }
 
 func TestLoadConfigDeployment(t *testing.T) {
-	config := &Config{}
+	c := &Config{}
 
-	if err := config.Load(deploymentConfig); err != nil {
+	if err := c.Load(deploymentConfig); err != nil {
 		t.Error(err)
 		return
 	}
 
-	assert.EqualValues(t, createDeploymentConf(), config)
+	assert.EqualValues(t, createDeploymentConf(), c)
 }
 
 func TestLoadConfigDeploymentMinimal(t *testing.T) {
-	config := &Config{}
+	c := &Config{}
 
-	if err := config.Load(deploymentConfigMinimal); err != nil {
+	if err := c.Load(deploymentConfigMinimal); err != nil {
 		t.Error(err)
 		return
 	}
 
-	assert.EqualValues(t, createDeploymentConfMinimal(), config)
+	assert.EqualValues(t, createDeploymentConfMinimal(), c)
 }
 
 func TestLoadConfigCronjob(t *testing.T) {
-	config := &Config{}
-	if err := config.Load(cronjobConfig); err != nil {
+	c := &Config{}
+	if err := c.Load(cronjobConfig); err != nil {
 		t.Error(err)
 		return
 	}
 
-	assert.EqualValues(t, createCronjobConf(), config)
+	assert.EqualValues(t, createCronjobConf(), c)
 }
 
 func TestLoadConfigCronjobMinimal(t *testing.T) {
-	config := &Config{}
-	if err := config.Load(cronjobConfigMinimal); err != nil {
+	c := &Config{}
+	if err := c.Load(cronjobConfigMinimal); err != nil {
 		t.Error(err)
 		return
 	}
 
-	assert.EqualValues(t, createCronjobConfMinimal(), config)
+	assert.EqualValues(t, createCronjobConfMinimal(), c)
 }
 
 func TestLoadConfigBadDeployment(t *testing.T) {
-	config := &Config{}
+	c := &Config{}
 	expected := "validation of configuration failed: Key: 'Config.Deployment.Port' Error:Field validation for 'Port' failed on the 'required' tag\nKey: 'Config.Deployment.Containers' Error:Field validation for 'Containers' failed on the 'required' tag"
-	if err := config.Load(badConfigDeployment); assert.Error(t, err) {
+	if err := c.Load(badConfigDeployment); assert.Error(t, err) {
 		assert.Equal(t, expected, err.Error())
 	}
 }
 
 func TestLoadConfigBadDeploymentLabels(t *testing.T) {
-	config := &Config{}
+	c := &Config{}
 	expected := "validation of labels environment/branch failed: a valid label must be an empty string or consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character (e.g. 'MyValue',  or 'my_value',  or '12345', regex used for validation is '(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?')"
-	if err := config.Load(badConfigDeploymentLabels); assert.Error(t, err) {
+	if err := c.Load(badConfigDeploymentLabels); assert.Error(t, err) {
 		assert.Equal(t, expected, err.Error())
 	}
 }
 
 func TestLoadConfigBadCommonLabels(t *testing.T) {
-	config := &Config{}
+	c := &Config{}
 	expected := "validation of labels environment/test failed: a valid label must be an empty string or consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character (e.g. 'MyValue',  or 'my_value',  or '12345', regex used for validation is '(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?')"
-	if err := config.Load(badConfigCommonLabels); assert.Error(t, err) {
+	if err := c.Load(badConfigCommonLabels); assert.Error(t, err) {
 		assert.Equal(t, expected, err.Error())
 	}
 }
 
 func TestLoadConfigLabelsDuplication(t *testing.T) {
-	config := &Config{}
+	c := &Config{}
 	expected := "common labels \"environment\" cannot be duplicated in deployment labels"
-	if err := config.Load(badConfigLabelsDuplication); assert.Error(t, err) {
+	if err := c.Load(badConfigLabelsDuplication); assert.Error(t, err) {
 		assert.Equal(t, expected, err.Error())
 	}
 }
 
 func TestLoadConfigAnnotationsDuplication(t *testing.T) {
-	config := &Config{}
+	c := &Config{}
 	expected := "common annotations \"branch\" cannot be duplicated in deployment annotations"
-	if err := config.Load(badConfigCommonAnnotations); assert.Error(t, err) {
+	if err := c.Load(badConfigCommonAnnotations); assert.Error(t, err) {
 		assert.Equal(t, expected, err.Error())
 	}
 }
 
 func TestLoadConfigBadIngresslabels(t *testing.T) {
-	config := &Config{}
+	c := &Config{}
 	expected := "validation of labels cloudflare dns failed: a valid label must be an empty string or consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character (e.g. 'MyValue',  or 'my_value',  or '12345', regex used for validation is '(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?')"
-	if err := config.Load(badConfigIngressLabels); assert.Error(t, err) {
+	if err := c.Load(badConfigIngressLabels); assert.Error(t, err) {
 		assert.Equal(t, expected, err.Error())
 	}
 }
 
 func TestLoadConfigBadResources(t *testing.T) {
-	config := &Config{}
+	c := &Config{}
 	expected := "validation of configuration resources failed: quantities must match the regular expression '^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$'\ncontainer: myapp -> requests cpu: 25f"
-	if err := config.Load(badConfigResources); assert.Error(t, err) {
+	if err := c.Load(badConfigResources); assert.Error(t, err) {
 		assert.Equal(t, expected, err.Error())
 	}
 }

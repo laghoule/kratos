@@ -25,15 +25,15 @@ func createClusterIssuer() *cmv1.ClusterIssuer {
 }
 
 func new() *Certmanager {
-	cmSet := fake.NewSimpleClientset(createClusterIssuer())
-	return &Certmanager{Interface: cmSet}
+	c := fake.NewSimpleClientset(createClusterIssuer())
+	return &Certmanager{Interface: c}
 }
 
 func TestCheckClusterIssuer(t *testing.T) {
-	cmClient := new()
+	c := new()
 	found := false
 
-	if cmClient.IsClusterIssuerExist(&k8s.Client{}, goodName) {
+	if c.IsClusterIssuerExist(&k8s.Client{}, goodName) {
 		found = true
 	}
 
@@ -41,10 +41,10 @@ func TestCheckClusterIssuer(t *testing.T) {
 }
 
 func TestCheckBadClusterIssuer(t *testing.T) {
-	cmClient := new()
+	c := new()
 	found := false
 
-	if cmClient.IsClusterIssuerExist(&k8s.Client{}, badName) {
+	if c.IsClusterIssuerExist(&k8s.Client{}, badName) {
 		found = true
 	}
 

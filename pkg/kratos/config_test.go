@@ -17,7 +17,7 @@ func createConf() *config.Config {
 	return &config.Config{
 		Common: &config.Common{
 			Labels: map[string]string{
-				"app": "myapp",
+				"app": name,
 			},
 			Annotations: map[string]string{
 				"branch": "dev",
@@ -47,23 +47,23 @@ func createConf() *config.Config {
 }
 
 func TestSaveConfigFile(t *testing.T) {
-	c := new()
-	c.Config = createConf()
+	k := new()
+	k.Config = createConf()
 
-	b, err := yaml.Marshal(c.Config)
+	b, err := yaml.Marshal(k.Config)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	expected := c.createSecretDataString(name+configSuffix, namespace, string(b))
+	expected := k.createSecretDataString(name+configSuffix, namespace, string(b))
 
-	if err := c.saveConfigToSecret(name+configSuffix, namespace); err != nil {
+	if err := k.saveConfigToSecret(name+configSuffix, namespace); err != nil {
 		t.Error(err)
 		return
 	}
 
-	result, err := c.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), name+configSuffix, metav1.GetOptions{})
+	result, err := k.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), name+configSuffix, metav1.GetOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -73,15 +73,15 @@ func TestSaveConfigFile(t *testing.T) {
 }
 
 func TestSaveConfigFileToDisk(t *testing.T) {
-	c := new()
-	c.Config.Load(testdataInitFile)
+	k := new()
+	k.Config.Load(testdataInitFile)
 
-	if err := c.saveConfigToSecret(name+configSuffix, namespace); err != nil {
+	if err := k.saveConfigToSecret(name+configSuffix, namespace); err != nil {
 		t.Error(err)
 		return
 	}
 
-	list, err := c.Clientset.CoreV1().Secrets(namespace).List(context.Background(), metav1.ListOptions{})
+	list, err := k.Clientset.CoreV1().Secrets(namespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -89,7 +89,7 @@ func TestSaveConfigFileToDisk(t *testing.T) {
 
 	assert.Len(t, list.Items, 1)
 
-	if err := c.SaveConfigToDisk(name, namespace, os.TempDir()); err != nil {
+	if err := k.SaveConfigToDisk(name, namespace, os.TempDir()); err != nil {
 		t.Error(err)
 		return
 	}
@@ -110,7 +110,7 @@ func TestSaveConfigFileToDisk(t *testing.T) {
 }
 
 func TestCreateSecretString(t *testing.T) {
-	c := new()
-	s := c.createSecretDataString(name, namespace, configString)
+	k := new()
+	s := k.createSecretDataString(name, namespace, configString)
 	assert.Equal(t, configString, s.StringData[configKey])
 }

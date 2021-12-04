@@ -40,8 +40,12 @@ func new() *Kratos {
 }
 
 func TestCreateInit(t *testing.T) {
-	kratos := new()
-	kratos.CreateInit(filepath.Join(os.TempDir(), generatedInitFile))
+	k := new()
+	
+	if err := k.CreateInit(filepath.Join(os.TempDir(), generatedInitFile)); err != nil {
+		t.Error(err)
+		return
+	}
 
 	expected, err := os.ReadFile(testdataInitFile)
 	if err != nil {
