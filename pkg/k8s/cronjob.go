@@ -15,6 +15,18 @@ import (
 	"github.com/imdario/mergo"
 )
 
+// ListCronjobs list cronjob
+func (c *Client) ListCronjobs(namespace string) ([]batchv1.CronJob, error) {
+	list, err := c.Clientset.BatchV1().CronJobs(namespace).List(context.Background(), metav1.ListOptions{
+		LabelSelector: config.DeployLabel,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error getting list of cronjobs: %s", err)
+	}
+
+	return list.Items, nil
+}
+
 // CreateUpdateCronjob create or update a cronjobs
 func (c *Client) CreateUpdateCronjob(name, namespace string, conf *config.Config) error {
 	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
@@ -23,8 +35,10 @@ func (c *Client) CreateUpdateCronjob(name, namespace string, conf *config.Config
 	}
 
 	// merge common & cronjob labels
-	if err := mergo.Map(&conf.Cronjob.Labels, conf.Common.Labels); err != nil {
-		return fmt.Errorf("merging cronjob labels failed: %s", err)
+	if conf.Common != nil && conf.Common.Labels != nil {
+		if err := mergo.Map(&conf.Cronjob.Labels, conf.Common.Labels); err != nil {
+			return fmt.Errorf("merging cronjob labels failed: %s", err)
+		}
 	}
 
 	// merge kratosLabels & cronjob labels
@@ -33,8 +47,10 @@ func (c *Client) CreateUpdateCronjob(name, namespace string, conf *config.Config
 	}
 
 	// merge common & cronjob annotations
-	if err := mergo.Map(&conf.Cronjob.Annotations, conf.Common.Annotations); err != nil {
-		return fmt.Errorf("merging cronjob annotations failed: %s", err)
+	if conf.Common != nil && conf.Common.Annotations != nil {
+		if err := mergo.Map(&conf.Cronjob.Annotations, conf.Common.Annotations); err != nil {
+			return fmt.Errorf("merging cronjob annotations failed: %s", err)
+		}
 	}
 
 	cronjobs := &batchv1.CronJob{
@@ -44,7 +60,7 @@ func (c *Client) CreateUpdateCronjob(name, namespace string, conf *config.Config
 			Labels: labels.Merge(
 				conf.Cronjob.Labels,
 				labels.Set{
-					appLabelName: name,
+					cronLabelName: name,
 				},
 			),
 			Annotations: conf.Cronjob.Annotations,
@@ -59,7 +75,7 @@ func (c *Client) CreateUpdateCronjob(name, namespace string, conf *config.Config
 					Labels: labels.Merge(
 						conf.Cronjob.Labels,
 						labels.Set{
-							appLabelName: name,
+							cronLabelName: name,
 						},
 					),
 					Annotations: conf.Cronjob.Annotations,
@@ -73,17 +89,18 @@ func (c *Client) CreateUpdateCronjob(name, namespace string, conf *config.Config
 							Labels: labels.Merge(
 								conf.Cronjob.Labels,
 								labels.Set{
-									appLabelName: name,
+									cronLabelName: name,
 								},
 							),
 							Annotations: conf.Cronjob.Annotations,
 						},
 						Spec: corev1.PodSpec{
+							RestartPolicy: corev1.RestartPolicyOnFailure,
 							Containers: []corev1.Container{
 								{
 									Name:      conf.Cronjob.Container.Name,
 									Image:     conf.Cronjob.Container.Image + ":" + conf.Cronjob.Container.Tag,
-									Resources: formatResources(*conf.Cronjob.Container),
+									Resources: formatResources(conf.Cronjob.Container),
 								},
 							},
 						},

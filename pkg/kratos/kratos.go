@@ -49,19 +49,22 @@ func (k *Kratos) IsDependencyMeet() error {
 		return err
 	}
 
-	// validate clusterIssuer
-	cm, err := certmanager.New(*k.Client)
-	if err != nil {
-		return err
-	}
+	// dependency for deployment
+	if k.Config.Deployment != nil{
+		// validate clusterIssuer
+		cm, err := certmanager.New(*k.Client)
+		if err != nil {
+			return err
+		}
 
-	if !cm.IsClusterIssuerExist(k.Client, k.Config.ClusterIssuer) {
-		return fmt.Errorf("clusterIssuer %s not found", k.Config.ClusterIssuer)
-	}
+		if !cm.IsClusterIssuerExist(k.Client, k.Config.ClusterIssuer) {
+			return fmt.Errorf("clusterIssuer %s not found", k.Config.ClusterIssuer)
+		}
 
-	// validate ingressClass
-	if !k.Client.IsIngressClassExist(k.IngressClass) {
-		return fmt.Errorf("ingressClass %s not found", k.ClusterIssuer)
+		// validate ingressClass
+		if !k.Client.IsIngressClassExist(k.IngressClass) {
+			return fmt.Errorf("ingressClass %s not found", k.ClusterIssuer)
+		}
 	}
 
 	return nil

@@ -8,7 +8,9 @@ import (
 
 const (
 	cronjobConfig              = "testdata/cronjobConfig.yml"
+	cronjobConfigMinimal       = "testdata/cronjobConfigMinimal.yml"
 	deploymentConfig           = "testdata/deploymentConfig.yml"
+	deploymentConfigMinimal    = "testdata/deploymentConfigMinimal.yml"
 	badConfigResources         = "testdata/badConfigResources.yml"
 	badConfigDeployment        = "testdata/badConfigDeployment.yml"
 	badConfigDeploymentLabels  = "testdata/badConfigDeploymentLabels.yml"
@@ -66,19 +68,30 @@ func createDeploymentConf() *Config {
 				},
 			},
 		},
-		Cronjob: &Cronjob{
-			Labels:      map[string]string{},
-			Annotations: map[string]string{},
-			Container: &Container{
-				Resources: &Resources{
-					Requests: &ResourceType{},
-					Limits:   &ResourceType{},
+		Ingress: &Ingress{
+			Labels:        ingLabels,
+			Annotations:   ingAnnotation,
+			IngressClass:  ingresClass,
+			ClusterIssuer: clusterIssuer,
+			Hostnames:     []string{hostname},
+		},
+	}
+}
+
+func createDeploymentConfMinimal() *Config {
+	return &Config{
+		Deployment: &Deployment{
+			Replicas: replicas,
+			Port:     port,
+			Containers: []Container{
+				{
+					Name:  name,
+					Image: image,
+					Tag:   tag,
 				},
 			},
 		},
 		Ingress: &Ingress{
-			Labels:        ingLabels,
-			Annotations:   ingAnnotation,
 			IngressClass:  ingresClass,
 			ClusterIssuer: clusterIssuer,
 			Hostnames:     []string{hostname},
@@ -93,18 +106,6 @@ func createCronjobConf() *Config {
 		Common: &Common{
 			Labels:      commonLabels,
 			Annotations: commonAnnotations,
-		},
-		Deployment: &Deployment{
-			Labels:      map[string]string{},
-			Annotations: map[string]string{},
-			Containers: []Container{
-				{
-					Resources: &Resources{
-						Requests: &ResourceType{},
-						Limits:   &ResourceType{},
-					},
-				},
-			},
 		},
 		Cronjob: &Cronjob{
 			Labels: map[string]string{
@@ -131,15 +132,24 @@ func createCronjobConf() *Config {
 				},
 			},
 		},
-		Ingress: &Ingress{
-			Labels:      map[string]string{},
-			Annotations: map[string]string{},
-			Hostnames:   []string{},
+	}
+}
+
+func createCronjobConfMinimal() *Config {
+	return &Config{
+		Cronjob: &Cronjob{
+			Schedule: schedule,
+			Retry:    retry,
+			Container: &Container{
+				Name:  name,
+				Image: image,
+				Tag:   tag,
+			},
 		},
 	}
 }
 
-func TestLoadConfig(t *testing.T) {
+func TestLoadConfigDeployment(t *testing.T) {
 	config := &Config{}
 
 	if err := config.Load(deploymentConfig); err != nil {
@@ -148,6 +158,17 @@ func TestLoadConfig(t *testing.T) {
 	}
 
 	assert.EqualValues(t, createDeploymentConf(), config)
+}
+
+func TestLoadConfigDeploymentMinimal(t *testing.T) {
+	config := &Config{}
+
+	if err := config.Load(deploymentConfigMinimal); err != nil {
+		t.Error(err)
+		return
+	}
+
+	assert.EqualValues(t, createDeploymentConfMinimal(), config)
 }
 
 func TestLoadConfigCronjob(t *testing.T) {
@@ -160,7 +181,17 @@ func TestLoadConfigCronjob(t *testing.T) {
 	assert.EqualValues(t, createCronjobConf(), config)
 }
 
-func TestLoadConfigDeployment(t *testing.T) {
+func TestLoadConfigCronjobMinimal(t *testing.T) {
+	config := &Config{}
+	if err := config.Load(cronjobConfigMinimal); err != nil {
+		t.Error(err)
+		return
+	}
+
+	assert.EqualValues(t, createCronjobConfMinimal(), config)
+}
+
+func TestLoadConfigBadDeployment(t *testing.T) {
 	config := &Config{}
 	expected := "validation of configuration failed: Key: 'Config.Deployment.Port' Error:Field validation for 'Port' failed on the 'required' tag\nKey: 'Config.Deployment.Containers' Error:Field validation for 'Containers' failed on the 'required' tag"
 	if err := config.Load(badConfigDeployment); assert.Error(t, err) {
@@ -168,7 +199,7 @@ func TestLoadConfigDeployment(t *testing.T) {
 	}
 }
 
-func TestLoadConfigDeploymentLabels(t *testing.T) {
+func TestLoadConfigBadDeploymentLabels(t *testing.T) {
 	config := &Config{}
 	expected := "validation of labels environment/branch failed: a valid label must be an empty string or consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character (e.g. 'MyValue',  or 'my_value',  or '12345', regex used for validation is '(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?')"
 	if err := config.Load(badConfigDeploymentLabels); assert.Error(t, err) {
@@ -176,7 +207,7 @@ func TestLoadConfigDeploymentLabels(t *testing.T) {
 	}
 }
 
-func TestLoadConfigCommonLabels(t *testing.T) {
+func TestLoadConfigBadCommonLabels(t *testing.T) {
 	config := &Config{}
 	expected := "validation of labels environment/test failed: a valid label must be an empty string or consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character (e.g. 'MyValue',  or 'my_value',  or '12345', regex used for validation is '(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?')"
 	if err := config.Load(badConfigCommonLabels); assert.Error(t, err) {
@@ -200,7 +231,7 @@ func TestLoadConfigAnnotationsDuplication(t *testing.T) {
 	}
 }
 
-func TestLoadConfigIngresslabels(t *testing.T) {
+func TestLoadConfigBadIngresslabels(t *testing.T) {
 	config := &Config{}
 	expected := "validation of labels cloudflare dns failed: a valid label must be an empty string or consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character (e.g. 'MyValue',  or 'my_value',  or '12345', regex used for validation is '(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?')"
 	if err := config.Load(badConfigIngressLabels); assert.Error(t, err) {
@@ -208,7 +239,7 @@ func TestLoadConfigIngresslabels(t *testing.T) {
 	}
 }
 
-func TestLoadConfigResources(t *testing.T) {
+func TestLoadConfigBadResources(t *testing.T) {
 	config := &Config{}
 	expected := "validation of configuration resources failed: quantities must match the regular expression '^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$'\ncontainer: myapp -> requests cpu: 25f"
 	if err := config.Load(badConfigResources); assert.Error(t, err) {

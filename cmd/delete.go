@@ -25,6 +25,8 @@ var deleteCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		// TODO validate release exist before trying to delete
+
 		if err := kratos.Delete(name, namespace); err != nil {
 			fmt.Println(err)
 			os.Exit(1)

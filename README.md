@@ -212,7 +212,7 @@ ingress:
 
 ```yaml
 cronjob:
-  shedule: 0 0 * * *
+  schedule: 0 0 * * *
   container:
     name: myjobs
     image: laghoule/crunchdata

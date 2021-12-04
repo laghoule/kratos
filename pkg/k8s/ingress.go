@@ -91,7 +91,7 @@ func (c *Client) CreateUpdateIngress(name, namespace string, conf *config.Config
 			Labels: labels.Merge(
 				conf.Ingress.Labels,
 				labels.Set{
-					appLabelName: name,
+					depLabelName: name,
 				},
 			),
 			Annotations: conf.Ingress.Annotations,

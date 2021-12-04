@@ -30,7 +30,7 @@ func (c *Client) CreateUpdateService(name, namespace string, conf *config.Config
 			Labels: labels.Merge(
 				kratosLabel,
 				labels.Set{
-					appLabelName: name,
+					depLabelName: name,
 				},
 			),
 		},
@@ -45,7 +45,7 @@ func (c *Client) CreateUpdateService(name, namespace string, conf *config.Config
 				},
 			},
 			Selector: map[string]string{
-				appLabelName: name,
+				depLabelName: name,
 			},
 		},
 	}
@@ -102,7 +102,7 @@ func (c *Client) updateService(name, namespace string, conf *config.Config) erro
 			Labels: labels.Merge(
 				svcLabels,
 				labels.Set{
-					appLabelName: name,
+					depLabelName: name,
 				},
 			),
 			Annotations:     conf.Common.Annotations,
@@ -120,7 +120,7 @@ func (c *Client) updateService(name, namespace string, conf *config.Config) erro
 				},
 			},
 			Selector: map[string]string{
-				appLabelName: name,
+				depLabelName: name,
 			},
 		},
 	}

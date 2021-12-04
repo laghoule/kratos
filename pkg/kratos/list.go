@@ -14,15 +14,34 @@ func (k *Kratos) List(namespace string) error {
 		pterm.Error.Println(err)
 	}
 
-	pdata := pterm.TableData{
-		{"Name", "Namespace", "Replicas", "Creation", "Revision"},
+	cronList, err := k.ListCronjobs(namespace)
+	if err != nil {
+		pterm.Error.Println(err)
 	}
 
+	pdata := pterm.TableData{
+		{"Name", "Namespace", "Type", "Replicas", "Creation", "Revision"},
+	}
+
+	// deployments
 	for _, item := range depList {
 		pdata = append(pdata, []string{
 			item.Name,
 			item.Namespace,
+			"deployment",
 			strconv.Itoa(int(*item.Spec.Replicas)),
+			item.CreationTimestamp.UTC().String(),
+			fmt.Sprint(item.Generation),
+		})
+	}
+
+	// cronjobs
+	for _, item := range cronList {
+		pdata = append(pdata, []string{
+			item.Name,
+			item.Namespace,
+			"cronjob",
+			"-",
 			item.CreationTimestamp.UTC().String(),
 			fmt.Sprint(item.Generation),
 		})

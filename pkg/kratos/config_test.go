@@ -38,7 +38,6 @@ func createConf() *config.Config {
 				},
 			},
 		},
-		Cronjob: &config.Cronjob{},
 		Ingress: &config.Ingress{
 			IngressClass:  ingresClass,
 			ClusterIssuer: clusterIssuer,

@@ -18,12 +18,12 @@ func createDeployment() *appsv1.Deployment {
 	var replicas int32 = 1
 	depLabels := map[string]string{
 		kratosLabelName: kratosLabelValue,
-		appLabelName:    name,
+		depLabelName:    name,
 		"environment":   environment,
 		"app":           name,
 	}
 	podLabels := map[string]string{
-		appLabelName:  name,
+		depLabelName:  name,
 		"environment": environment,
 		"app":         name,
 	}
@@ -42,7 +42,7 @@ func createDeployment() *appsv1.Deployment {
 			Replicas: &replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					appLabelName: name,
+					depLabelName: name,
 				},
 			},
 			Template: corev1.PodTemplateSpec{

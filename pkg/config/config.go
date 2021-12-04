@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"regexp"
 
 	validator "github.com/go-playground/validator/v10"
 	"gopkg.in/yaml.v3"
@@ -86,82 +87,6 @@ func labelsValidation(labels map[string]string) error {
 	return nil
 }
 
-func (c *Config) ensureNoNil() {
-	// common
-	if c.Common == nil {
-		c.Common = &Common{
-			Labels:      map[string]string{},
-			Annotations: map[string]string{},
-		}
-	}
-
-	// cronjobs
-	if c.Cronjob == nil {
-		c.Cronjob = &Cronjob{
-			Labels:      map[string]string{},
-			Annotations: map[string]string{},
-			Container: &Container{
-				Resources: &Resources{
-					Requests: &ResourceType{},
-					Limits:   &ResourceType{},
-				},
-			},
-		}
-	} else {
-		if c.Cronjob.Container.Resources == nil {
-			c.Cronjob.Container.Resources = &Resources{
-				Requests: &ResourceType{},
-				Limits:   &ResourceType{},
-			}
-		} else {
-			if c.Cronjob.Container.Resources.Requests == nil {
-				c.Cronjob.Container.Resources.Requests = &ResourceType{}
-			}
-			if c.Cronjob.Container.Resources.Limits == nil {
-				c.Cronjob.Container.Resources.Limits = &ResourceType{}
-			}
-		}
-	}
-
-	// deployment
-	if c.Deployment == nil {
-		c.Deployment = &Deployment{
-			Labels:      map[string]string{},
-			Annotations: map[string]string{},
-			Containers: []Container{
-				{
-					Resources: &Resources{
-						Requests: &ResourceType{},
-						Limits:   &ResourceType{},
-					},
-				},
-			},
-		}
-	} else {
-		for i, container := range c.Deployment.Containers {
-			if container.Resources == nil {
-				c.Deployment.Containers[i].Resources = &Resources{}
-				continue
-			}
-			if container.Resources.Requests == nil {
-				c.Deployment.Containers[i].Resources.Requests = &ResourceType{}
-			}
-			if container.Resources.Limits == nil {
-				c.Deployment.Containers[i].Resources.Limits = &ResourceType{}
-			}
-		}
-	}
-
-	// ingress
-	if c.Ingress == nil {
-		c.Ingress = &Ingress{
-			Labels:      map[string]string{},
-			Annotations: map[string]string{},
-			Hostnames:   []string{},
-		}
-	}
-}
-
 func (c *Config) validateConfig() error {
 	validate := &validator.Validate{}
 	validate = validator.New()
@@ -175,71 +100,115 @@ func (c *Config) validateConfig() error {
 	// TODO integration of all validations with the validator
 	// REF: https://github.com/go-playground/validator/blob/master/_examples/struct-level/main.go
 
-	// replace nil value in config
-	c.ensureNoNil()
+	// TODO find a way to simplify these statements
 
-	labelsList := []map[string]string{
-		c.Common.Labels,
-		c.Deployment.Labels,
-		c.Cronjob.Labels,
-		c.Ingress.Labels,
+	// validate common labels
+	if c.Common != nil && c.Common.Labels != nil {
+		if err := labelsValidation(c.Common.Labels); err != nil {
+			return err
+		}
 	}
 
-	// validate labels
-	for _, labels := range labelsList {
-		if labels != nil {
-			if err := labelsValidation(labels); err != nil {
-				return err
-			}
+	// validate deployment labels
+	if c.Deployment != nil && c.Deployment.Labels != nil {
+		if err := labelsValidation(c.Deployment.Labels); err != nil {
+			return err
+		}
+	}
+
+	// validate cronjob labels
+	if c.Cronjob != nil && c.Cronjob.Labels != nil {
+		if err := labelsValidation(c.Cronjob.Labels); err != nil {
+			return err
+		}
+	}
+
+	// validate ingress labels
+	if c.Ingress != nil && c.Ingress.Labels != nil {
+		if err := labelsValidation(c.Ingress.Labels); err != nil {
+			return err
 		}
 	}
 
 	// TODO find a way to simplify these statements
 
 	// common labels must be uniq
-	for name := range c.Common.Labels {
-		if _, found := c.Deployment.Labels[name]; found {
-			return fmt.Errorf("common labels %q cannot be duplicated in deployment labels", name)
-		}
-		if _, found := c.Cronjob.Labels[name]; found {
-			return fmt.Errorf("common labels %q cannot be duplicated in cronjobs labels", name)
-		}
-		if _, found := c.Ingress.Labels[name]; found {
-			return fmt.Errorf("common labels %q cannot be duplicated in ingress labels", name)
+	if c.Common != nil && c.Common.Labels != nil {
+		for name := range c.Common.Labels {
+			if c.Deployment != nil {
+				if _, found := c.Deployment.Labels[name]; found {
+					return fmt.Errorf("common labels %q cannot be duplicated in deployment labels", name)
+				}
+			}
+			if c.Cronjob != nil {
+				if _, found := c.Cronjob.Labels[name]; found {
+					return fmt.Errorf("common labels %q cannot be duplicated in cronjobs labels", name)
+				}
+			}
+			if c.Ingress != nil {
+				if _, found := c.Ingress.Labels[name]; found {
+					return fmt.Errorf("common labels %q cannot be duplicated in ingress labels", name)
+				}
+			}
 		}
 	}
 
 	// common annotations must be uniq
-	for name := range c.Common.Annotations {
-		if _, found := c.Deployment.Annotations[name]; found {
-			return fmt.Errorf("common annotations %q cannot be duplicated in deployment annotations", name)
-		}
-		if _, found := c.Cronjob.Annotations[name]; found {
-			return fmt.Errorf("common annotations %q cannot be duplicated in cronjobs annotations", name)
-		}
-		if _, found := c.Ingress.Annotations[name]; found {
-			return fmt.Errorf("common annotations %q cannot be duplicated in ingress annotations", name)
+	if c.Common != nil && c.Common.Annotations != nil {
+		for name := range c.Common.Annotations {
+			if c.Deployment != nil {
+				if _, found := c.Deployment.Annotations[name]; found {
+					return fmt.Errorf("common annotations %q cannot be duplicated in deployment annotations", name)
+				}
+			}
+			if c.Cronjob != nil {
+				if _, found := c.Cronjob.Annotations[name]; found {
+					return fmt.Errorf("common annotations %q cannot be duplicated in cronjobs annotations", name)
+				}
+			}
+			if c.Ingress != nil {
+				if _, found := c.Ingress.Annotations[name]; found {
+					return fmt.Errorf("common annotations %q cannot be duplicated in ingress annotations", name)
+				}
+			}
 		}
 	}
 
-	// TODO validate cronjobs schedule
-	// via regex: https://stackoverflow.com/questions/14203122/create-a-regular-expression-for-cron-statement
+	// cronjob schedule validation
+	// TODO better validation, probably check how k8s handle this
+	if c.Cronjob != nil {
+		re := regexp.MustCompile("(((\\d+,)+\\d+|(\\d+(\\/|-)\\d+)|\\d+|\\*) ?){5,7}")
+		if !re.MatchString(c.Cronjob.Schedule) {
+			return fmt.Errorf("cronjob schedule isn't valid")
+		}
+	}
 
 	// validate resource limits/requests
-	for _, container := range c.Deployment.Containers {
-		resources := map[string]string{
-			"requests cpu":    container.Resources.Requests.CPU,
-			"requests memory": container.Resources.Requests.Memory,
-			"limits cpu":      container.Resources.Limits.CPU,
-			"limits memory":   container.Resources.Limits.Memory,
-		}
-		for rsName, rsValue := range resources {
-			if rsValue == "" {
-				continue
-			}
-			_, err := resource.ParseQuantity(rsValue)
-			if err != nil {
-				return fmt.Errorf("validation of configuration resources failed: %s\ncontainer: %s -> %s: %s", err, container.Name, rsName, rsValue)
+	if c.Deployment != nil {
+		for _, container := range c.Deployment.Containers {
+			if container.Resources != nil {
+				resources := map[string]string{}
+				if container.Resources.Requests != nil && container.Resources.Requests.CPU != "" {
+					resources["requests cpu"] = container.Resources.Requests.CPU
+				}
+				if container.Resources.Requests != nil && container.Resources.Requests.Memory != "" {
+					resources["requests memory"] = container.Resources.Requests.Memory
+				}
+				if container.Resources.Limits != nil && container.Resources.Limits.CPU != "" {
+					resources["limits cpu"] = container.Resources.Limits.CPU
+				}
+				if container.Resources.Limits != nil && container.Resources.Limits.Memory != "" {
+					resources["limits memory"] = container.Resources.Limits.Memory
+				}
+				for rsName, rsValue := range resources {
+					if rsValue == "" {
+						continue
+					}
+					_, err := resource.ParseQuantity(rsValue)
+					if err != nil {
+						return fmt.Errorf("validation of configuration resources failed: %s\ncontainer: %s -> %s: %s", err, container.Name, rsName, rsValue)
+					}
+				}
 			}
 		}
 	}
@@ -339,6 +308,15 @@ func (c *Config) Load(file string) error {
 
 	if err := c.validateConfig(); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// LoadFromString load configuration from a specified string
+func (c *Config) LoadFromString(conf string) error {
+	if err := yaml.Unmarshal([]byte(conf), c); err != nil {
+		return fmt.Errorf("unmarshaling yaml failed: %s", err)
 	}
 
 	return nil

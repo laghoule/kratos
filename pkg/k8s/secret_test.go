@@ -26,7 +26,7 @@ func createSecret() *corev1.Secret {
 			Labels: labels.Merge(
 				kratosLabel,
 				labels.Set{
-					appLabelName: name,
+					depLabelName: name,
 				}),
 		},
 		StringData: map[string]string{

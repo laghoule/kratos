@@ -26,6 +26,8 @@ var getCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		// TODO check if a release exist before trying to retreive it
+
 		if err := kratos.SaveConfigToDisk(name, namespace, destination); err != nil {
 			fmt.Println(err)
 			os.Exit(1)

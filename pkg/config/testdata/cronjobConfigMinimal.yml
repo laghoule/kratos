@@ -1,0 +1,7 @@
+cronjob:
+  schedule: 0 0 * * *
+  retry: 3
+  container:
+    name: myapp
+    image: myimage
+    tag: latest

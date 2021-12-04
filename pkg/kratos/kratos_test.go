@@ -33,12 +33,7 @@ const (
 func new() *Kratos {
 	kratos := &Kratos{
 		Client: &k8s.Client{},
-		Config: &config.Config{
-			Common:     &config.Common{},
-			Cronjob:    &config.Cronjob{},
-			Deployment: &config.Deployment{},
-			Ingress:    &config.Ingress{},
-		},
+		Config: &config.Config{},
 	}
 	kratos.Clientset = fake.NewSimpleClientset()
 	return kratos

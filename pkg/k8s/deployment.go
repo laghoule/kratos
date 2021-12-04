@@ -9,7 +9,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
@@ -22,7 +21,7 @@ const (
 	resMemory = "memory"
 )
 
-// ListDeployments list deployment of k8dep labels
+// ListDeployments list deployments
 func (c *Client) ListDeployments(namespace string) ([]appsv1.Deployment, error) {
 	list, err := c.Clientset.AppsV1().Deployments(namespace).List(context.Background(), metav1.ListOptions{
 		LabelSelector: config.DeployLabel,
@@ -32,33 +31,6 @@ func (c *Client) ListDeployments(namespace string) ([]appsv1.Deployment, error) 
 	}
 
 	return list.Items, nil
-}
-
-// TODO move this function to `k8s.go`
-// formatResources format the resource from container configurations
-func formatResources(container config.Container) corev1.ResourceRequirements {
-	req := corev1.ResourceRequirements{
-		Requests: corev1.ResourceList{},
-		Limits:   corev1.ResourceList{},
-	}
-
-	// requests
-	if container.Resources.Requests.CPU != "" {
-		req.Requests[resCPU] = resource.MustParse(container.Resources.Requests.CPU)
-	}
-	if container.Resources.Requests.Memory != "" {
-		req.Requests[resMemory] = resource.MustParse(container.Resources.Requests.Memory)
-	}
-
-	// limits
-	if container.Resources.Limits.CPU != "" {
-		req.Limits[resCPU] = resource.MustParse(container.Resources.Limits.CPU)
-	}
-	if container.Resources.Limits.Memory != "" {
-		req.Limits[resMemory] = resource.MustParse(container.Resources.Limits.Memory)
-	}
-
-	return req
 }
 
 // CreateUpdateDeployment create or update a deployment
@@ -100,7 +72,7 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 					ContainerPort: conf.Deployment.Port,
 				},
 			},
-			Resources: formatResources(container),
+			Resources: formatResources(&container),
 		})
 	}
 
@@ -112,7 +84,7 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 			Labels: labels.Merge(
 				conf.Deployment.Labels,
 				labels.Set{
-					appLabelName: name,
+					depLabelName: name,
 				},
 			),
 		},
@@ -120,7 +92,7 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 			Replicas: &conf.Replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					appLabelName: name,
+					depLabelName: name,
 				},
 			},
 			Template: corev1.PodTemplateSpec{
@@ -131,7 +103,7 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 					Labels: labels.Merge(
 						podLabels,
 						labels.Set{
-							appLabelName: name,
+							depLabelName: name,
 						},
 					),
 				},

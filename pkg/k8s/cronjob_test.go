@@ -22,7 +22,7 @@ func createCronjobs() *batchv1.CronJob {
 			Namespace: namespace,
 			Labels: map[string]string{
 				kratosLabelName: kratosLabelValue,
-				appLabelName:    name,
+				cronLabelName:    name,
 				"environment":   environment,
 				"type":          "long",
 			},
@@ -40,7 +40,7 @@ func createCronjobs() *batchv1.CronJob {
 					Namespace: namespace,
 					Labels: map[string]string{
 						kratosLabelName: kratosLabelValue,
-						appLabelName:    name,
+						cronLabelName:    name,
 						"environment":   environment,
 						"type":          "long",
 					},
@@ -56,7 +56,7 @@ func createCronjobs() *batchv1.CronJob {
 							Namespace: namespace,
 							Labels: map[string]string{
 								kratosLabelName: kratosLabelValue,
-								appLabelName:    name,
+								cronLabelName:    name,
 								"environment":   environment,
 								"type":          "long",
 							},
@@ -66,6 +66,7 @@ func createCronjobs() *batchv1.CronJob {
 							},
 						},
 						Spec: corev1.PodSpec{
+							RestartPolicy: corev1.RestartPolicyOnFailure,
 							Containers: []corev1.Container{
 								{
 									Name:  name,
@@ -89,6 +90,30 @@ func createCronjobs() *batchv1.CronJob {
 			},
 		},
 	}
+}
+
+// TestListCronjobs test the listing of cronjobs
+func TestListCronjobs(t *testing.T) {
+	c := new()
+	conf := &config.Config{}
+
+	if err := conf.Load(cronjobConfig); err != nil {
+		t.Error(err)
+		return
+	}
+
+	if err := c.CreateUpdateCronjob(name, namespace, conf); err != nil {
+		t.Error(err)
+		return
+	}
+
+	list, err := c.ListCronjobs(namespace)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	assert.Len(t, list, 1)
 }
 
 func TestCreateUpdateCronjob(t *testing.T) {
