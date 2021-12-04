@@ -16,13 +16,13 @@ var initCmd = &cobra.Command{
 	Short: "Create an empty configuration file.",
 	Long:  `Initialise a configuration file with all available options.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		kratos, err := kratos.New("", viper.GetString("kubeconfig"))
+		k, err := kratos.New("", viper.GetString("kubeconfig"))
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 
-		if err := kratos.CreateInit(viper.GetString("initName")); err != nil {
+		if err := k.CreateInit(viper.GetString("initName")); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}

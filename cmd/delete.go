@@ -19,15 +19,23 @@ var deleteCmd = &cobra.Command{
 		name := viper.GetString("dName")
 		namespace := viper.GetString("dNamespace")
 
-		kratos, err := kratos.New("", viper.GetString("kubeconfig"))
+		k, err := kratos.New("", viper.GetString("kubeconfig"))
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 
-		// TODO validate release exist before trying to delete
+		if found, err := k.IsReleaseExist(name, namespace); !found && err == nil {
+			fmt.Printf("%s don't exist\n", name)
+			os.Exit(1)
+		} else {
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+		}
 
-		if err := kratos.Delete(name, namespace); err != nil {
+		if err := k.Delete(name, namespace); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}

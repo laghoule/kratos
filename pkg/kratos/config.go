@@ -17,7 +17,8 @@ const (
 	configSuffix = "-kratos-config"
 	configKey    = "config"
 	fileMode     = 0666
-	yamlExt      = ".yaml"
+	// YamlExt is the default yaml extension
+	YamlExt = ".yaml"
 )
 
 // CreateInit create sample configuration file
@@ -76,12 +77,12 @@ func (k *Kratos) SaveConfigToDisk(name, namespace, destination string) error {
 	}
 
 	if _, ok := secret.Data[configKey]; ok {
-		if err := os.WriteFile(filepath.Join(destination, name)+yamlExt, []byte(secret.Data[configKey]), fileMode); err != nil {
+		if err := os.WriteFile(filepath.Join(destination, name)+YamlExt, []byte(secret.Data[configKey]), fileMode); err != nil {
 			return fmt.Errorf("writing yaml init file failed: %s", err)
 		}
 	} else {
 		if _, ok := secret.StringData[configKey]; ok {
-			if err := os.WriteFile(filepath.Join(destination, name)+yamlExt, []byte(secret.StringData[configKey]), fileMode); err != nil {
+			if err := os.WriteFile(filepath.Join(destination, name)+YamlExt, []byte(secret.StringData[configKey]), fileMode); err != nil {
 				return fmt.Errorf("writing yaml init file failed: %s", err)
 			}
 		} else {

@@ -16,13 +16,13 @@ var listCmd = &cobra.Command{
 	Short: "List application of managed kratos deployment.",
 	Long:  `List application by namespace, or cluster wide of managed kratos deployment.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		kratos, err := kratos.New("", viper.GetString("kubeconfig"))
+		k, err := kratos.New("", viper.GetString("kubeconfig"))
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 
-		if err := kratos.List(viper.GetString("listNamespace")); err != nil {
+		if err := k.PrintList(viper.GetString("listNamespace")); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}

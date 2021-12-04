@@ -141,7 +141,7 @@ deployment:
 cronjob:
   labels: {}
   annotations: {}
-  shedule: 0 0 * * *
+  schedule: 0 0 * * *
   retry: 1
   container:
     name: myjobs

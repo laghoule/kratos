@@ -12,27 +12,27 @@ import (
 
 // createCmd represents the create command
 var createCmd = &cobra.Command{
-	Use:   "create",
-	Short: "Deploy an application in an namespace.",
-	Long: `Create and update deployment, service and ingress for simple k8s application.`,
+	Use:              "create",
+	Short:            "Deploy an application in an namespace.",
+	Long:             `Create and update deployment, service and ingress for simple k8s application.`,
 	TraverseChildren: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		config := viper.GetString("cConfig")
 		name := viper.GetString("cName")
 		namespace := viper.GetString("cNamespace")
 
-		kratos, err := kratos.New(config, viper.GetString("kubeconfig"))
+		k, err := kratos.New(config, viper.GetString("kubeconfig"))
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 
-		if err := kratos.IsDependencyMeet(); err != nil {
+		if err := k.IsDependencyMeet(); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 
-		if err := kratos.Create(name, namespace); err != nil {
+		if err := k.Create(name, namespace); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}

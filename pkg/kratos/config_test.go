@@ -94,7 +94,7 @@ func TestSaveConfigFileToDisk(t *testing.T) {
 		return
 	}
 
-	result, err := os.ReadFile(filepath.Join(os.TempDir(), name+yamlExt))
+	result, err := os.ReadFile(filepath.Join(os.TempDir(), name+YamlExt))
 	if err != nil {
 		t.Error(err)
 		return

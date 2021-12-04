@@ -20,18 +20,28 @@ var getCmd = &cobra.Command{
 		namespace := viper.GetString("gNamespace")
 		destination := viper.GetString("gdestination")
 
-		kratos, err := kratos.New("", viper.GetString("kubeconfig"))
+		k, err := kratos.New("", viper.GetString("kubeconfig"))
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 
-		// TODO check if a release exist before trying to retreive it
+		if found, err := k.IsReleaseExist(name, namespace); !found && err == nil {
+			fmt.Printf("%s don't exist\n", name)
+			os.Exit(1)
+		} else {
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+		}
 
-		if err := kratos.SaveConfigToDisk(name, namespace, destination); err != nil {
+		if err := k.SaveConfigToDisk(name, namespace, destination); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
+
+		fmt.Printf("configuration saved at %s/%s", destination, name+kratos.YamlExt)
 	},
 }
 
