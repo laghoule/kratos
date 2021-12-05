@@ -56,7 +56,7 @@ func TestSaveConfigFile(t *testing.T) {
 		return
 	}
 
-	expected := k.createSecretDataString(name+configSuffix, namespace, string(b))
+	expected := k.createConfigSecret(name+configSuffix, namespace, string(b))
 
 	if err := k.saveConfigToSecret(name+configSuffix, namespace); err != nil {
 		t.Error(err)
@@ -111,6 +111,6 @@ func TestSaveConfigFileToDisk(t *testing.T) {
 
 func TestCreateSecretString(t *testing.T) {
 	k := new()
-	s := k.createSecretDataString(name, namespace, configString)
+	s := k.createConfigSecret(name, namespace, configString)
 	assert.Equal(t, configString, s.StringData[configKey])
 }

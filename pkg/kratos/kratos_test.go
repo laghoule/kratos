@@ -41,7 +41,7 @@ func new() *Kratos {
 
 func TestCreateInit(t *testing.T) {
 	k := new()
-	
+
 	if err := k.CreateInit(filepath.Join(os.TempDir(), generatedInitFile)); err != nil {
 		t.Error(err)
 		return
@@ -63,5 +63,5 @@ func TestCreateInit(t *testing.T) {
 }
 
 func TestIsDependencyMeet(t *testing.T) {
-	// TODO
+	// TODO TestIsDependencyMeet
 }

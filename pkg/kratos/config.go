@@ -42,7 +42,7 @@ func (k *Kratos) saveConfigToSecret(name, namespace string) error {
 		return fmt.Errorf("saving configuration to kubernetes secret failed: %s", err)
 	}
 
-	secret := k.createSecretDataString(name, namespace, string(b))
+	secret := k.createConfigSecret(name, namespace, string(b))
 
 	if err := k.Client.CreateUpdateSecret(secret, namespace); err != nil {
 		return err
@@ -51,10 +51,10 @@ func (k *Kratos) saveConfigToSecret(name, namespace string) error {
 	return nil
 }
 
-// createSecretDataString return a secret object with data in StringData field
-func (k *Kratos) createSecretDataString(name, namespace, data string) *corev1.Secret {
+// createConfigSecret return the configuration as a secret object
+func (k *Kratos) createConfigSecret(name, namespace, data string) *corev1.Secret {
 	if k.Config.Common == nil {
-		k.Config.Common = &config.Common{} // FIXME
+		k.Config.Common = &config.Common{} // FIXME pass common labels & annotations
 	}
 	return &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{

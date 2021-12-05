@@ -33,7 +33,7 @@ func new() *Client {
 	return c
 }
 
-// TODO: FIXME
+// TODO: TestCheckVersionDepency
 //func TestCheckVersionDepency(t *testing.T) {
 //	c := new()
 //
