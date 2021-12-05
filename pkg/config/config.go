@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	// DeployLabel is a managed-by k8s label for krator
+	// DeployLabel is a managed-by k8s label for kratos
 	DeployLabel = "app.kubernetes.io/managed-by=kratos"
 )
 

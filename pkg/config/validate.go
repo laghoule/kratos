@@ -34,7 +34,6 @@ func (c *Config) validateConfig() error {
 	validate = validator.New()
 
 	// validate config via struct yaml tag
-	// must be checked before `ensureNoNil`
 	if err := validate.Struct(c); err != nil {
 		return fmt.Errorf("validation of configuration failed: %s", err)
 	}
@@ -104,7 +103,7 @@ func (d *Deployment) validateConfig(common *Common) error {
 
 	// containers resources
 	for _, container := range d.Containers {
-		if err := container.validateResource(); err != nil {
+		if err := container.validateResources(); err != nil {
 			return err
 		}
 	}
@@ -142,7 +141,7 @@ func (c *Cronjob) validateConfig(common *Common) error {
 	}
 
 	// container resources
-	if err := c.Container.validateResource(); err != nil {
+	if err := c.Container.validateResources(); err != nil {
 		return err
 	}
 
@@ -175,30 +174,28 @@ func (i *Ingress) validateConfig(common *Common) error {
 }
 
 // validateResources validate that specified containter resources are valids
-func (c *Container) validateResource() error {
+func (c *Container) validateResources() error {
 	resources := map[string]string{}
 
 	if c.Resources != nil {
-		// validate requests
 		if c.Resources.Requests != nil {
 			resources["requests cpu"] = c.Resources.Requests.CPU
 			resources["requests memory"] = c.Resources.Requests.Memory
 		}
 
-		// validate limits
 		if c.Resources.Limits != nil {
 			resources["limits cpu"] = c.Resources.Limits.CPU
 			resources["limits memory"] = c.Resources.Limits.Memory
 		}
-	}
 
-	for rsName, rsValue := range resources {
-		if rsValue == "" {
-			continue
-		}
+		for rsName, rsValue := range resources {
+			if rsValue == "" {
+				continue
+			}
 
-		if _, err := resource.ParseQuantity(rsValue); err != nil {
-			return fmt.Errorf("validation of configuration resources failed: %s\ncontainer: %s -> %s: %s", err, c.Name, rsName, rsValue)
+			if _, err := resource.ParseQuantity(rsValue); err != nil {
+				return fmt.Errorf("validation of configuration resources failed: %s\ncontainer: %s -> %s: %s", err, c.Name, rsName, rsValue)
+			}
 		}
 	}
 
