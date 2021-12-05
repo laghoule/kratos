@@ -217,7 +217,7 @@ func TestLoadConfigBadCommonLabels(t *testing.T) {
 
 func TestLoadConfigLabelsDuplication(t *testing.T) {
 	c := &Config{}
-	expected := "common labels \"environment\" cannot be duplicated in deployment labels"
+	expected := "common labels/annotations \"environment\" cannot be duplicated in others sections"
 	if err := c.Load(badConfigLabelsDuplication); assert.Error(t, err) {
 		assert.Equal(t, expected, err.Error())
 	}
@@ -225,7 +225,7 @@ func TestLoadConfigLabelsDuplication(t *testing.T) {
 
 func TestLoadConfigAnnotationsDuplication(t *testing.T) {
 	c := &Config{}
-	expected := "common annotations \"branch\" cannot be duplicated in deployment annotations"
+	expected := "common labels/annotations \"branch\" cannot be duplicated in others sections"
 	if err := c.Load(badConfigCommonAnnotations); assert.Error(t, err) {
 		assert.Equal(t, expected, err.Error())
 	}
