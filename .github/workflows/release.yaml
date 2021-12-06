@@ -42,9 +42,8 @@ jobs:
           build_flags: -v
           ldflags: -X "github.com/laghoule/kratos/cmd.version=${{ env.VERSION }}" -X "github.com/laghoule/kratos/cmd.buildDate=${{ env.BUILD_DATE }}" -X "github.com/laghoule/kratos/cmd.gitCommit=${{ github.sha }}" -X "github.com/laghoule/kratos/cmd.gitRef=${{ github.ref }}"
           project_path: "."
-          binary_name: "kratos"
           extra_files: LICENSE README.md
-          retry: 45
+          retry: 10
 
   docker:
     runs-on: ubuntu-latest
