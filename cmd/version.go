@@ -1,0 +1,34 @@
+package cmd
+
+import (
+	"time"
+
+	"github.com/pterm/pterm"
+	"github.com/spf13/cobra"
+)
+
+// build informations
+var (
+	version   = "devel"
+	buildDate = time.Now().String()
+	gitCommit = ""
+	gitRef    = ""
+)
+
+// versionCmd represents the version command
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "version of kratos.",
+	Long:  `version, build time, git commit, git reference informations.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		pdata := pterm.TableData{
+			{"Version", "Build date", "Git commit", "Git reference"},
+			{version, buildDate, gitCommit, gitRef},
+		}
+		pterm.DefaultTable.WithHasHeader().WithData(pdata).Render()
+	},
+}
+
+func init() {
+	rootCmd.AddCommand(versionCmd)
+}
