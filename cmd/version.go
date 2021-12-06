@@ -18,8 +18,8 @@ var (
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "version of kratos.",
-	Long:  `version, build time, git commit, git reference informations.`,
+	Short: "Show version of kratos.",
+	Long:  `Show version, build time, git commit, git reference informations.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		pdata := pterm.TableData{
 			{"Version", "Build date", "Git commit", "Git reference"},

@@ -12,10 +12,9 @@ import (
 
 // createCmd represents the create command
 var createCmd = &cobra.Command{
-	Use:              "create",
-	Short:            "Deploy an application in an namespace.",
-	Long:             `Create and update deployment, service and ingress for simple k8s application.`,
-	TraverseChildren: true,
+	Use:   "create",
+	Short: "Deploy an application.",
+	Long:  `Create and update an application in a namespace.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config := viper.GetString("cConfig")
 		name := viper.GetString("cName")

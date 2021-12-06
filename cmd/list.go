@@ -13,8 +13,8 @@ import (
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List application of managed kratos deployment.",
-	Long:  `List application by namespace, or cluster wide of managed kratos deployment.`,
+	Short: "List applications.",
+	Long:  `List applications in namespace, or cluster wide.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		k, err := kratos.New("", viper.GetString("kubeconfig"))
 		if err != nil {

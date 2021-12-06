@@ -30,16 +30,17 @@ Usage:
   kratos [command]
 
 Available Commands:
-  create      Deploy an application in an namespace.
-  delete      Delete a deployment in a namespace.
-  get         Retreive a configuration of a kratos deployment.
+  create      Deploy an application.
+  delete      Delete an application.
+  get         Retreive a configuration of deployed application.
   help        Help about any command
   init        Create an empty configuration file.
-  list        List application of managed kratos deployment.
+  list        List applications.
+  version     Show version of kratos.
 
 Flags:
   -h, --help                help for kratos
-  -k, --kubeconfig string   kubernetes configuration file (default "/home/user/.kube/config")
+  -k, --kubeconfig string   kubernetes configuration file (default "/home/pgauthier/.kube/config")
 
 Use "kratos [command] --help" for more information about a command.
 ```

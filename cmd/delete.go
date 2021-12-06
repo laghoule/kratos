@@ -13,8 +13,8 @@ import (
 // deleteCmd represents the delete command
 var deleteCmd = &cobra.Command{
 	Use:   "delete",
-	Short: "Delete a deployment in a namespace.",
-	Long:  `Delete the deployment, service and ingress of the deployed application.`,
+	Short: "Delete an application.",
+	Long:  `Delete an application in a namespace.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		name := viper.GetString("dName")
 		namespace := viper.GetString("dNamespace")
