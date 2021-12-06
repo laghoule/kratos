@@ -173,6 +173,54 @@ func (i *Ingress) validateConfig(common *Common) error {
 	return nil
 }
 
+func (c *Configmaps) validateConfig(common *Common) error {
+	if c.Labels != nil {
+		if err := labelsValidation(c.Labels); err != nil {
+			return err
+		}
+	}
+
+	// common labels & annotations must be uniq
+	if common != nil {
+		if common.Labels != nil && c.Labels != nil {
+			if err := mapKeyUniq(common.Labels, c.Labels); err != nil {
+				return err
+			}
+		}
+		if common.Annotations != nil && c.Annotations != nil {
+			if err := mapKeyUniq(common.Annotations, c.Annotations); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (s *Secrets) validateConfig(common *Common) error {
+	if s.Labels != nil {
+		if err := labelsValidation(s.Labels); err != nil {
+			return err
+		}
+	}
+
+	// common labels & annotations must be uniq
+	if common != nil {
+		if common.Labels != nil && s.Labels != nil {
+			if err := mapKeyUniq(common.Labels, s.Labels); err != nil {
+				return err
+			}
+		}
+		if common.Annotations != nil && s.Annotations != nil {
+			if err := mapKeyUniq(common.Annotations, s.Annotations); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
 // validateResources validate that specified containter resources are valids
 func (c *Container) validateResources() error {
 	resources := map[string]string{}
