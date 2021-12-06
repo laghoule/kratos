@@ -35,16 +35,16 @@ jobs:
         uses: managedkaos/print-env@v1.0
       - uses: wangyoucao577/go-release-action@v1.22
         with:
-          github_token: ${{ secrets.KRATOS_TOKEN}}
+          github_token: ${{ secrets.KRATOS_TOKEN }}
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
-          goversion: "https://dl.google.com/go/go1.17.3.linux-amd64.tar.gz"
+          goversion: "https://dl.google.com/go/go1.17.4.linux-amd64.tar.gz"
           build_flags: -v
           ldflags: -X "github.com/laghoule/kratos/cmd.version=${{ env.VERSION }}" -X "github.com/laghoule/kratos/cmd.buildDate=${{ env.BUILD_DATE }}" -X "github.com/laghoule/kratos/cmd.gitCommit=${{ github.sha }}" -X "github.com/laghoule/kratos/cmd.gitRef=${{ github.ref }}"
           project_path: "."
           binary_name: "kratos"
           extra_files: LICENSE README.md
-          retry: 10
+          retry: 45
 
   docker:
     runs-on: ubuntu-latest
@@ -65,7 +65,7 @@ jobs:
           GIT_COMMIT: ${{ github.sha }}
           GIT_REF: ${{ github.ref }}
         with:
-          name: laghoule/kratos/kratos
+          name: laghoule/kratos
           username: ${{ github.actor }}
           password: ${{ secrets.KRATOS_TOKEN }}
           buildargs: VERSION, BUILD_DATE, GIT_COMMIT, GIT_REF
