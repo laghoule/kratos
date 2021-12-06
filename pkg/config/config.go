@@ -20,13 +20,13 @@ type Config struct {
 	*Ingress    `yaml:"ingress,omitempty" validate:"required_with=deployment"`
 }
 
-// Common object
+// Common represent the common fields
 type Common struct {
 	Labels      map[string]string `yaml:"labels,omitempty"`
 	Annotations map[string]string `yaml:"annotations,omitempty"`
 }
 
-// Deployment object
+// Deployment represent the Kubernetes deployment
 type Deployment struct {
 	Labels      map[string]string `yaml:"labels,omitempty"`
 	Annotations map[string]string `yaml:"annotations,omitempty"`
@@ -35,7 +35,7 @@ type Deployment struct {
 	Containers  []Container       `yaml:"containers" validate:"required,dive"`
 }
 
-// Container object
+// Container represent the Kubernetes container
 type Container struct {
 	Name      string     `yaml:"name" validate:"required,alphanum,lowercase"`
 	Image     string     `yaml:"image" validate:"required,ascii"`
@@ -43,19 +43,19 @@ type Container struct {
 	Resources *Resources `yaml:"resources,omitempty"`
 }
 
-// Resources objext
+// Resources represent requests and limits allocations
 type Resources struct {
 	Requests *ResourceType `yaml:"requests,omitempty"`
 	Limits   *ResourceType `yaml:"limits,omitempty"`
 }
 
-// ResourceType object
+// ResourceType represent CPU & Memory allocations
 type ResourceType struct {
 	CPU    string `yaml:"cpu,omitempty"`
 	Memory string `yaml:"memory,omitempty"`
 }
 
-// Ingress object
+// Ingress represent the Kubernetes ingress
 type Ingress struct {
 	Labels        map[string]string `yaml:"labels,omitempty"`
 	Annotations   map[string]string `yaml:"annotations,omitempty"`
@@ -64,13 +64,35 @@ type Ingress struct {
 	Hostnames     []string          `yaml:"hostnames" validate:"required,dive,hostname"`
 }
 
-// Cronjob object
+// Cronjob represent the Kubernetes cronjobs
 type Cronjob struct {
 	Labels      map[string]string `yaml:"labels,omitempty"`
 	Annotations map[string]string `yaml:"annotations,omitempty"`
 	Schedule    string            `yaml:"schedule" validate:"required"`
 	Retry       int32             `yaml:"retry,omitempty" validate:"gte=0,lte=100"`
 	Container   *Container        `yaml:"container" validate:"required"`
+}
+
+// Configmaps represent the Kubernetes configmaps
+type Configmaps struct {
+	Labels      map[string]string `yaml:"labels,omitempty"`
+	Annotations map[string]string `yaml:"annotations,omitempty"`
+	*File
+}
+
+// Secrets represent the Kubernetes secrets
+type Secrets struct {
+	Labels      map[string]string `yaml:"labels,omitempty"`
+	Annotations map[string]string `yaml:"annotations,omitempty"`
+	*File
+}
+
+// File contains secrets and configmaps informations
+type File struct {
+	Name       string   `yaml:"name" validate:"required"`
+	MountPath  string   `yaml:"mountPath" validate:"required, dir"`
+	Data       string   `yaml:"data" validate:"requires"`
+	Containers []string `yaml:"containers" validate:"required"`
 }
 
 // CreateInit return an sample config

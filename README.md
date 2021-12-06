@@ -1,17 +1,17 @@
 # Kratos
 
-## Yet another deployment tools
+## Yep another deployment tools
 
 Kratos is simple, but with simplicity come less flexibility, so if you want a full fledge deploying tools, this is propably not for you. But, if you have some simple container, maybe a nginx with your html5 website, this may be the perfect alternative to custom Kubernetes YAML, or the build of helm templates.
 
 ### Use case
 
-I was having a little html5 demo container that I wanted to host on my Kubernetes cluster. To deploy on the cluster I have 2 options at hand (ok, I haven't search for others options beside these two):
+I had a little html5 demo container that I wanted to host on my Kubernetes cluster. To deploy on my cluster I have 2 options at hand (ok, I haven't search for others options beside these two):
 
 * Helm template packaging
 * Kubernetes yaml files
 
-These solutions are not difficult (if you are familiar with Kubernetes), but time consuming.
+These solutions are not difficult (if you are familiar with Kubernetes), but time consuming (and yes boring).
 
 So Kratos is born from this use case.
 
