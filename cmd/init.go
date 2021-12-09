@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/laghoule/kratos/pkg/kratos"
 
 	"github.com/spf13/cobra"
@@ -17,11 +15,11 @@ var initCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		k, err := kratos.New("", viper.GetString("kubeconfig"))
 		if err != nil {
-			fmt.Printf(err.Error())
+			errorExit(err.Error())
 		}
 
 		if err := k.CreateInit(viper.GetString("initName")); err != nil {
-			fmt.Printf(err.Error())
+			errorExit(err.Error())
 		}
 	},
 }
