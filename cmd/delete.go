@@ -21,8 +21,7 @@ var deleteCmd = &cobra.Command{
 
 		k, err := kratos.New("", viper.GetString("kubeconfig"))
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			errorExit(err.Error())
 		}
 
 		if found, err := k.IsReleaseExist(name, namespace); !found && err == nil {
@@ -30,14 +29,12 @@ var deleteCmd = &cobra.Command{
 			os.Exit(1)
 		} else {
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				errorExit(err.Error())
 			}
 		}
 
 		if err := k.Delete(name, namespace); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			errorExit(err.Error())
 		}
 	},
 }

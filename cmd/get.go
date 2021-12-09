@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/laghoule/kratos/pkg/kratos"
 
@@ -22,23 +21,19 @@ var getCmd = &cobra.Command{
 
 		k, err := kratos.New("", viper.GetString("kubeconfig"))
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			errorExit(err.Error())
 		}
 
 		if found, err := k.IsReleaseExist(name, namespace); !found && err == nil {
-			fmt.Printf("%s don't exist\n", name)
-			os.Exit(1)
+			errorExit(fmt.Sprintf("%s don't exist\n", name))
 		} else {
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				errorExit(err.Error())
 			}
 		}
 
 		if err := k.SaveConfigToDisk(name, namespace, destination); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			errorExit(err.Error())
 		}
 
 		fmt.Printf("configuration saved at %s/%s", destination, name+kratos.YamlExt)

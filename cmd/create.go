@@ -1,9 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/laghoule/kratos/pkg/kratos"
 
 	"github.com/spf13/cobra"
@@ -22,18 +19,15 @@ var createCmd = &cobra.Command{
 
 		k, err := kratos.New(config, viper.GetString("kubeconfig"))
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			errorExit(err.Error())
 		}
 
 		if err := k.IsDependencyMeet(); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			errorExit(err.Error())
 		}
 
 		if err := k.Create(name, namespace); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			errorExit(err.Error())
 		}
 	},
 }

@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/laghoule/kratos/pkg/kratos"
 
@@ -18,13 +17,11 @@ var listCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		k, err := kratos.New("", viper.GetString("kubeconfig"))
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			fmt.Printf(err.Error())
 		}
 
 		if err := k.PrintList(viper.GetString("listNamespace")); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			fmt.Printf(err.Error())
 		}
 	},
 }

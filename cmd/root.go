@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
@@ -35,4 +37,9 @@ func init() {
 
 func initConfig() {
 	viper.AutomaticEnv()
+}
+
+func errorExit(err string) {
+	fmt.Println(err)
+	os.Exit(1)
 }
