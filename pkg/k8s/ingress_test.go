@@ -117,7 +117,7 @@ func TestCreateUpdateIngress(t *testing.T) {
 	assert.Equal(t, createIngress(), ing)
 
 	// update
-	conf.Ingress.Hostnames[0] = "www.example.com"
+	conf.Deployment.Ingress.Hostnames[0] = "www.example.com"
 	err = c.CreateUpdateIngress(name, namespace, conf)
 	if err != nil {
 		t.Error(err)
@@ -174,11 +174,6 @@ func TestDeleteIngress(t *testing.T) {
 // TestIsIngressClassExist test if an ingressClass exist
 func TestIsIngressClassExist(t *testing.T) {
 	c := new()
-	conf := &config.Config{
-		Ingress: &config.Ingress{},
-	}
-
-	conf.ClusterIssuer = clusterIssuer
 	class := createIngressClass()
 
 	_, err := c.Clientset.NetworkingV1().IngressClasses().Create(context.Background(), class, metav1.CreateOptions{})

@@ -64,6 +64,7 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 	containers := []corev1.Container{}
 
 	for _, container := range conf.Deployment.Containers {
+		// FIXME all container use the same ContainerPort
 		containers = append(containers, corev1.Container{
 			Name:  container.Name,
 			Image: container.Image + ":" + container.Tag,
@@ -109,7 +110,7 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 				},
 				Spec: corev1.PodSpec{
 					Containers: containers,
-					// TODO service account
+					// TODO add service account
 					ServiceAccountName: "",
 				},
 			},

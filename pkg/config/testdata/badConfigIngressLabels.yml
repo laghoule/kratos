@@ -5,11 +5,10 @@ deployment:
     - name: myapp
       image: myimage
       tag: latest
-
-ingress:
-  labels:
-    cloudflare dns: enabled
-  ingressClass: nginx
-  clusterIssuer: letsencrypt
-  hostnames:
-    - example.com
+  ingress:
+    labels:
+      cloudflare dns: enabled
+    ingressClass: nginx
+    clusterIssuer: letsencrypt
+    hostnames:
+      - example.com

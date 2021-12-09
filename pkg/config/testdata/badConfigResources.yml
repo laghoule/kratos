@@ -8,9 +8,8 @@ deployment:
       resources:
         requests:
           cpu: 25f
-
-ingress:
-  ingressClass: nginx
-  clusterIssuer: letsencrypt
-  hostnames:
-    - example.com
+  ingress:
+    ingressClass: nginx
+    clusterIssuer: letsencrypt
+    hostnames:
+      - example.com

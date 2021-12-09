@@ -67,13 +67,13 @@ func createDeploymentConf() *Config {
 					},
 				},
 			},
-		},
-		Ingress: &Ingress{
-			Labels:        ingLabels,
-			Annotations:   ingAnnotation,
-			IngressClass:  ingresClass,
-			ClusterIssuer: clusterIssuer,
-			Hostnames:     []string{hostname},
+			Ingress: &Ingress{
+				Labels:        ingLabels,
+				Annotations:   ingAnnotation,
+				IngressClass:  ingresClass,
+				ClusterIssuer: clusterIssuer,
+				Hostnames:     []string{hostname},
+			},
 		},
 	}
 }
@@ -90,11 +90,11 @@ func createDeploymentConfMinimal() *Config {
 					Tag:   tag,
 				},
 			},
-		},
-		Ingress: &Ingress{
-			IngressClass:  ingresClass,
-			ClusterIssuer: clusterIssuer,
-			Hostnames:     []string{hostname},
+			Ingress: &Ingress{
+				IngressClass:  ingresClass,
+				ClusterIssuer: clusterIssuer,
+				Hostnames:     []string{hostname},
+			},
 		},
 	}
 }

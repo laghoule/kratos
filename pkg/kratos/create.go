@@ -6,6 +6,8 @@ import (
 	"github.com/pterm/pterm"
 )
 
+// TODO add protection via kratos label
+
 // Create the deployment of all objects
 func (k *Kratos) Create(name, namespace string) error {
 	runWithError := false

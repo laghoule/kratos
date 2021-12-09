@@ -17,7 +17,6 @@ type Config struct {
 	*Common     `yaml:"common,omitempty"`
 	*Cronjob    `yaml:"cronjob,omitempty"`
 	*Deployment `yaml:"deployment,omitempty"`
-	*Ingress    `yaml:"ingress,omitempty" validate:"required_with=deployment"`
 }
 
 // Common represent the common fields
@@ -31,8 +30,9 @@ type Deployment struct {
 	Labels      map[string]string `yaml:"labels,omitempty"`
 	Annotations map[string]string `yaml:"annotations,omitempty"`
 	Replicas    int32             `yaml:"replicas,omitempty" validate:"required,gte=0,lte=100" `
-	Port        int32             `yaml:"port" validate:"required,gte=1,lte=65535"`
+	Port        int32             `yaml:"port" validate:"required,gte=1,lte=65535"` // FIXME should be in Container (in at least one)
 	Containers  []Container       `yaml:"containers" validate:"required,dive"`
+	Ingress     *Ingress          `yaml:"ingress" validate:"required,dive"`
 }
 
 // Container represent the Kubernetes container
@@ -132,6 +132,19 @@ func CreateInit() *Config {
 					},
 				},
 			},
+			Ingress: &Ingress{
+				Labels: map[string]string{
+					"label": "value",
+				},
+				Annotations: map[string]string{
+					"annotation": "value",
+				},
+				IngressClass:  "nginx",
+				ClusterIssuer: "letsencrypt",
+				Hostnames: []string{
+					"www.example.com",
+				},
+			},
 		},
 		Cronjob: &Cronjob{
 			Labels: map[string]string{
@@ -156,19 +169,6 @@ func CreateInit() *Config {
 						Memory: "64Mi",
 					},
 				},
-			},
-		},
-		Ingress: &Ingress{
-			Labels: map[string]string{
-				"label": "value",
-			},
-			Annotations: map[string]string{
-				"annotation": "value",
-			},
-			IngressClass:  "nginx",
-			ClusterIssuer: "letsencrypt",
-			Hostnames: []string{
-				"www.example.com",
 			},
 		},
 	}

@@ -7,9 +7,9 @@ deployment:
     - name: myapp
       image: myimage
       tag: latest
-ingress:
-  ingressClass: nginx
-  clusterIssuer: letsencrypt
-  hostnames:
-    - example.com
-    - www.example.com
+  ingress:
+    ingressClass: nginx
+    clusterIssuer: letsencrypt
+    hostnames:
+      - example.com
+      - www.example.com

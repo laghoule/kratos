@@ -37,11 +37,11 @@ func createConf() *config.Config {
 					},
 				},
 			},
-		},
-		Ingress: &config.Ingress{
-			IngressClass:  ingresClass,
-			ClusterIssuer: clusterIssuer,
-			Hostnames:     []string{hostname},
+			Ingress: &config.Ingress{
+				IngressClass:  ingresClass,
+				ClusterIssuer: clusterIssuer,
+				Hostnames:     []string{hostname},
+			},
 		},
 	}
 }

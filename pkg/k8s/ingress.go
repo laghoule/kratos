@@ -27,27 +27,27 @@ func (c *Client) CreateUpdateIngress(name, namespace string, conf *config.Config
 	}
 
 	// merge common & ingress labels
-	if err := mergo.Map(&conf.Ingress.Labels, conf.Common.Labels); err != nil {
+	if err := mergo.Map(&conf.Deployment.Ingress.Labels, conf.Common.Labels); err != nil {
 		return fmt.Errorf("merging ingress labels failed: %s", err)
 	}
 
 	// merge kratosLabels & ingress labels
-	if err := mergo.Map(&conf.Ingress.Labels, map[string]string(kratosLabel)); err != nil {
+	if err := mergo.Map(&conf.Deployment.Ingress.Labels, map[string]string(kratosLabel)); err != nil {
 		return fmt.Errorf("merging ingress labels failed: %s", err)
 	}
 
 	// merge common & ingress annotations
-	if err := mergo.Map(&conf.Ingress.Annotations, conf.Common.Annotations); err != nil {
+	if err := mergo.Map(&conf.Deployment.Ingress.Annotations, conf.Common.Annotations); err != nil {
 		return fmt.Errorf("merging ingress annotations failed: %s", err)
 	}
 
 	sslAnnotations := map[string]string{
-		clusterIssuerAnnotation: conf.ClusterIssuer,
+		clusterIssuerAnnotation: conf.Deployment.Ingress.ClusterIssuer,
 		sslRedirectAnnotation:   "true",
 	}
 
 	// merge ingress annotations & sslAnnotations
-	if err := mergo.Map(&conf.Ingress.Annotations, sslAnnotations); err != nil {
+	if err := mergo.Map(&conf.Deployment.Ingress.Annotations, sslAnnotations); err != nil {
 		return fmt.Errorf("merging ingress annotations failed: %s", err)
 	}
 
@@ -55,7 +55,7 @@ func (c *Client) CreateUpdateIngress(name, namespace string, conf *config.Config
 	ingressRules := []netv1.IngressRule{}
 	pathType := netv1.PathTypePrefix
 
-	for _, hostname := range conf.Hostnames {
+	for _, hostname := range conf.Deployment.Ingress.Hostnames {
 		ingressTLS = append(ingressTLS, netv1.IngressTLS{
 			Hosts:      []string{hostname},
 			SecretName: hostname + "-tls",
@@ -89,15 +89,15 @@ func (c *Client) CreateUpdateIngress(name, namespace string, conf *config.Config
 			Name:      name,
 			Namespace: namespace,
 			Labels: labels.Merge(
-				conf.Ingress.Labels,
+				conf.Deployment.Ingress.Labels,
 				labels.Set{
 					depLabelName: name,
 				},
 			),
-			Annotations: conf.Ingress.Annotations,
+			Annotations: conf.Deployment.Ingress.Annotations,
 		},
 		Spec: netv1.IngressSpec{
-			IngressClassName: &conf.IngressClass,
+			IngressClassName: &conf.Deployment.Ingress.IngressClass,
 			TLS:              ingressTLS,
 			Rules:            ingressRules,
 		},

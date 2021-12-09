@@ -39,12 +39,12 @@ deployment:
             limits:
                 cpu: 50m
                 memory: 64Mi
-ingress:
-    labels:
-        label: value
-    annotations:
-        annotation: value
-    ingressClass: nginx
-    clusterIssuer: letsencrypt
-    hostnames:
-        - www.example.com
+    ingress:
+        labels:
+            label: value
+        annotations:
+            annotation: value
+        ingressClass: nginx
+        clusterIssuer: letsencrypt
+        hostnames:
+            - www.example.com

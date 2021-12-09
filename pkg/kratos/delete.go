@@ -6,6 +6,8 @@ import (
 	"github.com/pterm/pterm"
 )
 
+// TODO add protection via kratos label
+
 // Delete all objects of the deployment
 func (k *Kratos) Delete(name, namespace string) error {
 	runWithError := false

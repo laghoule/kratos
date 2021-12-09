@@ -59,12 +59,6 @@ func (c *Config) validateConfig() error {
 		}
 	}
 
-	if c.Ingress != nil {
-		if err := c.Ingress.validateConfig(c.Common); err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 
@@ -104,6 +98,13 @@ func (d *Deployment) validateConfig(common *Common) error {
 	// containers resources
 	for _, container := range d.Containers {
 		if err := container.validateResources(); err != nil {
+			return err
+		}
+	}
+
+	// ingress
+	if d.Ingress != nil {
+		if err := d.Ingress.validateConfig(common); err != nil {
 			return err
 		}
 	}

@@ -50,20 +50,20 @@ func (k *Kratos) IsDependencyMeet() error {
 	}
 
 	// dependency for deployment
-	if k.Config.Deployment != nil{
+	if k.Config.Deployment != nil {
+		
 		// validate clusterIssuer
-		cm, err := certmanager.New(*k.Client)
-		if err != nil {
+		if cm, err := certmanager.New(*k.Client); err == nil {
+			if !cm.IsClusterIssuerExist(k.Client, k.Config.Deployment.Ingress.ClusterIssuer) {
+				return fmt.Errorf("clusterIssuer %s not found", k.Config.Deployment.Ingress.ClusterIssuer)
+			}
+		} else {
 			return err
 		}
 
-		if !cm.IsClusterIssuerExist(k.Client, k.Config.ClusterIssuer) {
-			return fmt.Errorf("clusterIssuer %s not found", k.Config.ClusterIssuer)
-		}
-
 		// validate ingressClass
-		if !k.Client.IsIngressClassExist(k.IngressClass) {
-			return fmt.Errorf("ingressClass %s not found", k.ClusterIssuer)
+		if !k.Client.IsIngressClassExist(k.Config.Deployment.Ingress.IngressClass) {
+			return fmt.Errorf("ingressClass %s not found", k.Config.Deployment.Ingress.ClusterIssuer)
 		}
 	}
 

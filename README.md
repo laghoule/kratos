@@ -40,7 +40,7 @@ Available Commands:
 
 Flags:
   -h, --help                help for kratos
-  -k, --kubeconfig string   kubernetes configuration file (default "/home/pgauthier/.kube/config")
+  -k, --kubeconfig string   kubernetes configuration file (default "/home/user/.kube/config")
 
 Use "kratos [command] --help" for more information about a command.
 ```
@@ -83,6 +83,11 @@ kratos create --name myapp --namespace mynamespace --config myappconfig.yaml
 | deployment.containers.resources.requests.memory | Request this amount of RAM | no |
 | deployment.containers.resources.limits.cpu | Max amount of CPU | no |
 | deployment.containers.resources.limites.memory | Max amount of RAM | no |
+| deployment.ingress.labels | Ingress labels | no |
+| deployment.ingress.annotations | Ingress annotations | no |
+| deployment.ingress.ingressClass | Name of the ingressClass to use | yes |
+| deployment.ingress.clusterIssuer | Name of the clusterIssuer to use | yes |
+| deployment.ingress.hostnames | List of hostnames associate with this deployment | yes |
 | cronjobs.labels | Cronjobs labels | no |
 | cronjobs.annotations | Cronjobs annotation | no |
 | cronjobs.schedule | Cronjobs schedule definition | yes |
@@ -101,19 +106,14 @@ kratos create --name myapp --namespace mynamespace --config myappconfig.yaml
 | configmaps.name | Name of the configmap | yes |
 | configmaps.mountPath | Path of the mount point in the pod | yes |
 | configmaps.data | Contents of the configmap | yes |
-| configmaps.containers | List of containers to expose the configmap | no |
+| configmaps.exposedTo | List of containers to expose the configmap | no |
 | secrets | List of secrets | no |
 | secrets.labels | Secrets labels | no |
 | secrets.annotation | Secrets annotations | no |
 | secrets.name | Name of the secret | yes |
 | secrets.mountPath | Path of the mount point in the pod | yes |
 | secrets.data | Contents of the secret | yes |
-| secrets.containers | List of containers to expose the secret | no |
-| ingress.labels | Ingress labels | no |
-| ingress.annotations | Ingress annotations | no |
-| ingress.ingressClass | Name of the ingressClass to use | yes |
-| ingress.clusterIssuer | Name of the clusterIssuer to use | yes |
-| ingress.hostnames | List of hostnames associate with this deployment | yes |
+| secrets.exposedTo | List of containers to expose the secret | no |
 
 ### Example of a full features configuration
 
@@ -138,6 +138,23 @@ deployment:
         limits:
           cpu: 50m
           memory: 64Mi
+    health:
+      live: # not yet implemented
+        probe: /isLive
+        initialDelaySeconds: 3
+        periodSeconds: 3
+      ready: # not yet implemented
+        probe: /isReady
+        initialDelaySeconds: 3
+        periodSeconds: 3
+  ingress:
+    labels: {}
+    annotations: {}
+    ingressClass: nginx
+    clusterIssuer: letsencrypt
+    hostnames:
+      - example.com
+      - www.example.com
 
 cronjob:
   labels: {}
@@ -156,36 +173,31 @@ cronjob:
         cpu: 50m
         memory: 64Mi
 
+# not yet implemented
 configmaps:
   labels: {}
   annotations: {}
   - name: configuration.yaml
-    mountPath: /etc/cfg
+    mount:
+      path: /etc/cfg
+      exposedTo:
+        - pacman
+        - myjobs
     data: |
       my configuration data
-    containers:
-      - pacman
-      - myjobs
 
+# not yet implemented
 secrets:
   labels: {}
   annotations: {}
   - name: credentials.yaml
-    mountPath: /etc/cfg
+    mount:
+      path: /etc/cfg
+      exposedTo:
+        - myjobs
     data: |
       usename: patate
       password: poil
-    containers:
-      - myjobs
-
-ingress:
-  labels: {}
-  annotations: {}
-  ingressClass: nginx
-  clusterIssuer: letsencrypt
-  hostnames:
-    - example.com
-    - www.example.com
 ```
 
 ### Example of a minimal configuration
@@ -200,13 +212,12 @@ deployment:
     - name: pacman
       image: laghoule/patate-poil
       tag: v1.0.1
-
-ingress:
-  ingressClass: nginx
-  clusterIssuer: letsencrypt
-  hostnames:
-    - example.com
-    - www.example.com
+  ingress:
+    ingressClass: nginx
+    clusterIssuer: letsencrypt
+    hostnames:
+      - example.com
+      - www.example.com
 ```
 
 #### Cronjobs

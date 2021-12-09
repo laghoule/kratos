@@ -22,13 +22,12 @@ deployment:
         limits:
           cpu: 50m
           memory: 64Mi
-
-ingress:
-  labels:
-    cloudflare: enabled
-  annotations:
-    hsts: true
-  ingressClass: nginx
-  clusterIssuer: letsencrypt
-  hostnames:
-    - example.com
+  ingress:
+    labels:
+      cloudflare: enabled
+    annotations:
+      hsts: true
+    ingressClass: nginx
+    clusterIssuer: letsencrypt
+    hostnames:
+      - example.com
