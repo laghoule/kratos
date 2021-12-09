@@ -16,8 +16,30 @@ import (
 	"github.com/jinzhu/copier"
 )
 
+// IsServiceSafeToUse check if it's safe to create, update or delete the service
+func (c *Client) isServiceSafeToUse(name, namespace string) error {
+	svc, err := c.Clientset.CoreV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return nil
+		} else {
+			return fmt.Errorf("getting service failed: %s", err)
+		}
+	}
+
+	if svc.Labels[depLabelName] == name {
+		return nil
+	}
+
+	return fmt.Errorf("service is not owned by kratos")
+}
+
 // CreateUpdateService create or update a service
 func (c *Client) CreateUpdateService(name, namespace string, conf *config.Config) error {
+	if err := c.isServiceSafeToUse(name, namespace); err != nil {
+		return err
+	}
+
 	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
 	if err != nil {
 		return nil
@@ -65,7 +87,7 @@ func (c *Client) CreateUpdateService(name, namespace string, conf *config.Config
 	return nil
 }
 
-// updateService update an existing service
+// updateService update an existing service. Used by CreateUpdateService.
 func (c *Client) updateService(name, namespace string, conf *config.Config) error {
 	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
 	if err != nil {
@@ -135,6 +157,10 @@ func (c *Client) updateService(name, namespace string, conf *config.Config) erro
 
 // DeleteService delete the specified service
 func (c *Client) DeleteService(name, namespace string) error {
+	if err := c.isServiceSafeToUse(name, namespace); err != nil {
+		return err
+	}
+
 	if err := c.Clientset.CoreV1().Services(namespace).Delete(context.Background(), name, metav1.DeleteOptions{}); err != nil {
 		return fmt.Errorf("delete service failed: %s", err)
 	}

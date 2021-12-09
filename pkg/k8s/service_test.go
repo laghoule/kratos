@@ -42,6 +42,31 @@ func createService() *corev1.Service {
 }
 
 // TestCreateUpdateDeployment test creation and update of a service
+func TestCreateUpdateServiceNotOwnedByKratos(t *testing.T) {
+	c := new()
+	conf := &config.Config{}
+
+	if err := conf.Load(deploymentConfig); err != nil {
+		t.Error(err)
+		return
+	}
+
+	extSvc := createService()
+	extSvc.Labels = nil
+
+	_, err := c.Clientset.CoreV1().Services(namespace).Create(context.Background(), extSvc, metav1.CreateOptions{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	// create && fail
+	if err := c.CreateUpdateService(name, namespace, conf); assert.Error(t, err) {
+		assert.Equal(t, err.Error(), "service is not owned by kratos")
+	}
+}
+
+// TestCreateUpdateDeployment test creation and update of a service
 func TestCreateUpdateService(t *testing.T) {
 	c := new()
 	conf := &config.Config{}
@@ -79,6 +104,30 @@ func TestCreateUpdateService(t *testing.T) {
 	}
 
 	assert.Equal(t, int32(443), svc.Spec.Ports[0].Port)
+}
+
+// TestDeleteService test delete of a service
+func TestDeleteServiceNotOwnedByKratos(t *testing.T) {
+	c := new()
+	conf := &config.Config{}
+
+	if err := conf.Load(deploymentConfig); err != nil {
+		t.Error(err)
+		return
+	}
+
+	extSvc := createService()
+	extSvc.Labels = nil
+
+	_, err := c.Clientset.CoreV1().Services(namespace).Create(context.Background(), extSvc, metav1.CreateOptions{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if err := c.DeleteService(name, namespace); assert.Error(t, err) {
+		assert.Equal(t, err.Error(), "service is not owned by kratos")
+	}
 }
 
 // TestDeleteService test delete of a service
