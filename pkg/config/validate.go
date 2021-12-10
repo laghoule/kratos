@@ -30,8 +30,7 @@ func mapKeyUniq(m1, m2 map[string]string) error {
 }
 
 func (c *Config) validateConfig() error {
-	validate := &validator.Validate{}
-	validate = validator.New()
+	validate := validator.New()
 
 	// validate config via struct yaml tag
 	if err := validate.Struct(c); err != nil {
