@@ -6,11 +6,18 @@ import (
 	"github.com/pterm/pterm"
 )
 
-// TODO add protection via kratos label
-
 // Create the deployment of all objects
 func (k *Kratos) Create(name, namespace string) error {
 	runWithError := false
+
+	// configuration is saved first
+	spinner, _ := pterm.DefaultSpinner.Start("saving configuration")
+	if err := k.saveConfigToSecret(name+configSuffix, namespace); err != nil {
+		spinner.Fail(err)
+		runWithError = true
+	} else {
+		spinner.Success()
+	}
 
 	// deployment
 	if k.Config.Deployment != nil {
@@ -50,15 +57,6 @@ func (k *Kratos) Create(name, namespace string) error {
 		} else {
 			spinner.Success()
 		}
-	}
-
-	// configuration
-	spinner, _ := pterm.DefaultSpinner.Start("saving configuration")
-	if err := k.saveConfigToSecret(name+configSuffix, namespace); err != nil {
-		spinner.Fail(err)
-		runWithError = true
-	} else {
-		spinner.Success()
 	}
 
 	if runWithError {
