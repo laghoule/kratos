@@ -12,7 +12,7 @@ import (
 // getCmd represents the get command
 var getCmd = &cobra.Command{
 	Use:   "get",
-	Short: "Retreive a configuration of deployed application.",
+	Short: "Retrieve a configuration of deployed application.",
 	Long:  `Download the saved configuration of a deployed application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		name := viper.GetString("gName")
