@@ -51,7 +51,7 @@ func (k *Kratos) IsDependencyMeet() error {
 
 	// dependency for deployment
 	if k.Config.Deployment != nil {
-		
+
 		// validate clusterIssuer
 		if cm, err := certmanager.New(*k.Client); err == nil {
 			if !cm.IsClusterIssuerExist(k.Client, k.Config.Deployment.Ingress.ClusterIssuer) {

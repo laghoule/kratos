@@ -24,7 +24,7 @@ const (
 	schedule         = "0 0 * * *"
 
 	deploymentConfig = "../config/testdata/deploymentConfig.yml"
-	cronjobConfig = "../config/testdata/cronjobConfig.yml"
+	cronjobConfig    = "../config/testdata/cronjobConfig.yml"
 )
 
 func new() *Client {
