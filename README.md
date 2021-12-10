@@ -1,5 +1,7 @@
 # Kratos
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/laghoule/kratos)](https://goreportcard.com/report/github.com/laghoule/kratos)
+
 ## Yep another deployment tools
 
 Kratos is simple, but with simplicity come less flexibility, so if you want a full fledge deploying tools, this is propably not for you. But, if you have some simple container, maybe a nginx with your html5 website, this may be the perfect alternative to custom Kubernetes YAML, or the build of helm templates.
@@ -14,6 +16,12 @@ I had a little html5 demo container that I wanted to host on my Kubernetes clust
 These solutions are not difficult (if you are familiar with Kubernetes), but time consuming (and yes boring).
 
 So Kratos is born from this use case.
+
+## Status
+
+Under heavy developpment, **use at your own risk**.
+
+Contribution are welcome.
 
 ## Prerequisite
 
