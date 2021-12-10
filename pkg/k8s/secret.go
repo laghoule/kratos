@@ -9,6 +9,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// TODO add isSecretSafeToUse for protection
+// TODO refactor CreateUpdateSecret to work as the other CreateUpdateObject
+// TODO add a CreateUpdateConfiguration, for storing kratos release configuration
+
 // CreateUpdateSecret a secret to namespace
 func (c *Client) CreateUpdateSecret(secret *corev1.Secret, namespace string) error {
 	_, err := c.Clientset.CoreV1().Secrets(namespace).Create(context.Background(), secret, metav1.CreateOptions{})
