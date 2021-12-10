@@ -15,6 +15,23 @@ import (
 	"github.com/imdario/mergo"
 )
 
+// isCronjobSafeToUse check if it's safe to create, update or delete the cronjob
+func (c *Client) isCronjobSafeToUse(name, namespace string) error {
+	svc, err := c.Clientset.BatchV1().CronJobs(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return nil
+		}
+		return fmt.Errorf("getting cronjob failed: %s", err)
+	}
+
+	if svc.Labels[cronLabelName] == name {
+		return nil
+	}
+
+	return fmt.Errorf("cronjob is not owned by kratos")
+}
+
 // ListCronjobs list cronjob
 func (c *Client) ListCronjobs(namespace string) ([]batchv1.CronJob, error) {
 	list, err := c.Clientset.BatchV1().CronJobs(namespace).List(context.Background(), metav1.ListOptions{
@@ -29,6 +46,10 @@ func (c *Client) ListCronjobs(namespace string) ([]batchv1.CronJob, error) {
 
 // CreateUpdateCronjob create or update a cronjobs
 func (c *Client) CreateUpdateCronjob(name, namespace string, conf *config.Config) error {
+	if err := c.isCronjobSafeToUse(name, namespace); err != nil {
+		return err
+	}
+
 	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
 	if err != nil {
 		return fmt.Errorf("converting label failed: %s", err)
@@ -127,6 +148,10 @@ func (c *Client) CreateUpdateCronjob(name, namespace string, conf *config.Config
 
 // DeleteCronjob delete the specified cronjobs
 func (c *Client) DeleteCronjob(name, namespace string) error {
+	if err := c.isCronjobSafeToUse(name, namespace); err != nil {
+		return err
+	}
+
 	if err := c.Clientset.BatchV1().CronJobs(namespace).Delete(context.Background(), name, metav1.DeleteOptions{}); err != nil {
 		return fmt.Errorf("deleting cronjobs failed: %s", err)
 	}

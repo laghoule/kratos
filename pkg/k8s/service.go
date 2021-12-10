@@ -22,9 +22,8 @@ func (c *Client) isServiceSafeToUse(name, namespace string) error {
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil
-		} else {
-			return fmt.Errorf("getting service failed: %s", err)
 		}
+		return fmt.Errorf("getting service failed: %s", err)
 	}
 
 	if svc.Labels[depLabelName] == name {

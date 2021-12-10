@@ -41,7 +41,7 @@ func createService() *corev1.Service {
 	}
 }
 
-// TestCreateUpdateDeployment test creation and update of a service
+// TestCreateUpdateServiceNotOwnedByKratos test update of a service not owned by kratos
 func TestCreateUpdateServiceNotOwnedByKratos(t *testing.T) {
 	c := new()
 	conf := &config.Config{}
@@ -106,7 +106,7 @@ func TestCreateUpdateService(t *testing.T) {
 	assert.Equal(t, int32(443), svc.Spec.Ports[0].Port)
 }
 
-// TestDeleteService test delete of a service
+// TestDeleteService test delete of a service not owned by kratos
 func TestDeleteServiceNotOwnedByKratos(t *testing.T) {
 	c := new()
 	conf := &config.Config{}

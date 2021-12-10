@@ -116,6 +116,10 @@ func TestListCronjobs(t *testing.T) {
 	assert.Len(t, list, 1)
 }
 
+func TestCreateUpdateCronjobNotOwnedByKratos(t *testing.T) {
+// TODO TestCreateUpdateNotOwnedByKratos
+}
+
 func TestCreateUpdateCronjob(t *testing.T) {
 	c := new()
 	conf := &config.Config{}
@@ -154,6 +158,10 @@ func TestCreateUpdateCronjob(t *testing.T) {
 
 	assert.Equal(t, result.Spec.JobTemplate.Spec.Template.Spec.Containers[0].Image, image+":"+tagV1)
 }
+
+func TestDeleteCronjobNotOwnedByKratos(t *testing.T) {
+	// TODO TestCreateUpdateNotOwnedByKratos
+	}
 
 func TestDeleteCronjob(t *testing.T) {
 	c := new()

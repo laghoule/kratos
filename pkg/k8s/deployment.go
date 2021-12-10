@@ -21,6 +21,23 @@ const (
 	resMemory = "memory"
 )
 
+// isDeploymentSafeToUse check if it's safe to create, update or delete the deployment
+func (c *Client) isDeploymentSafeToUse(name, namespace string) error {
+	svc, err := c.Clientset.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return nil
+		}
+		return fmt.Errorf("getting deployment failed: %s", err)
+	}
+
+	if svc.Labels[depLabelName] == name {
+		return nil
+	}
+
+	return fmt.Errorf("deployment is not owned by kratos")
+}
+
 // ListDeployments list deployments
 func (c *Client) ListDeployments(namespace string) ([]appsv1.Deployment, error) {
 	list, err := c.Clientset.AppsV1().Deployments(namespace).List(context.Background(), metav1.ListOptions{
@@ -35,6 +52,10 @@ func (c *Client) ListDeployments(namespace string) ([]appsv1.Deployment, error) 
 
 // CreateUpdateDeployment create or update a deployment
 func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Config) error {
+	if err := c.isDeploymentSafeToUse(name, namespace); err != nil {
+		return err
+	}
+
 	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
 	if err != nil {
 		return fmt.Errorf("converting label failed: %s", err)
@@ -134,6 +155,10 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 
 // DeleteDeployment delete the specified deployment
 func (c *Client) DeleteDeployment(name, namespace string) error {
+	if err := c.isDeploymentSafeToUse(name, namespace); err != nil {
+		return err
+	}
+
 	if err := c.Clientset.AppsV1().Deployments(namespace).Delete(context.Background(), name, metav1.DeleteOptions{}); err != nil {
 		return fmt.Errorf("deleting deployment failed: %s", err)
 	}

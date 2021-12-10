@@ -91,6 +91,11 @@ func createIngressClass() *netv1.IngressClass {
 	}
 }
 
+// TestCreateUpdateIngressNotOwnedByKratos test update of an ingress not owned by kratos
+func TestCreateUpdateIngressNotOwnedByKratos(t *testing.T) {
+	// TODO TestCreateUpdateIngressNotOwnedByKratos
+}
+
 // TestCreateUpdateIngress test the creation and update of an ingress
 func TestCreateUpdateIngress(t *testing.T) {
 	c := new()
@@ -131,6 +136,11 @@ func TestCreateUpdateIngress(t *testing.T) {
 	}
 
 	assert.Equal(t, "www.example.com", ing.Spec.Rules[0].Host)
+}
+
+// TestDeleteIngressNotOwnedByKratos test removing of ingress not owned by kratos
+func TestDeleteIngressNotOwnedByKratos(t *testing.T) {
+	// TODO TestDeleteIngressNotOwnedByKratos
 }
 
 // TestDeleteIngress test removing of ingress

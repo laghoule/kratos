@@ -19,8 +19,29 @@ const (
 	sslRedirectAnnotation   = "nginx.ingress.kubernetes.io/ssl-redirect"
 )
 
+// isIngressSafeToUse check if it's safe to create, update or delete the ingress
+func (c *Client) isIngressSafeToUse(name, namespace string) error {
+	svc, err := c.Clientset.NetworkingV1().Ingresses(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return nil
+		}
+		return fmt.Errorf("getting ingress failed: %s", err)
+	}
+
+	if svc.Labels[depLabelName] == name {
+		return nil
+	}
+
+	return fmt.Errorf("ingress is not owned by kratos")
+}
+
 // CreateUpdateIngress create or update an ingress
 func (c *Client) CreateUpdateIngress(name, namespace string, conf *config.Config) error {
+	if err := c.isIngressSafeToUse(name, namespace); err != nil {
+		return err
+	}
+
 	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
 	if err != nil {
 		return nil
@@ -120,6 +141,10 @@ func (c *Client) CreateUpdateIngress(name, namespace string, conf *config.Config
 
 // DeleteIngress delete specified ingress
 func (c *Client) DeleteIngress(name, namespace string) error {
+	if err := c.isIngressSafeToUse(name, namespace); err != nil {
+		return err
+	}
+
 	err := c.Clientset.NetworkingV1().Ingresses(namespace).Delete(context.Background(), name, metav1.DeleteOptions{})
 	if err != nil {
 		return fmt.Errorf("deleting ingress failed: %s", err)
