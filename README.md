@@ -1,6 +1,7 @@
 # Kratos
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/laghoule/kratos)](https://goreportcard.com/report/github.com/laghoule/kratos)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=laghoule_kratos&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=laghoule_kratos)
 
 ## Yep another deployment tools
 
