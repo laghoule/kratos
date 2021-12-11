@@ -117,7 +117,7 @@ func TestListCronjobs(t *testing.T) {
 }
 
 func TestCreateUpdateCronjobNotOwnedByKratos(t *testing.T) {
-// TODO TestCreateUpdateNotOwnedByKratos
+	// TODO TestCreateUpdateNotOwnedByKratos
 }
 
 func TestCreateUpdateCronjob(t *testing.T) {
@@ -161,7 +161,7 @@ func TestCreateUpdateCronjob(t *testing.T) {
 
 func TestDeleteCronjobNotOwnedByKratos(t *testing.T) {
 	// TODO TestCreateUpdateNotOwnedByKratos
-	}
+}
 
 func TestDeleteCronjob(t *testing.T) {
 	c := new()
