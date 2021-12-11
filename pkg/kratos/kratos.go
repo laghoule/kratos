@@ -35,8 +35,6 @@ func New(conf, kubeconfig string) (*Kratos, error) {
 
 // IsDependencyMeet check if all dependency are met
 func (k *Kratos) IsDependencyMeet() error {
-	var err error
-
 	// check if we meet k8s version requirement
 	if err := k.CheckVersionDepency(); err != nil {
 		return err
@@ -45,14 +43,13 @@ func (k *Kratos) IsDependencyMeet() error {
 	// dependency for deployment
 	if k.Config.Deployment != nil {
 
-		cm := &certmanager.Certmanager{}
-		if cm, err = certmanager.New(*k.Client); err != nil {
-			return err
-		}
-
 		// validate clusterIssuer
-		if err := cm.IsClusterIssuerExist(k.Client, k.Config.Deployment.Ingress.ClusterIssuer); err != nil {
+		if cm, err := certmanager.New(*k.Client); err != nil {
 			return err
+		} else {
+			if err := cm.IsClusterIssuerExist(k.Client, k.Config.Deployment.Ingress.ClusterIssuer); err != nil {
+				return err
+			}
 		}
 
 		// validate ingressClass
