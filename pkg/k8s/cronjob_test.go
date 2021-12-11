@@ -117,7 +117,21 @@ func TestListCronjobs(t *testing.T) {
 }
 
 func TestCreateUpdateCronjobNotOwnedByKratos(t *testing.T) {
-	// TODO TestCreateUpdateNotOwnedByKratos
+	c := new()
+	conf := &config.Config{}
+
+	cron := createCronjobs()
+	cron.Labels = nil
+
+	_, err := c.Clientset.BatchV1().CronJobs(namespace).Create(context.Background(), cron, metav1.CreateOptions{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if err := c.CreateUpdateCronjob(name, namespace, conf); assert.Error(t, err) {
+		assert.Equal(t, err.Error(), "cronjob is not owned by kratos")
+	}
 }
 
 func TestCreateUpdateCronjob(t *testing.T) {
@@ -160,7 +174,20 @@ func TestCreateUpdateCronjob(t *testing.T) {
 }
 
 func TestDeleteCronjobNotOwnedByKratos(t *testing.T) {
-	// TODO TestCreateUpdateNotOwnedByKratos
+	c := new()
+
+	cron := createCronjobs()
+	cron.Labels = nil
+
+	_, err := c.Clientset.BatchV1().CronJobs(namespace).Create(context.Background(), cron, metav1.CreateOptions{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if err := c.DeleteCronjob(name, namespace); assert.Error(t, err) {
+		assert.Equal(t, err.Error(), "cronjob is not owned by kratos")
+	}
 }
 
 func TestDeleteCronjob(t *testing.T) {

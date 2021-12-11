@@ -116,6 +116,25 @@ func TestListDeployment(t *testing.T) {
 	assert.NotEmpty(t, list)
 }
 
+// TestCreateUpdateDeploymentNotOwnedByKratos test update of deployment not owned by kratos
+func TestCreateUpdateDeploymentNotOwnedByKratos(t *testing.T) {
+	c := new()
+	conf := &config.Config{}
+
+	dep := createDeployment()
+	dep.Labels = nil
+
+	_, err := c.Clientset.AppsV1().Deployments(namespace).Create(context.Background(), dep, metav1.CreateOptions{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if err := c.CreateUpdateDeployment(name, namespace, conf); assert.Error(t, err) {
+		assert.Equal(t, err.Error(), "deployment is not owned by kratos")
+	}
+}
+
 // TestCreateUpdateDeployment test creation of deployment
 func TestCreateUpdateDeployment(t *testing.T) {
 	c := new()
@@ -154,6 +173,24 @@ func TestCreateUpdateDeployment(t *testing.T) {
 	}
 
 	assert.Equal(t, image+":"+tagV1, dep.Spec.Template.Spec.Containers[0].Image)
+}
+
+// TestDeleteDeploymentNotOwnedByKratos test delete of deployment not owned by kratos
+func TestDeleteDeploymentNotOwnedByKratos(t *testing.T) {
+	c := new()
+
+	dep := createDeployment()
+	dep.Labels = nil
+
+	_, err := c.Clientset.AppsV1().Deployments(namespace).Create(context.Background(), dep, metav1.CreateOptions{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if err := c.DeleteDeployment(name, namespace); assert.Error(t, err) {
+		assert.Equal(t, err.Error(), "deployment is not owned by kratos")
+	}
 }
 
 // TestDeleteDeployment test delete of deployment
