@@ -135,7 +135,7 @@ func (c *Cronjob) validateConfig(common *Common) error {
 
 	// cronjob schedule validation
 	// TODO better validation, probably check how k8s handle this
-	re := regexp.MustCompile("(((\\d+,)+\\d+|(\\d+(\\/|-)\\d+)|\\d+|\\*) ?){5,7}")
+	re := regexp.MustCompile(`(((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*) ?){5,7}`)
 	if !re.MatchString(c.Schedule) {
 		return fmt.Errorf("cronjob schedule isn't valid")
 	}
@@ -165,54 +165,6 @@ func (i *Ingress) validateConfig(common *Common) error {
 		}
 		if common.Annotations != nil && i.Annotations != nil {
 			if err := mapKeyUniq(common.Annotations, i.Annotations); err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
-
-func (c *Configmaps) validateConfig(common *Common) error {
-	if c.Labels != nil {
-		if err := labelsValidation(c.Labels); err != nil {
-			return err
-		}
-	}
-
-	// common labels & annotations must be uniq
-	if common != nil {
-		if common.Labels != nil && c.Labels != nil {
-			if err := mapKeyUniq(common.Labels, c.Labels); err != nil {
-				return err
-			}
-		}
-		if common.Annotations != nil && c.Annotations != nil {
-			if err := mapKeyUniq(common.Annotations, c.Annotations); err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
-
-func (s *Secrets) validateConfig(common *Common) error {
-	if s.Labels != nil {
-		if err := labelsValidation(s.Labels); err != nil {
-			return err
-		}
-	}
-
-	// common labels & annotations must be uniq
-	if common != nil {
-		if common.Labels != nil && s.Labels != nil {
-			if err := mapKeyUniq(common.Labels, s.Labels); err != nil {
-				return err
-			}
-		}
-		if common.Annotations != nil && s.Annotations != nil {
-			if err := mapKeyUniq(common.Annotations, s.Annotations); err != nil {
 				return err
 			}
 		}
