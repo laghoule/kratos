@@ -8,13 +8,6 @@ import (
 	"github.com/laghoule/kratos/pkg/k8s"
 )
 
-// Kratosphere is the kratos interface
-type Kratosphere interface {
-	List(namespace string) error
-	Create(name, namespace, image, tag, ingresClass, clusterIssuer string, hostnames []string, replicas, port int32) error
-	Delete(name, namespace string)
-}
-
 // Kratos contains info for deployment
 type Kratos struct {
 	*k8s.Client
