@@ -1,8 +1,6 @@
 package kratos
 
 import (
-	"fmt"
-
 	"github.com/laghoule/kratos/pkg/certmanager"
 	"github.com/laghoule/kratos/pkg/config"
 	"github.com/laghoule/kratos/pkg/k8s"
@@ -58,8 +56,8 @@ func (k *Kratos) IsDependencyMeet() error {
 		}
 
 		// validate ingressClass
-		if !k.Client.IsIngressClassExist(k.Config.Deployment.Ingress.IngressClass) {
-			return fmt.Errorf("ingressClass %s not found", k.Config.Deployment.Ingress.ClusterIssuer)
+		if err := k.Client.IsIngressClassExist(k.Config.Deployment.Ingress.IngressClass); err != nil {
+			return err
 		}
 	}
 

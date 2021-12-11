@@ -200,7 +200,6 @@ func TestIsIngressClassExist(t *testing.T) {
 
 	assert.Len(t, list.Items, 1)
 
-	found := c.IsIngressClassExist(name)
-
-	assert.True(t, found)
+	err = c.IsIngressClassExist(name)
+	assert.NoError(t, err)
 }

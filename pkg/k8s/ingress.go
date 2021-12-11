@@ -149,14 +149,16 @@ func (c *Client) DeleteIngress(name, namespace string) error {
 	if err != nil {
 		return fmt.Errorf("deleting ingress failed: %s", err)
 	}
+
 	return nil
 }
 
 // IsIngressClassExist check if an ingress class object exist
-func (c *Client) IsIngressClassExist(name string) bool {
+func (c *Client) IsIngressClassExist(name string) error {
 	_, err := c.Clientset.NetworkingV1().IngressClasses().Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
-		return false
+		return fmt.Errorf("ingressClass %s not found", name)
 	}
-	return true
+
+	return nil
 }
