@@ -30,7 +30,7 @@ type Deployment struct {
 	Labels      map[string]string `yaml:"labels,omitempty"`
 	Annotations map[string]string `yaml:"annotations,omitempty"`
 	Replicas    int32             `yaml:"replicas,omitempty" validate:"required,gte=0,lte=100" `
-	Port        int32             `yaml:"port" validate:"required,gte=1,lte=65535"` // FIXME should be in Container (in at least one)
+	Port        int32             `yaml:"port" validate:"required,gte=1,lte=65535"`
 	Containers  []Container       `yaml:"containers" validate:"required,dive"`
 	Ingress     *Ingress          `yaml:"ingress" validate:"required,dive"`
 }
@@ -41,6 +41,20 @@ type Container struct {
 	Image     string     `yaml:"image" validate:"required,ascii"`
 	Tag       string     `yaml:"tag" validate:"required,ascii"`
 	Resources *Resources `yaml:"resources,omitempty"`
+	Health    *Health    `yaml:"health,omitempty"`
+}
+
+// Health represent the healthcheck for the container
+type Health struct {
+	Live  *Check `yaml:"live,omitempty"`
+	Ready *Check `yaml:"ready,omitempty"`
+}
+
+// Check represent the information about the healthcheck
+type Check struct {
+	Probe               string `yaml:"probe" validate:"required,uri"`
+	InitialDelaySeconds int32  `yaml:"initialDelaySeconds,omitempty" validate:"gte=1,lte=600"`
+	PeriodSeconds       int32  `yaml:"periodSeconds,omitempty" validate:"gte=1,lte=600"`
 }
 
 // Resources represent requests and limits allocations
