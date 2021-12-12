@@ -38,9 +38,6 @@ func (c *Container) FormatProbe(healthType string) *corev1.Probe {
 			}
 
 			return probe
-
-		} else {
-			return nil
 		}
 
 	// readyness
@@ -69,14 +66,13 @@ func (c *Container) FormatProbe(healthType string) *corev1.Probe {
 			}
 
 			return probe
-
-		} else {
-			return nil
 		}
 
 	default:
 		return nil
 	}
+
+	return nil
 }
 
 // FormatResources format the resource of the container to return a corev1.ResourceRequirements
