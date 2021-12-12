@@ -92,6 +92,17 @@ kratos create --name myapp --namespace mynamespace --config myappconfig.yaml
 | deployment.containers.resources.requests.memory | Request this amount of RAM | no |
 | deployment.containers.resources.limits.cpu | Max amount of CPU | no |
 | deployment.containers.resources.limites.memory | Max amount of RAM | no |
+| deployment.containers.health | Healthcheck configuration for the container | no |
+| deployment.containers.health.live | Liveness check | no |
+| deployment.containers.health.live.probe | URI to use for the check | yes |
+| deployment.containers.health.live.port | Port of the container | yes |
+| deployment.containers.health.live.initialDelaySeconds | Delay the check for x seconds at startup | no |
+| deployment.containers.health.live.periodSeconds | Time between check in second | no |
+| deployment.containers.health.ready | Readyness check | no |
+| deployment.containers.health.ready.probe | URI to use for the check | yes |
+| deployment.containers.health.ready.port |  Port of the container | yes |
+| deployment.containers.health.ready.initialDelaySeconds | Delay the check for x seconds at startup | no |
+| deployment.containers.health.ready.periodSeconds | Time between check in second| no |
 | deployment.ingress.labels | Ingress labels | no |
 | deployment.ingress.annotations | Ingress annotations | no |
 | deployment.ingress.ingressClass | Name of the ingressClass to use | yes |
@@ -147,15 +158,15 @@ deployment:
         limits:
           cpu: 50m
           memory: 64Mi
-    health:
-      live:
-        probe: /isLive
-        initialDelaySeconds: 3
-        periodSeconds: 3
-      ready:
-        probe: /isReady
-        initialDelaySeconds: 3
-        periodSeconds: 3
+      health:
+        live:
+          probe: /isLive
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        ready:
+          probe: /isReady
+          initialDelaySeconds: 3
+          periodSeconds: 3
   ingress:
     labels: {}
     annotations: {}
