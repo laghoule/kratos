@@ -94,10 +94,12 @@ func (d *Deployment) validateConfig(common *Common) error {
 		}
 	}
 
-	// containers resources
+	// containers
 	for _, container := range d.Containers {
-		if err := container.validateResources(); err != nil {
-			return err
+		if container.Resources != nil {
+			if err := container.Resources.validateConfig(container.Name); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -140,9 +142,10 @@ func (c *Cronjob) validateConfig(common *Common) error {
 		return fmt.Errorf("cronjob schedule isn't valid")
 	}
 
-	// container resources
-	if err := c.Container.validateResources(); err != nil {
-		return err
+	if c.Container.Resources != nil {
+		if err := c.Container.Resources.validateConfig(c.Container.Name); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -173,30 +176,26 @@ func (i *Ingress) validateConfig(common *Common) error {
 	return nil
 }
 
-// validateResources validate that specified containter resources are valids
-func (c *Container) validateResources() error {
-	resources := map[string]string{}
-
-	if c.Resources != nil {
-		if c.Resources.Requests != nil {
-			resources["requests cpu"] = c.Resources.Requests.CPU
-			resources["requests memory"] = c.Resources.Requests.Memory
+func (r *Resources) validateConfig(container string) error {
+	if r.Requests != nil {
+		if err := r.Requests.validateConfig(container, "requests"); err != nil {
+			return err
 		}
-
-		if c.Resources.Limits != nil {
-			resources["limits cpu"] = c.Resources.Limits.CPU
-			resources["limits memory"] = c.Resources.Limits.Memory
+	}
+	if r.Limits != nil {
+		if err := r.Limits.validateConfig(container, "limits"); err != nil {
+			return err
 		}
+	}
+	return nil
+}
 
-		for rsName, rsValue := range resources {
-			if rsValue == "" {
-				continue
-			}
-
-			if _, err := resource.ParseQuantity(rsValue); err != nil {
-				return fmt.Errorf("validation of configuration resources failed: %s\ncontainer: %s -> %s: %s", err, c.Name, rsName, rsValue)
-			}
-		}
+func (r *ResourceType) validateConfig(container, rType string) error {
+	if _, err := resource.ParseQuantity(r.CPU); err != nil {
+		return fmt.Errorf("validation of configuration resources failed: %s\ncontainer: %s -> %s cpu: %s", err, container, rType, r.CPU)
+	}
+	if _, err := resource.ParseQuantity(r.Memory); err != nil {
+		return fmt.Errorf("validation of configuration resources failed: %s\ncontainer: %s -> %s memory: %s", err, container, rType, r.Memory)
 	}
 
 	return nil

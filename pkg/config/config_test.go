@@ -31,6 +31,9 @@ const (
 	schedule            = "0 0 * * *"
 	retry         int32 = 3
 	environment         = "dev"
+	period        int32 = 3
+	liveProbe           = "/isLive"
+	readyProbe          = "/isReady"
 )
 
 func createDeploymentConf() *Config {
@@ -63,6 +66,20 @@ func createDeploymentConf() *Config {
 						Limits: &ResourceType{
 							CPU:    "50m",
 							Memory: "64Mi",
+						},
+					},
+					Health: &Health{
+						Live: &Check{
+							Probe:               liveProbe,
+							Port:                80,
+							InitialDelaySeconds: period,
+							PeriodSeconds:       period,
+						},
+						Ready: &Check{
+							Probe:               readyProbe,
+							Port:                80,
+							InitialDelaySeconds: period,
+							PeriodSeconds:       period,
 						},
 					},
 				},

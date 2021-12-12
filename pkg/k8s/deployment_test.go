@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 func createDeployment() *appsv1.Deployment {
@@ -71,6 +72,32 @@ func createDeployment() *appsv1.Deployment {
 									corev1.ResourceCPU:    resource.MustParse("50m"),
 									corev1.ResourceMemory: resource.MustParse("64Mi"),
 								},
+							},
+							LivenessProbe: &corev1.Probe{
+								ProbeHandler: corev1.ProbeHandler{
+									HTTPGet: &corev1.HTTPGetAction{
+										Path: "/isLive",
+										Port: intstr.IntOrString{
+											Type:   intstr.Int,
+											IntVal: 80,
+										},
+									},
+								},
+								InitialDelaySeconds: 3,
+								PeriodSeconds:       3,
+							},
+							ReadinessProbe: &corev1.Probe{
+								ProbeHandler: corev1.ProbeHandler{
+									HTTPGet: &corev1.HTTPGetAction{
+										Path: "/isReady",
+										Port: intstr.IntOrString{
+											Type:   intstr.Int,
+											IntVal: 80,
+										},
+									},
+								},
+								InitialDelaySeconds: 3,
+								PeriodSeconds:       3,
 							},
 						},
 					},

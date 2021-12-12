@@ -10,6 +10,8 @@ import (
 const (
 	// DeployLabel is a managed-by k8s label for kratos
 	DeployLabel = "app.kubernetes.io/managed-by=kratos"
+	LiveProbe   = "live"
+	ReadyProbe  = "ready"
 )
 
 // Config of kratos
@@ -53,8 +55,9 @@ type Health struct {
 // Check represent the information about the healthcheck
 type Check struct {
 	Probe               string `yaml:"probe" validate:"required,uri"`
-	InitialDelaySeconds int32  `yaml:"initialDelaySeconds,omitempty" validate:"gte=1,lte=600"`
-	PeriodSeconds       int32  `yaml:"periodSeconds,omitempty" validate:"gte=1,lte=600"`
+	Port                int32  `yaml:"port" validate:"required,gte=1,lte=65535"`
+	InitialDelaySeconds int32  `yaml:"initialDelaySeconds,omitempty" validate:"omitempty,gte=1,lte=600"`
+	PeriodSeconds       int32  `yaml:"periodSeconds,omitempty" validate:"omitempty,gte=1,lte=600"`
 }
 
 // Resources represent requests and limits allocations
@@ -83,7 +86,7 @@ type Cronjob struct {
 	Labels      map[string]string `yaml:"labels,omitempty"`
 	Annotations map[string]string `yaml:"annotations,omitempty"`
 	Schedule    string            `yaml:"schedule" validate:"required"`
-	Retry       int32             `yaml:"retry,omitempty" validate:"gte=0,lte=100"`
+	Retry       int32             `yaml:"retry,omitempty" validate:"omitempty,gte=0,lte=100"`
 	Container   *Container        `yaml:"container" validate:"required"`
 }
 
@@ -142,6 +145,20 @@ func CreateInit() *Config {
 						Limits: &ResourceType{
 							CPU:    "50m",
 							Memory: "64Mi",
+						},
+					},
+					Health: &Health{
+						Live: &Check{
+							Probe:               "/isLive",
+							Port:                8080,
+							InitialDelaySeconds: 10,
+							PeriodSeconds:       5,
+						},
+						Ready: &Check{
+							Probe:               "/isReady",
+							Port:                8080,
+							InitialDelaySeconds: 5,
+							PeriodSeconds:       5,
 						},
 					},
 				},

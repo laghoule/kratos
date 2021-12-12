@@ -148,11 +148,11 @@ deployment:
           cpu: 50m
           memory: 64Mi
     health:
-      live: # not yet implemented
+      live:
         probe: /isLive
         initialDelaySeconds: 3
         periodSeconds: 3
-      ready: # not yet implemented
+      ready:
         probe: /isReady
         initialDelaySeconds: 3
         periodSeconds: 3

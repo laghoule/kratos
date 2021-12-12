@@ -39,6 +39,17 @@ deployment:
             limits:
                 cpu: 50m
                 memory: 64Mi
+          health:
+            live:
+                probe: /isLive
+                port: 8080
+                initialDelaySeconds: 10
+                periodSeconds: 5
+            ready:
+                probe: /isReady
+                port: 8080
+                initialDelaySeconds: 5
+                periodSeconds: 5
     ingress:
         labels:
             label: value

@@ -121,7 +121,7 @@ func (c *Client) CreateUpdateCronjob(name, namespace string, conf *config.Config
 								{
 									Name:      conf.Cronjob.Container.Name,
 									Image:     conf.Cronjob.Container.Image + ":" + conf.Cronjob.Container.Tag,
-									Resources: formatResources(conf.Cronjob.Container),
+									Resources: conf.Cronjob.Container.FormatResources(),
 								},
 							},
 						},

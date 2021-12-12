@@ -35,6 +35,20 @@ func createConf() *config.Config {
 						Requests: &config.ResourceType{},
 						Limits:   &config.ResourceType{},
 					},
+					Health: &config.Health{
+						Live: &config.Check{
+							Probe:               "/isLive",
+							Port:                80,
+							InitialDelaySeconds: 10,
+							PeriodSeconds:       5,
+						},
+						Ready: &config.Check{
+							Probe:               "/isReady",
+							Port:                80,
+							InitialDelaySeconds: 5,
+							PeriodSeconds:       5,
+						},
+					},
 				},
 			},
 			Ingress: &config.Ingress{

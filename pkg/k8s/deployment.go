@@ -16,11 +16,6 @@ import (
 	"github.com/jinzhu/copier"
 )
 
-const (
-	resCPU    = "cpu"
-	resMemory = "memory"
-)
-
 // isDeploymentSafeToUse check if it's safe to create, update or delete the deployment
 func (c *Client) isDeploymentSafeToUse(name, namespace string) error {
 	svc, err := c.Clientset.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
@@ -94,7 +89,9 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 					ContainerPort: conf.Deployment.Port,
 				},
 			},
-			Resources: formatResources(&container),
+			Resources:      container.FormatResources(),
+			LivenessProbe:  container.FormatProbe(config.LiveProbe),
+			ReadinessProbe: container.FormatProbe(config.ReadyProbe),
 		})
 	}
 
