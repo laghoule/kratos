@@ -32,8 +32,8 @@ const (
 	retry         int32 = 3
 	environment         = "dev"
 	period        int32 = 3
-	liveProbe           = "/isLive"
-	readyProbe          = "/isReady"
+	livePath            = "/isLive"
+	readyPath           = "/isReady"
 )
 
 func createDeploymentConf() *Config {
@@ -70,14 +70,14 @@ func createDeploymentConf() *Config {
 					},
 					Health: &Health{
 						Live: &Check{
-							Probe:               liveProbe,
-							Port:                80,
+							Probe:               livePath,
+							Port:                port,
 							InitialDelaySeconds: period,
 							PeriodSeconds:       period,
 						},
 						Ready: &Check{
-							Probe:               readyProbe,
-							Port:                80,
+							Probe:               readyPath,
+							Port:                port,
 							InitialDelaySeconds: period,
 							PeriodSeconds:       period,
 						},

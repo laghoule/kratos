@@ -6,6 +6,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/intstr"
+
+	"github.com/pterm/pterm"
 )
 
 // FormatProbe format the container healthcheck to return a *corev1.Probe
@@ -69,7 +71,7 @@ func (c *Container) FormatProbe(healthType string) *corev1.Probe {
 		}
 
 	default:
-		return nil
+		pterm.Warning.Printf("health type %s not valid", healthType)
 	}
 
 	return nil
