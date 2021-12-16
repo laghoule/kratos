@@ -16,6 +16,10 @@ import (
 	"github.com/jinzhu/copier"
 )
 
+const (
+	automountServiceAccount bool = false
+)
+
 // isDeploymentSafeToUse check if it's safe to create, update or delete the deployment
 func (c *Client) isDeploymentSafeToUse(name, namespace string) error {
 	svc, err := c.Clientset.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
@@ -95,6 +99,7 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 		})
 	}
 
+	automount := automountServiceAccount
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        name,
@@ -128,8 +133,8 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 				},
 				Spec: corev1.PodSpec{
 					Containers: containers,
-					// TODO add service account
-					ServiceAccountName: "",
+					// kratos should not be use to deploy app who need access au K8S API
+					AutomountServiceAccountToken: &automount,
 				},
 			},
 		},

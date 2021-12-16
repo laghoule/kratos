@@ -17,6 +17,7 @@ import (
 
 func createDeployment() *appsv1.Deployment {
 	var replicas int32 = 1
+	automount := automountServiceAccount
 	depLabels := map[string]string{
 		kratosLabelName: kratosLabelValue,
 		depLabelName:    name,
@@ -101,6 +102,7 @@ func createDeployment() *appsv1.Deployment {
 							},
 						},
 					},
+					AutomountServiceAccountToken: &automount,
 				},
 			},
 		},
