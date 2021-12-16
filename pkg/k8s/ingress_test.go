@@ -93,7 +93,21 @@ func createIngressClass() *netv1.IngressClass {
 
 // TestCreateUpdateIngressNotOwnedByKratos test update of an ingress not owned by kratos
 func TestCreateUpdateIngressNotOwnedByKratos(t *testing.T) {
-	// TODO TestCreateUpdateIngressNotOwnedByKratos
+	c := new()
+	conf := &config.Config{}
+
+	ing := createIngress()
+	ing.Labels = nil
+
+	_, err := c.Clientset.NetworkingV1().Ingresses(namespace).Create(context.Background(), ing, metav1.CreateOptions{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if err := c.CreateUpdateIngress(name, namespace, conf); assert.Error(t, err) {
+		assert.Equal(t, err.Error(), "ingress is not owned by kratos")
+	}
 }
 
 // TestCreateUpdateIngress test the creation and update of an ingress
@@ -140,7 +154,21 @@ func TestCreateUpdateIngress(t *testing.T) {
 
 // TestDeleteIngressNotOwnedByKratos test removing of ingress not owned by kratos
 func TestDeleteIngressNotOwnedByKratos(t *testing.T) {
-	// TODO TestDeleteIngressNotOwnedByKratos
+	c := new()
+	conf := &config.Config{}
+
+	ing := createIngress()
+	ing.Labels = nil
+
+	_, err := c.Clientset.NetworkingV1().Ingresses(namespace).Create(context.Background(), ing, metav1.CreateOptions{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if err := c.CreateUpdateIngress(name, namespace, conf); assert.Error(t, err) {
+		assert.Equal(t, err.Error(), "ingress is not owned by kratos")
+	}
 }
 
 // TestDeleteIngress test removing of ingress
