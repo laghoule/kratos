@@ -20,8 +20,8 @@ const (
 	automountServiceAccount bool = false
 )
 
-// isDeploymentSafeToUse check if it's safe to create, update or delete the deployment
-func (c *Client) isDeploymentSafeToUse(name, namespace string) error {
+// checkDeploymentOwnership check if it's safe to create, update or delete the deployment
+func (c *Client) checkDeploymentOwnership(name, namespace string) error {
 	svc, err := c.Clientset.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -51,7 +51,7 @@ func (c *Client) ListDeployments(namespace string) ([]appsv1.Deployment, error) 
 
 // CreateUpdateDeployment create or update a deployment
 func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Config) error {
-	if err := c.isDeploymentSafeToUse(name, namespace); err != nil {
+	if err := c.checkDeploymentOwnership(name, namespace); err != nil {
 		return err
 	}
 
@@ -157,7 +157,7 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 
 // DeleteDeployment delete the specified deployment
 func (c *Client) DeleteDeployment(name, namespace string) error {
-	if err := c.isDeploymentSafeToUse(name, namespace); err != nil {
+	if err := c.checkDeploymentOwnership(name, namespace); err != nil {
 		return err
 	}
 

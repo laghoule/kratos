@@ -15,8 +15,8 @@ import (
 	"github.com/imdario/mergo"
 )
 
-// isCronjobSafeToUse check if it's safe to create, update or delete the cronjob
-func (c *Client) isCronjobSafeToUse(name, namespace string) error {
+// checkCronjobOwnership check if it's safe to create, update or delete the cronjob
+func (c *Client) checkCronjobOwnership(name, namespace string) error {
 	svc, err := c.Clientset.BatchV1().CronJobs(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -46,7 +46,7 @@ func (c *Client) ListCronjobs(namespace string) ([]batchv1.CronJob, error) {
 
 // CreateUpdateCronjob create or update a cronjobs
 func (c *Client) CreateUpdateCronjob(name, namespace string, conf *config.Config) error {
-	if err := c.isCronjobSafeToUse(name, namespace); err != nil {
+	if err := c.checkCronjobOwnership(name, namespace); err != nil {
 		return err
 	}
 
@@ -148,7 +148,7 @@ func (c *Client) CreateUpdateCronjob(name, namespace string, conf *config.Config
 
 // DeleteCronjob delete the specified cronjobs
 func (c *Client) DeleteCronjob(name, namespace string) error {
-	if err := c.isCronjobSafeToUse(name, namespace); err != nil {
+	if err := c.checkCronjobOwnership(name, namespace); err != nil {
 		return err
 	}
 

@@ -16,8 +16,8 @@ import (
 	"github.com/jinzhu/copier"
 )
 
-// IsServiceSafeToUse check if it's safe to create, update or delete the service
-func (c *Client) isServiceSafeToUse(name, namespace string) error {
+// checkServiceOwnership check if it's safe to create, update or delete the service
+func (c *Client) checkServiceOwnership(name, namespace string) error {
 	svc, err := c.Clientset.CoreV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -35,7 +35,7 @@ func (c *Client) isServiceSafeToUse(name, namespace string) error {
 
 // CreateUpdateService create or update a service
 func (c *Client) CreateUpdateService(name, namespace string, conf *config.Config) error {
-	if err := c.isServiceSafeToUse(name, namespace); err != nil {
+	if err := c.checkServiceOwnership(name, namespace); err != nil {
 		return err
 	}
 
@@ -156,7 +156,7 @@ func (c *Client) updateService(name, namespace string, conf *config.Config) erro
 
 // DeleteService delete the specified service
 func (c *Client) DeleteService(name, namespace string) error {
-	if err := c.isServiceSafeToUse(name, namespace); err != nil {
+	if err := c.checkServiceOwnership(name, namespace); err != nil {
 		return err
 	}
 
