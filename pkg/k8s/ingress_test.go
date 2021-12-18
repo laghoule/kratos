@@ -8,7 +8,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	netv1 "k8s.io/api/networking/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -91,16 +90,23 @@ func createIngressClass() *netv1.IngressClass {
 	}
 }
 
+func createNotKratosIngress(c *Client) error {
+	ing := createIngress()
+	ing.Labels = nil
+
+	if _, err := c.Clientset.NetworkingV1().Ingresses(namespace).Create(context.Background(), ing, metav1.CreateOptions{}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // TestCreateUpdateIngressNotOwnedByKratos test update of an ingress not owned by kratos
 func TestCreateUpdateIngressNotOwnedByKratos(t *testing.T) {
 	c := new()
 	conf := &config.Config{}
 
-	ing := createIngress()
-	ing.Labels = nil
-
-	_, err := c.Clientset.NetworkingV1().Ingresses(namespace).Create(context.Background(), ing, metav1.CreateOptions{})
-	if err != nil {
+	if err := createNotKratosIngress(c); err != nil {
 		t.Error(err)
 		return
 	}
@@ -121,8 +127,7 @@ func TestCreateUpdateIngress(t *testing.T) {
 	}
 
 	// create
-	err := c.CreateUpdateIngress(name, namespace, conf)
-	if err != nil {
+	if err := c.CreateUpdateIngress(name, namespace, conf); err != nil {
 		t.Error(err)
 		return
 	}
@@ -137,8 +142,7 @@ func TestCreateUpdateIngress(t *testing.T) {
 
 	// update
 	conf.Deployment.Ingress.Hostnames[0] = "www.example.com"
-	err = c.CreateUpdateIngress(name, namespace, conf)
-	if err != nil {
+	if err = c.CreateUpdateIngress(name, namespace, conf); err != nil {
 		t.Error(err)
 		return
 	}
@@ -157,11 +161,7 @@ func TestDeleteIngressNotOwnedByKratos(t *testing.T) {
 	c := new()
 	conf := &config.Config{}
 
-	ing := createIngress()
-	ing.Labels = nil
-
-	_, err := c.Clientset.NetworkingV1().Ingresses(namespace).Create(context.Background(), ing, metav1.CreateOptions{})
-	if err != nil {
+	if err := createNotKratosIngress(c); err != nil {
 		t.Error(err)
 		return
 	}
@@ -181,8 +181,7 @@ func TestDeleteIngress(t *testing.T) {
 		return
 	}
 
-	err := c.CreateUpdateIngress(name, namespace, conf)
-	if err != nil {
+	if err := c.CreateUpdateIngress(name, namespace, conf); err != nil {
 		t.Error(err)
 		return
 	}
@@ -200,13 +199,13 @@ func TestDeleteIngress(t *testing.T) {
 		return
 	}
 
-	_, err = c.Clientset.NetworkingV1().Ingresses(namespace).Get(context.Background(), name, metav1.GetOptions{})
-	if err != nil && !errors.IsNotFound(err) {
+	list, err := c.Clientset.NetworkingV1().Ingresses(namespace).List(context.Background(), metav1.ListOptions{})
+	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	assert.True(t, errors.IsNotFound(err))
+	assert.Empty(t, list)
 }
 
 // TestIsIngressClassExist test if an ingressClass exist
@@ -214,20 +213,11 @@ func TestIsIngressClassExist(t *testing.T) {
 	c := new()
 	class := createIngressClass()
 
-	_, err := c.Clientset.NetworkingV1().IngressClasses().Create(context.Background(), class, metav1.CreateOptions{})
-	if err != nil {
+	if _, err := c.Clientset.NetworkingV1().IngressClasses().Create(context.Background(), class, metav1.CreateOptions{}); err != nil {
 		t.Error(err)
 		return
 	}
 
-	list, err := c.Clientset.NetworkingV1().IngressClasses().List(context.Background(), metav1.ListOptions{})
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	assert.Len(t, list.Items, 1)
-
-	err = c.IsIngressClassExist(name)
+	err := c.IsIngressClassExist(name)
 	assert.NoError(t, err)
 }
