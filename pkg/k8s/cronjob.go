@@ -25,7 +25,7 @@ func (c *Client) checkCronjobOwnership(name, namespace string) error {
 		return fmt.Errorf("getting cronjob failed: %s", err)
 	}
 
-	if svc.Labels[cronLabelName] == name {
+	if svc.Labels[CronLabelName] == name {
 		return nil
 	}
 
@@ -81,7 +81,7 @@ func (c *Client) CreateUpdateCronjob(name, namespace string, conf *config.Config
 			Labels: labels.Merge(
 				conf.Cronjob.Labels,
 				labels.Set{
-					cronLabelName: name,
+					CronLabelName: name,
 				},
 			),
 			Annotations: conf.Cronjob.Annotations,
@@ -96,7 +96,7 @@ func (c *Client) CreateUpdateCronjob(name, namespace string, conf *config.Config
 					Labels: labels.Merge(
 						conf.Cronjob.Labels,
 						labels.Set{
-							cronLabelName: name,
+							CronLabelName: name,
 						},
 					),
 					Annotations: conf.Cronjob.Annotations,
@@ -110,7 +110,7 @@ func (c *Client) CreateUpdateCronjob(name, namespace string, conf *config.Config
 							Labels: labels.Merge(
 								conf.Cronjob.Labels,
 								labels.Set{
-									cronLabelName: name,
+									CronLabelName: name,
 								},
 							),
 							Annotations: conf.Cronjob.Annotations,

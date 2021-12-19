@@ -58,6 +58,12 @@ func (c *Config) validateConfig() error {
 		}
 	}
 
+	if c.Secrets != nil {
+		if err := c.Secrets.validateConfig(c.Common); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -151,7 +157,7 @@ func (c *Cronjob) validateConfig(common *Common) error {
 	return nil
 }
 
-// validateConfig validate ingress config
+// validateConfig validate ingress labels & annotations
 func (i *Ingress) validateConfig(common *Common) error {
 	if i.Labels != nil {
 		if err := labelsValidation(i.Labels); err != nil {
@@ -176,6 +182,7 @@ func (i *Ingress) validateConfig(common *Common) error {
 	return nil
 }
 
+// validateConfig validate resources requests and limits
 func (r *Resources) validateConfig(container string) error {
 	if r.Requests != nil {
 		if err := r.Requests.validateConfig(container, "requests"); err != nil {
@@ -190,12 +197,38 @@ func (r *Resources) validateConfig(container string) error {
 	return nil
 }
 
+// validateConfig validate CPU & Memory resources
 func (r *ResourceType) validateConfig(container, rType string) error {
 	if _, err := resource.ParseQuantity(r.CPU); err != nil {
 		return fmt.Errorf("validation of configuration resources failed: %s\ncontainer: %s -> %s cpu: %s", err, container, rType, r.CPU)
 	}
 	if _, err := resource.ParseQuantity(r.Memory); err != nil {
 		return fmt.Errorf("validation of configuration resources failed: %s\ncontainer: %s -> %s memory: %s", err, container, rType, r.Memory)
+	}
+
+	return nil
+}
+
+// validateConfig validate secrets labels & annotations
+func (s *Secrets) validateConfig(common *Common) error {
+	if s.Labels != nil {
+		if err := labelsValidation(s.Labels); err != nil {
+			return err
+		}
+	}
+
+	// common labels & annotations must be uniq
+	if common != nil {
+		if common.Labels != nil && s.Labels != nil {
+			if err := mapKeyUniq(common.Labels, s.Labels); err != nil {
+				return err
+			}
+		}
+		if common.Annotations != nil && s.Annotations != nil {
+			if err := mapKeyUniq(common.Annotations, s.Annotations); err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil

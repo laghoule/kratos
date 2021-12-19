@@ -3,6 +3,8 @@ package kratos
 import (
 	"fmt"
 
+	"github.com/laghoule/kratos/pkg/config"
+
 	"github.com/pterm/pterm"
 )
 
@@ -16,11 +18,11 @@ func (k *Kratos) Delete(name, namespace string) error {
 	}
 
 	conf := ""
-	if _, ok := secret.Data[configKey]; ok {
-		conf = string(secret.Data[configKey])
+	if _, ok := secret.Data[config.ConfigKey]; ok {
+		conf = string(secret.Data[config.ConfigKey])
 	} else {
-		if _, ok := secret.StringData[configKey]; ok {
-			conf = secret.StringData[configKey]
+		if _, ok := secret.StringData[config.ConfigKey]; ok {
+			conf = secret.StringData[config.ConfigKey]
 		} else {
 			return fmt.Errorf("getting config data from secret failed")
 		}

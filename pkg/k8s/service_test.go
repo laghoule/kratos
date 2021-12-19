@@ -21,7 +21,7 @@ func createService() *corev1.Service {
 			Namespace: namespace,
 			Labels: map[string]string{
 				kratosLabelName: kratosLabelValue,
-				depLabelName:    name,
+				DepLabelName:    name,
 			},
 		},
 		Spec: corev1.ServiceSpec{
@@ -35,7 +35,7 @@ func createService() *corev1.Service {
 				},
 			},
 			Selector: map[string]string{
-				depLabelName: name,
+				DepLabelName: name,
 			},
 		},
 	}

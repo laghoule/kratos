@@ -8,12 +8,15 @@ import (
 )
 
 const (
+	// TODO: Change to ManageLabel
 	// DeployLabel is a managed-by k8s label for kratos
 	DeployLabel = "app.kubernetes.io/managed-by=kratos"
 	// LiveProbe represent the live config keyword
 	LiveProbe = "live"
 	// ReadyProbe represent the ready config keyword
 	ReadyProbe = "ready"
+	// Key of the secret for the configuration of the release
+	ConfigKey = "config"
 )
 
 // Config of kratos
@@ -21,6 +24,7 @@ type Config struct {
 	*Common     `yaml:"common,omitempty"`
 	*Cronjob    `yaml:"cronjob,omitempty"`
 	*Deployment `yaml:"deployment,omitempty"`
+	*Secrets    `yaml:"secrets,omitempty"`
 }
 
 // Common represent the common fields
@@ -96,22 +100,27 @@ type Cronjob struct {
 type Configmaps struct {
 	Labels      map[string]string `yaml:"labels,omitempty"`
 	Annotations map[string]string `yaml:"annotations,omitempty"`
-	*File
+	*File       `yaml:"files" validate:"required,dive"`
 }
 
 // Secrets represent the Kubernetes secrets
 type Secrets struct {
 	Labels      map[string]string `yaml:"labels,omitempty"`
 	Annotations map[string]string `yaml:"annotations,omitempty"`
-	*File
+	Files       []File            `yaml:"files" validate:"required,dive"`
 }
 
 // File contains secrets and configmaps informations
 type File struct {
-	Name       string   `yaml:"name" validate:"required"`
-	MountPath  string   `yaml:"mountPath" validate:"required, dir"`
-	Data       string   `yaml:"data" validate:"requires"`
-	Containers []string `yaml:"containers" validate:"required"`
+	Name  string `yaml:"name" validate:"required"`
+	Data  string `yaml:"data" validate:"required"`
+	Mount `yaml:"mount" validate:"required,dive"`
+}
+
+// Mount contains the information how to exposed the secrets
+type Mount struct {
+	Path      string   `yaml:"path" validate:"required"` // TODO: Add directory validation
+	ExposedTo []string `yaml:"exposedTo" validate:"required"`
 }
 
 // CreateInit return an sample config
@@ -200,6 +209,26 @@ func CreateInit() *Config {
 					Limits: &ResourceType{
 						CPU:    "50m",
 						Memory: "64Mi",
+					},
+				},
+			},
+		},
+		Secrets: &Secrets{
+			Labels: map[string]string{
+				"label": "value",
+			},
+			Annotations: map[string]string{
+				"annotation": "value",
+			},
+			Files: []File{
+				{
+					Name: "secret.yaml",
+					Data: "my secret data",
+					Mount: Mount{
+						Path: "/etc/cfg",
+						ExposedTo: []string{
+							"example",
+						},
 					},
 				},
 			},

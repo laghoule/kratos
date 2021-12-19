@@ -59,3 +59,15 @@ deployment:
         clusterIssuer: letsencrypt
         hostnames:
             - www.example.com
+secrets:
+    labels:
+        label: value
+    annotations:
+        annotation: value
+    files:
+        - name: secret.yaml
+          data: my secret data
+          mount:
+            path: /etc/cfg
+            exposedTo:
+                - example

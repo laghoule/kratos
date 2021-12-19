@@ -22,7 +22,7 @@ func createCronjobs() *batchv1.CronJob {
 			Namespace: namespace,
 			Labels: map[string]string{
 				kratosLabelName: kratosLabelValue,
-				cronLabelName:   name,
+				CronLabelName:   name,
 				"environment":   environment,
 				"type":          "long",
 			},
@@ -40,7 +40,7 @@ func createCronjobs() *batchv1.CronJob {
 					Namespace: namespace,
 					Labels: map[string]string{
 						kratosLabelName: kratosLabelValue,
-						cronLabelName:   name,
+						CronLabelName:   name,
 						"environment":   environment,
 						"type":          "long",
 					},
@@ -56,7 +56,7 @@ func createCronjobs() *batchv1.CronJob {
 							Namespace: namespace,
 							Labels: map[string]string{
 								kratosLabelName: kratosLabelValue,
-								cronLabelName:   name,
+								CronLabelName:   name,
 								"environment":   environment,
 								"type":          "long",
 							},

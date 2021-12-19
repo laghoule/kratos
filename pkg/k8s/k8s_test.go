@@ -25,6 +25,8 @@ const (
 
 	deploymentConfig = "../config/testdata/deploymentConfig.yml"
 	cronjobConfig    = "../config/testdata/cronjobConfig.yml"
+	secretConfig     = "../config/testdata/secretsConfig.yml"
+	secretData       = "my secret data"
 )
 
 func new() *Client {

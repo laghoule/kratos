@@ -29,7 +29,7 @@ func (c *Client) checkIngressOwnership(name, namespace string) error {
 		return fmt.Errorf("getting ingress failed: %s", err)
 	}
 
-	if svc.Labels[depLabelName] == name {
+	if svc.Labels[DepLabelName] == name {
 		return nil
 	}
 
@@ -112,7 +112,7 @@ func (c *Client) CreateUpdateIngress(name, namespace string, conf *config.Config
 			Labels: labels.Merge(
 				conf.Deployment.Ingress.Labels,
 				labels.Set{
-					depLabelName: name,
+					DepLabelName: name,
 				},
 			),
 			Annotations: conf.Deployment.Ingress.Annotations,

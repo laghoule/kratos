@@ -26,57 +26,73 @@ func createSecret() *corev1.Secret {
 			Labels: labels.Merge(
 				kratosLabel,
 				labels.Set{
-					depLabelName: name,
+					"app":           name,
+					"environment":   environment,
+					SecretLabelName: name,
 				}),
+			Annotations: map[string]string{
+				"branch": environment,
+			},
 		},
 		StringData: map[string]string{
-			"mykey": "my secret data",
+			config.ConfigKey: "my secret data",
 		},
 		Type: "Opaque",
 	}
 }
 
+func createK8SSecret(c *Client, conf *config.Config) error {
+	if err := conf.Load(secretConfig); err != nil {
+		return err
+	}
+
+	if err := c.CreateUpdateSecret(name, namespace, config.ConfigKey, secretData, conf); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // TestCreateUpdateSecret test the creation and update of a secret
 func TestCreateUpdateSecret(t *testing.T) {
 	c := new()
-	s := createSecret()
+	conf := &config.Config{}
 
-	// create
-	if err := c.CreateUpdateSecret(s, namespace); err != nil {
+	if err := createK8SSecret(c, conf); err != nil {
 		t.Error(err)
 		return
 	}
 
-	secret, err := c.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), s.Name, metav1.GetOptions{})
+	secret, err := c.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	assert.Equal(t, s, secret)
+	expected := createSecret()
+	assert.Equal(t, expected, secret)
 
 	// update
-	secret.StringData["mykey"] = "my updated secret data"
-	if err := c.CreateUpdateSecret(secret, namespace); err != nil {
+	expected.StringData[config.ConfigKey] = "my updated secret data"
+	if err := c.CreateUpdateSecret(name, namespace, config.ConfigKey, secretData, conf); err != nil {
 		t.Error(err)
 		return
 	}
 
-	secret, err = c.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), s.Name, metav1.GetOptions{})
-	if err != nil {
+	if _, err = c.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), name, metav1.GetOptions{}); err != nil {
 		t.Error(err)
 		return
 	}
 
-	assert.Equal(t, "my updated secret data", secret.StringData["mykey"])
+	assert.Equal(t, "my updated secret data", expected.StringData[config.ConfigKey])
 }
 
 // TestDeleteSecret test delete of a secret
 func TestDeleteSecret(t *testing.T) {
 	c := new()
-	s := createSecret()
+	conf := &config.Config{}
 
-	if err := c.CreateUpdateSecret(s, namespace); err != nil {
+	if err := createK8SSecret(c, conf); err != nil {
 		t.Error(err)
 		return
 	}
@@ -89,7 +105,7 @@ func TestDeleteSecret(t *testing.T) {
 
 	assert.Len(t, list.Items, 1)
 
-	if err := c.DeleteSecret(s.Name, namespace); err != nil {
+	if err := c.DeleteSecret(name, namespace); err != nil {
 		t.Error(err)
 		return
 	}
@@ -108,18 +124,10 @@ func TestGetSecret(t *testing.T) {
 	c := new()
 	s := createSecret()
 
-	if err := c.CreateUpdateSecret(s, namespace); err != nil {
+	if _, err := c.Clientset.CoreV1().Secrets(namespace).Create(context.Background(), s, metav1.CreateOptions{}); err != nil {
 		t.Error(err)
 		return
 	}
-
-	list, err := c.Clientset.CoreV1().Secrets(namespace).List(context.Background(), metav1.ListOptions{})
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	assert.Len(t, list.Items, 1)
 
 	secret, err := c.GetSecret(name, namespace)
 	if err != nil {

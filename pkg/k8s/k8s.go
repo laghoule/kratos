@@ -17,9 +17,12 @@ type Client struct {
 }
 
 const (
-	depLabelName       = "kratos/deployment"
-	cronLabelName      = "kratos/cronjob"
-	requiredK8SVersion = "v1.19.0"
+	// TODO: Theses labels are not very useful, propably remove them in future
+	DepLabelName        = "kratos/deployment"
+	CronLabelName       = "kratos/cronjob"
+	SecretLabelName     = "kratos/secret"
+	ConfigmapsLabelName = "kratos/configmaps"
+	requiredK8SVersion  = "v1.19.0"
 )
 
 // New return a a Client

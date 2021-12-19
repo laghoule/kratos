@@ -7,10 +7,12 @@ import (
 	"testing"
 
 	"github.com/laghoule/kratos/pkg/config"
+	"github.com/laghoule/kratos/pkg/k8s"
 
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v3"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 func createConf() *config.Config {
@@ -60,17 +62,37 @@ func createConf() *config.Config {
 	}
 }
 
+// createSecret return a secret object
+func createSecret() *corev1.Secret {
+	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
+	if err != nil {
+		return nil
+	}
+
+	return &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name + configSuffix,
+			Namespace: namespace,
+			Labels: labels.Merge(
+				kratosLabel,
+				labels.Set{
+					"app":               name,
+					k8s.SecretLabelName: name + configSuffix,
+				}),
+			Annotations: map[string]string{
+				"branch": "dev",
+			},
+		},
+		StringData: map[string]string{
+			config.ConfigKey: "common:\n    labels:\n        app: myapp\n    annotations:\n        branch: dev\ndeployment:\n    replicas: 1\n    port: 80\n    containers:\n        - name: myapp\n          image: myimage\n          tag: latest\n          resources:\n            requests: {}\n            limits: {}\n          health:\n            live:\n                probe: /isLive\n                port: 80\n                initialDelaySeconds: 10\n                periodSeconds: 5\n            ready:\n                probe: /isReady\n                port: 80\n                initialDelaySeconds: 5\n                periodSeconds: 5\n    ingress:\n        ingressClass: nginx\n        clusterIssuer: letsencrypt\n        hostnames:\n            - example.com\n",
+		},
+		Type: "Opaque",
+	}
+}
+
 func TestSaveConfigFile(t *testing.T) {
 	k := new()
 	k.Config = createConf()
-
-	b, err := yaml.Marshal(k.Config)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	expected := k.createConfigSecret(name+configSuffix, namespace, string(b))
 
 	if err := k.saveConfigToSecret(name+configSuffix, namespace); err != nil {
 		t.Error(err)
@@ -83,6 +105,7 @@ func TestSaveConfigFile(t *testing.T) {
 		return
 	}
 
+	expected := createSecret()
 	assert.Equal(t, expected, result)
 }
 
@@ -121,10 +144,4 @@ func TestSaveConfigFileToDisk(t *testing.T) {
 	}
 
 	assert.Equal(t, string(expected), string(result))
-}
-
-func TestCreateSecretString(t *testing.T) {
-	k := new()
-	s := k.createConfigSecret(name, namespace, configString)
-	assert.Equal(t, configString, s.StringData[configKey])
 }

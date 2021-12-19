@@ -30,7 +30,7 @@ func (c *Client) checkDeploymentOwnership(name, namespace string) error {
 		return fmt.Errorf("getting deployment failed: %s", err)
 	}
 
-	if svc.Labels[depLabelName] == name {
+	if svc.Labels[DepLabelName] == name {
 		return nil
 	}
 
@@ -108,7 +108,7 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 			Labels: labels.Merge(
 				conf.Deployment.Labels,
 				labels.Set{
-					depLabelName: name,
+					DepLabelName: name,
 				},
 			),
 		},
@@ -116,7 +116,7 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 			Replicas: &conf.Replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					depLabelName: name,
+					DepLabelName: name,
 				},
 			},
 			Template: corev1.PodTemplateSpec{
@@ -127,7 +127,7 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 					Labels: labels.Merge(
 						podLabels,
 						labels.Set{
-							depLabelName: name,
+							DepLabelName: name,
 						},
 					),
 				},

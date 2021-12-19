@@ -58,7 +58,7 @@ func createIngress() *netv1.Ingress {
 			Namespace: namespace,
 			Labels: map[string]string{
 				kratosLabelName: kratosLabelValue,
-				depLabelName:    name,
+				DepLabelName:    name,
 				"cloudflare":    "enabled",
 				"environment":   "dev",
 			},

@@ -26,7 +26,7 @@ func (c *Client) checkServiceOwnership(name, namespace string) error {
 		return fmt.Errorf("getting service failed: %s", err)
 	}
 
-	if svc.Labels[depLabelName] == name {
+	if svc.Labels[DepLabelName] == name {
 		return nil
 	}
 
@@ -51,7 +51,7 @@ func (c *Client) CreateUpdateService(name, namespace string, conf *config.Config
 			Labels: labels.Merge(
 				kratosLabel,
 				labels.Set{
-					depLabelName: name,
+					DepLabelName: name,
 				},
 			),
 		},
@@ -66,7 +66,7 @@ func (c *Client) CreateUpdateService(name, namespace string, conf *config.Config
 				},
 			},
 			Selector: map[string]string{
-				depLabelName: name,
+				DepLabelName: name,
 			},
 		},
 	}
@@ -123,7 +123,7 @@ func (c *Client) updateService(name, namespace string, conf *config.Config) erro
 			Labels: labels.Merge(
 				svcLabels,
 				labels.Set{
-					depLabelName: name,
+					DepLabelName: name,
 				},
 			),
 			Annotations:     conf.Common.Annotations,
@@ -141,7 +141,7 @@ func (c *Client) updateService(name, namespace string, conf *config.Config) erro
 				},
 			},
 			Selector: map[string]string{
-				depLabelName: name,
+				DepLabelName: name,
 			},
 		},
 	}

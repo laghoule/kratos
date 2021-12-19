@@ -4,13 +4,15 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/laghoule/kratos/pkg/config"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-)
+	"k8s.io/apimachinery/pkg/labels"
 
-// TODO: refactor CreateUpdateSecret to work as the other CreateUpdateObject
-// TODO: add a CreateUpdateConfiguration, for storing kratos release configuration
+	"github.com/imdario/mergo"
+)
 
 // checkSecretOwnership check if it's safe to create, update or delete the secret
 func (c *Client) checkSecretOwnership(name, namespace string) error {
@@ -22,7 +24,7 @@ func (c *Client) checkSecretOwnership(name, namespace string) error {
 		return fmt.Errorf("getting secret failed: %s", err)
 	}
 
-	if svc.Labels[depLabelName] == name {
+	if svc.Labels[SecretLabelName] == name {
 		return nil
 	}
 
@@ -30,12 +32,60 @@ func (c *Client) checkSecretOwnership(name, namespace string) error {
 }
 
 // CreateUpdateSecret a secret to namespace
-func (c *Client) CreateUpdateSecret(secret *corev1.Secret, namespace string) error {
-	if err := c.checkSecretOwnership(secret.Name, namespace); err != nil {
+func (c *Client) CreateUpdateSecret(name, namespace, key, data string, conf *config.Config) error {
+	if err := c.checkSecretOwnership(name, namespace); err != nil {
 		return err
 	}
 
-	_, err := c.Clientset.CoreV1().Secrets(namespace).Create(context.Background(), secret, metav1.CreateOptions{})
+	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
+	if err != nil {
+		return nil
+	}
+
+	if conf.Secrets != nil {
+		// merge common & secrets labels
+		if err := mergo.Map(&conf.Secrets.Labels, conf.Common.Labels); err != nil {
+			return fmt.Errorf("merging secrets labels failed: %s", err)
+		}
+
+		// merge kratosLabels & secrets labels
+		if err := mergo.Map(&conf.Secrets.Labels, map[string]string(kratosLabel)); err != nil {
+			return fmt.Errorf("merging ingress labels failed: %s", err)
+		}
+
+		// merge common & ingress annotations
+		if err := mergo.Map(&conf.Secrets.Annotations, conf.Common.Annotations); err != nil {
+			return fmt.Errorf("merging secret annotations failed: %s", err)
+		}
+	} else {
+		// merge kratosLabels & common labels
+		conf.Secrets = &config.Secrets{
+			Labels: map[string]string(kratosLabel),
+		}
+		if err := mergo.Map(&conf.Secrets.Labels, conf.Common.Labels); err != nil {
+			return fmt.Errorf("merging secrets labels failed: %s", err)
+		}
+	}
+
+	secret := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels: labels.Merge(
+				conf.Secrets.Labels,
+				labels.Set{
+					SecretLabelName: name,
+				},
+			),
+			Annotations: conf.Common.Annotations,
+		},
+		StringData: map[string]string{
+			key: data,
+		},
+		Type: corev1.SecretTypeOpaque,
+	}
+
+	_, err = c.Clientset.CoreV1().Secrets(namespace).Create(context.Background(), secret, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
 			_, err := c.Clientset.CoreV1().Secrets(namespace).Update(context.Background(), secret, metav1.UpdateOptions{})

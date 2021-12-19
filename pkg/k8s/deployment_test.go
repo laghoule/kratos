@@ -20,12 +20,12 @@ func createDeployment() *appsv1.Deployment {
 	automount := automountServiceAccount
 	depLabels := map[string]string{
 		kratosLabelName: kratosLabelValue,
-		depLabelName:    name,
+		DepLabelName:    name,
 		"environment":   environment,
 		"app":           name,
 	}
 	podLabels := map[string]string{
-		depLabelName:  name,
+		DepLabelName:  name,
 		"environment": environment,
 		"app":         name,
 	}
@@ -44,7 +44,7 @@ func createDeployment() *appsv1.Deployment {
 			Replicas: &replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					depLabelName: name,
+					DepLabelName: name,
 				},
 			},
 			Template: corev1.PodTemplateSpec{
