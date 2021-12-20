@@ -9,7 +9,7 @@ require (
 	github.com/jinzhu/copier v0.3.4
 	github.com/pterm/pterm v0.12.33
 	github.com/spf13/cobra v1.2.1
-	github.com/spf13/viper v1.10.0
+	github.com/spf13/viper v1.10.1
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/mod v0.5.1
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
@@ -54,7 +54,7 @@ require (
 	golang.org/x/crypto v0.0.0-20211202192323-5770296d904e // indirect
 	golang.org/x/net v0.0.0-20211208012354-db4efeb81f4b // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
-	golang.org/x/sys v0.0.0-20211205182925-97ca703d548d // indirect
+	golang.org/x/sys v0.0.0-20211210111614-af8b64212486 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20211116232009-f0f3c7e86c11 // indirect
