@@ -19,6 +19,8 @@ func createSecret() *corev1.Secret {
 		return nil
 	}
 
+	name := "credentials.yaml"
+
 	return &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
@@ -26,7 +28,7 @@ func createSecret() *corev1.Secret {
 			Labels: labels.Merge(
 				kratosLabel,
 				labels.Set{
-					"app":           name,
+					"app":           "myapp",
 					"environment":   environment,
 					SecretLabelName: name,
 				}),
@@ -35,7 +37,7 @@ func createSecret() *corev1.Secret {
 			},
 		},
 		StringData: map[string]string{
-			config.ConfigKey: "my secret data",
+			name: "usename: patate\npassword: poil\n",
 		},
 		Type: "Opaque",
 	}
@@ -46,7 +48,7 @@ func createK8SSecret(c *Client, conf *config.Config) error {
 		return err
 	}
 
-	if err := c.CreateUpdateSecret(name, namespace, config.ConfigKey, secretData, conf); err != nil {
+	if err := c.CreateUpdateSecrets(namespace, conf); err != nil {
 		return err
 	}
 
@@ -63,6 +65,8 @@ func TestCreateUpdateSecret(t *testing.T) {
 		return
 	}
 
+	name := conf.Secrets.Files[0].Name
+
 	secret, err := c.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		t.Error(err)
@@ -74,7 +78,7 @@ func TestCreateUpdateSecret(t *testing.T) {
 
 	// update
 	expected.StringData[config.ConfigKey] = "my updated secret data"
-	if err := c.CreateUpdateSecret(name, namespace, config.ConfigKey, secretData, conf); err != nil {
+	if err := c.CreateUpdateSecrets(namespace, conf); err != nil {
 		t.Error(err)
 		return
 	}
@@ -105,6 +109,8 @@ func TestDeleteSecret(t *testing.T) {
 
 	assert.Len(t, list.Items, 1)
 
+	name := conf.Secrets.Files[0].Name
+
 	if err := c.DeleteSecret(name, namespace); err != nil {
 		t.Error(err)
 		return
@@ -122,12 +128,14 @@ func TestDeleteSecret(t *testing.T) {
 // TestGetSecret test getting a secret
 func TestGetSecret(t *testing.T) {
 	c := new()
-	s := createSecret()
+	conf := &config.Config{}
 
-	if _, err := c.Clientset.CoreV1().Secrets(namespace).Create(context.Background(), s, metav1.CreateOptions{}); err != nil {
+	if err := createK8SSecret(c, conf); err != nil {
 		t.Error(err)
 		return
 	}
+
+	name := conf.Secrets.Files[0].Name
 
 	secret, err := c.GetSecret(name, namespace)
 	if err != nil {
@@ -135,5 +143,7 @@ func TestGetSecret(t *testing.T) {
 		return
 	}
 
-	assert.Equal(t, s, secret)
+	expected := createSecret()
+
+	assert.Equal(t, expected, secret)
 }

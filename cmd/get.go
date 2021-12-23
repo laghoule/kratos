@@ -36,7 +36,7 @@ var getCmd = &cobra.Command{
 			errorExit(err.Error())
 		}
 
-		fmt.Printf("configuration saved at %s/%s", destination, name+kratos.YamlExt)
+		fmt.Printf("configuration saved at %s/%s\n", destination, name+kratos.YamlExt)
 	},
 }
 

@@ -62,8 +62,8 @@ func createConf() *config.Config {
 	}
 }
 
-// createSecret return a secret object
-func createSecret() *corev1.Secret {
+// createSecretConfig return a secret object representing a release configuration
+func createSecretConfig() *corev1.Secret {
 	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
 	if err != nil {
 		return nil
@@ -76,12 +76,8 @@ func createSecret() *corev1.Secret {
 			Labels: labels.Merge(
 				kratosLabel,
 				labels.Set{
-					"app":               name,
 					k8s.SecretLabelName: name + configSuffix,
 				}),
-			Annotations: map[string]string{
-				"branch": "dev",
-			},
 		},
 		StringData: map[string]string{
 			config.ConfigKey: "common:\n    labels:\n        app: myapp\n    annotations:\n        branch: dev\ndeployment:\n    replicas: 1\n    port: 80\n    containers:\n        - name: myapp\n          image: myimage\n          tag: latest\n          resources:\n            requests: {}\n            limits: {}\n          health:\n            live:\n                probe: /isLive\n                port: 80\n                initialDelaySeconds: 10\n                periodSeconds: 5\n            ready:\n                probe: /isReady\n                port: 80\n                initialDelaySeconds: 5\n                periodSeconds: 5\n    ingress:\n        ingressClass: nginx\n        clusterIssuer: letsencrypt\n        hostnames:\n            - example.com\n",
@@ -105,7 +101,7 @@ func TestSaveConfigFile(t *testing.T) {
 		return
 	}
 
-	expected := createSecret()
+	expected := createSecretConfig()
 	assert.Equal(t, expected, result)
 }
 

@@ -123,17 +123,21 @@ kratos create --name myapp --namespace mynamespace --config myappconfig.yaml
 | configmaps | List of configmaps | no |
 | configmaps.labels | Configmaps labels | no |
 | configmaps.annotations | Configmaps annotations | no |
-| configmaps.name | Name of the configmap | yes |
-| configmaps.mountPath | Path of the mount point in the pod | yes |
+| configmaps.files | List of configmaps files | yes |
+| configmaps.files.name | Name of the configmaps | yes |
+| configmaps.files.mount | How to use the configmaps | yes |
+| configmaps.files.mount.path | Path of the mount point in the pod | yes |
+| configmaps.files.mount.exposedTo | List of containers to expose the configmap | no |
 | configmaps.data | Contents of the configmap | yes |
-| configmaps.exposedTo | List of containers to expose the configmap | no |
 | secrets | List of secrets | no |
 | secrets.labels | Secrets labels | no |
 | secrets.annotation | Secrets annotations | no |
-| secrets.name | Name of the secret | yes |
-| secrets.mountPath | Path of the mount point in the pod | yes |
-| secrets.data | Contents of the secret | yes |
-| secrets.exposedTo | List of containers to expose the secret | no |
+| secrets.files | List of secrets files | yes |
+| secrets.files.name | Name of the secret | yes |
+| secrets.files.mount | How to use the secret | yes |
+| secrets.files.mount.path | Path of the mount point in the pod | yes |
+| secrets.files.mount.exposedTo | List of containers to expose the secret | no |
+| secrets.files.data | Contents of the secret | yes |
 
 ### Example of a full features configuration
 

@@ -38,7 +38,7 @@ func (k *Kratos) saveConfigToSecret(name, namespace string) error {
 		return fmt.Errorf("saving configuration to kubernetes secret failed: %s", err)
 	}
 
-	if err := k.Client.CreateUpdateSecret(name, namespace, config.ConfigKey, string(b), k.Config); err != nil {
+	if err := k.Client.SaveConfig(name, namespace, config.ConfigKey, string(b), k.Config); err != nil {
 		return err
 	}
 

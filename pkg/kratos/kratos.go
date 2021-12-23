@@ -34,7 +34,7 @@ func New(conf, kubeconfig string) (*Kratos, error) {
 }
 
 // IsDependencyMeet check if all dependency are met
-func (k *Kratos) IsDependencyMeet() error {
+func (k *Kratos) IsDependencyMeet() error { // TODO: Change name for CheckDependency()
 	// check if we meet k8s version requirement
 	if err := k.CheckVersionDepency(); err != nil {
 		return err
