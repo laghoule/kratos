@@ -197,27 +197,29 @@ cronjob:
 configmaps:
   labels: {}
   annotations: {}
-  - name: configuration.yaml
-    mount:
-      path: /etc/cfg
-      exposedTo:
-        - pacman
-        - myjobs
-    data: |
-      my configuration data
+  files:
+    - name: configuration.yaml
+      mount:
+        path: /etc/cfg
+        exposedTo:
+          - pacman
+          - myjobs
+      data: |
+        my configuration data
 
 # not yet implemented
 secrets:
   labels: {}
   annotations: {}
-  - name: credentials.yaml
-    mount:
-      path: /etc/cfg
-      exposedTo:
-        - myjobs
-    data: |
-      usename: patate
-      password: poil
+  files:
+    - name: credentials.yaml
+      mount:
+        path: /etc/cfg
+        exposedTo:
+          - myjobs
+      data: |
+        usename: patate
+        password: poil
 ```
 
 ### Example of a minimal configuration
