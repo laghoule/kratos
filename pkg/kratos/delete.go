@@ -61,7 +61,6 @@ func (k *Kratos) Delete(name, namespace string) error {
 
 	// cronjob
 	if k.Config.Cronjob != nil {
-		// cronjob
 		spinner, _ := pterm.DefaultSpinner.Start("deleting cronjob ")
 		if err := k.DeleteCronjob(name, namespace); err != nil {
 			pterm.Error.Println(err)
@@ -70,9 +69,19 @@ func (k *Kratos) Delete(name, namespace string) error {
 		spinner.Success()
 	}
 
+	// secrets
+	if k.Config.Secrets != nil {
+		spinner, _ := pterm.DefaultSpinner.Start("deleting secrets ")
+		if err := k.DeleteSecrets(namespace, k.Config); err != nil {
+			pterm.Error.Println(err)
+			runWithError = true
+		}
+		spinner.Success()
+	}
+
 	// configuration
 	spinner, _ := pterm.DefaultSpinner.Start("deleting configuration ")
-	if err := k.DeleteSecret(name+configSuffix, namespace); err != nil {
+	if err := k.DeleteConfig(name+configSuffix, namespace); err != nil {
 		pterm.Error.Println(err)
 		runWithError = true
 	}

@@ -96,6 +96,10 @@ func createDeploymentConf() *Config {
 
 func createDeploymentConfMinimal() *Config {
 	return &Config{
+		Common: &Common{
+			Labels:      map[string]string{},
+			Annotations: map[string]string{},
+		},
 		Deployment: &Deployment{
 			Replicas: replicas,
 			Port:     port,
@@ -153,6 +157,10 @@ func createCronjobConf() *Config {
 
 func createCronjobConfMinimal() *Config {
 	return &Config{
+		Common: &Common{
+			Labels:      map[string]string{},
+			Annotations: map[string]string{},
+		},
 		Cronjob: &Cronjob{
 			Schedule: schedule,
 			Retry:    retry,

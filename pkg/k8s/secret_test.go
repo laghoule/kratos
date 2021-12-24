@@ -55,6 +55,14 @@ func createK8SSecret(c *Client, conf *config.Config) error {
 	return nil
 }
 
+func TestSaveConfig(t *testing.T) {
+	// TODO: TestSaveConfig
+}
+
+func TestDeleteConfig(t *testing.T) {
+	// TODO: TestDeleteConfig
+}
+
 // TestCreateUpdateSecret test the creation and update of a secret
 func TestCreateUpdateSecret(t *testing.T) {
 	c := new()
@@ -91,6 +99,10 @@ func TestCreateUpdateSecret(t *testing.T) {
 	assert.Equal(t, "my updated secret data", expected.StringData[config.ConfigKey])
 }
 
+func TestDeleteSecrets(t *testing.T) {
+	// TODO: TestDeleteSecrets
+}
+
 // TestDeleteSecret test delete of a secret
 func TestDeleteSecret(t *testing.T) {
 	c := new()
@@ -109,9 +121,7 @@ func TestDeleteSecret(t *testing.T) {
 
 	assert.Len(t, list.Items, 1)
 
-	name := conf.Secrets.Files[0].Name
-
-	if err := c.DeleteSecret(name, namespace); err != nil {
+	if err := c.DeleteSecrets(namespace, conf); err != nil {
 		t.Error(err)
 		return
 	}

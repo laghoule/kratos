@@ -44,6 +44,11 @@ func (c *Config) validateConfig() error {
 		if err := c.Common.validateConfig(); err != nil {
 			return err
 		}
+	} else {
+		c.Common = &Common{
+			Labels:      map[string]string{},
+			Annotations: map[string]string{},
+		}
 	}
 
 	if c.Deployment != nil {
@@ -73,6 +78,12 @@ func (c *Common) validateConfig() error {
 		if err := labelsValidation(c.Labels); err != nil {
 			return err
 		}
+	} else {
+		c.Labels = map[string]string{}
+	}
+
+	if c.Annotations == nil {
+		c.Annotations = map[string]string{}
 	}
 
 	return nil

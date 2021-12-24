@@ -66,8 +66,21 @@ func (c *Client) SaveConfig(name, namespace, key, value string, conf *config.Con
 	return nil
 }
 
+// DeleteConfig delete kratos release configuration
+func (c *Client) DeleteConfig(name, namespace string) error {
+	if err := c.deleteSecret(name, namespace); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // createUpdateSecret create or update a secret
 func (c *Client) createUpdateSecret(secret *corev1.Secret) error {
+	if err := c.checkSecretOwnership(secret.Name, secret.Namespace); err != nil {
+		return err
+	}
+
 	_, err := c.Clientset.CoreV1().Secrets(secret.Namespace).Create(context.Background(), secret, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
@@ -116,10 +129,6 @@ func (c *Client) CreateUpdateSecrets(namespace string, conf *config.Config) erro
 	}
 
 	for _, file := range conf.Secrets.Files {
-		if err := c.checkSecretOwnership(file.Name, namespace); err != nil {
-			return err
-		}
-
 		secret := &corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      file.Name,
@@ -146,8 +155,19 @@ func (c *Client) CreateUpdateSecrets(namespace string, conf *config.Config) erro
 	return nil
 }
 
-// DeleteSecret delete a secret from a namespace
-func (c *Client) DeleteSecret(name, namespace string) error {
+// DeletesSecrets delete the secrets contained in conf for the specified namespace
+func (c *Client) DeleteSecrets(namespace string, conf *config.Config) error {
+	for _, file := range conf.Secrets.Files {
+		if err := c.deleteSecret(file.Name, namespace); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// deleteSecret delete a secret from a namespace
+func (c *Client) deleteSecret(name, namespace string) error {
 	if err := c.checkSecretOwnership(name, namespace); err != nil {
 		return err
 	}
