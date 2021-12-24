@@ -26,7 +26,13 @@ var initCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(initCmd)
+	
 	initCmd.Flags().String("name", "", "name of the configuration file")
-	initCmd.MarkFlagRequired("name")
-	viper.BindPFlag("initName", initCmd.Flags().Lookup("name"))
+	if err := initCmd.MarkFlagRequired("name"); err != nil {
+		errorExit(err.Error())
+	}
+
+	if err := viper.BindPFlag("initName", initCmd.Flags().Lookup("name")); err != nil {
+		errorExit(err.Error())
+	}
 }

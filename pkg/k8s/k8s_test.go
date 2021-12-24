@@ -16,7 +16,6 @@ const (
 	tagLatest        = "latest"
 	tagV1            = "v1.0.0"
 	containerHTTP    = 80
-	constainerHTTPS  = 443
 	clusterIssuer    = "letsencrypt"
 	hostname         = "example.com"
 	path             = "/"
@@ -26,7 +25,6 @@ const (
 	deploymentConfig = "../config/testdata/deploymentConfig.yml"
 	cronjobConfig    = "../config/testdata/cronjobConfig.yml"
 	secretConfig     = "../config/testdata/secretsConfig.yml"
-	secretData       = "my secret data"
 )
 
 func new() *Client {

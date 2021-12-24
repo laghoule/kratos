@@ -25,7 +25,9 @@ var versionCmd = &cobra.Command{
 			{"Version", "Build date", "Git commit", "Git reference"},
 			{version, buildDate, gitCommit, gitRef},
 		}
-		pterm.DefaultTable.WithHasHeader().WithData(pdata).Render()
+		if err := pterm.DefaultTable.WithHasHeader().WithData(pdata).Render(); err != nil {
+			errorExit(err.Error())
+		}
 	},
 }
 

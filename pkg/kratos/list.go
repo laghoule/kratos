@@ -90,6 +90,8 @@ func (k *Kratos) PrintList(namespace string) error {
 		})
 	}
 
-	pterm.DefaultTable.WithHasHeader().WithData(pdata).Render()
+	if err := pterm.DefaultTable.WithHasHeader().WithData(pdata).Render(); err != nil {
+		return err
+	}
 	return nil
 }

@@ -20,7 +20,6 @@ const (
 	badConfigCommonAnnotations = "testdata/badConfigAnnotationsDuplication.yml"
 
 	name                = "myapp"
-	namespace           = "mynamespace"
 	replicas      int32 = 1
 	image               = "myimage"
 	tag                 = "latest"

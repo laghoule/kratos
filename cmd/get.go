@@ -44,14 +44,26 @@ func init() {
 	rootCmd.AddCommand(getCmd)
 
 	getCmd.Flags().String("name", "", "name of the deployment")
-	getCmd.MarkFlagRequired("name")
+	if err := getCmd.MarkFlagRequired("name"); err != nil {
+		errorExit(err.Error())
+	}
 
 	getCmd.Flags().StringP("namespace", "n", "", "namespace of the deployment")
-	getCmd.MarkFlagRequired("namespace")
+	if err := getCmd.MarkFlagRequired("namespace"); err != nil {
+		errorExit(err.Error())
+	}
 
 	getCmd.Flags().StringP("destination", "d", ".", "destination path")
 
-	viper.BindPFlag("gName", getCmd.Flags().Lookup("name"))
-	viper.BindPFlag("gNamespace", getCmd.Flags().Lookup("namespace"))
-	viper.BindPFlag("gdestination", getCmd.Flags().Lookup("destination"))
+	if err := viper.BindPFlag("gName", getCmd.Flags().Lookup("name")); err != nil {
+		errorExit(err.Error())
+	}
+
+	if err := viper.BindPFlag("gNamespace", getCmd.Flags().Lookup("namespace")); err != nil {
+		errorExit(err.Error())
+	}
+
+	if err := viper.BindPFlag("gdestination", getCmd.Flags().Lookup("destination")); err != nil {
+		errorExit(err.Error())
+	}
 }

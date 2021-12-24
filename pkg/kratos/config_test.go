@@ -107,7 +107,10 @@ func TestSaveConfigFile(t *testing.T) {
 
 func TestSaveConfigFileToDisk(t *testing.T) {
 	k := new()
-	k.Config.Load(testdataInitFile)
+	if err := k.Config.Load(testdataInitFile); err != nil {
+		t.Error(err)
+		return
+	}
 
 	if err := k.saveConfigToSecret(name+configSuffix, namespace); err != nil {
 		t.Error(err)

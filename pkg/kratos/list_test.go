@@ -2,6 +2,7 @@ package kratos
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"testing"
 
@@ -66,7 +67,10 @@ func TestPrintList(t *testing.T) {
 
 	capture := listOutput(
 		func() {
-			k.PrintList(namespace)
+			if err := k.PrintList(namespace); err != nil {
+				fmt.Println(err)
+				return
+			}
 		},
 	)
 

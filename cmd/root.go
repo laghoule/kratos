@@ -32,7 +32,9 @@ func init() {
 	}
 
 	rootCmd.PersistentFlags().StringP("kubeconfig", "k", kubeconfig, "kubernetes configuration file")
-	viper.BindPFlag("kubeconfig", rootCmd.PersistentFlags().Lookup("kubeconfig"))
+	if err := viper.BindPFlag("kubeconfig", rootCmd.PersistentFlags().Lookup("kubeconfig")); err != nil {
+		errorExit(err.Error())
+	}
 }
 
 func initConfig() {

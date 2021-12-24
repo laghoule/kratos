@@ -13,8 +13,6 @@ import (
 )
 
 const (
-	goodConfig        = "../config/testdata/goodConfig.yml"
-	badConfig         = "../config/testdata/badConfig.yml"
 	generatedInitFile = "init.yaml"
 	testdataInitFile  = "testdata/init.yaml"
 
@@ -26,7 +24,6 @@ const (
 	port          int32 = 80
 	ingresClass         = "nginx"
 	clusterIssuer       = "letsencrypt"
-	configString        = "my config"
 	hostname            = "example.com"
 )
 

@@ -36,15 +36,29 @@ func init() {
 	rootCmd.AddCommand(createCmd)
 
 	createCmd.Flags().StringP("config", "c", "", "configuration file")
-	createCmd.MarkFlagRequired("config")
+	if err := createCmd.MarkFlagRequired("config"); err != nil {
+		errorExit(err.Error())
+	}
 
 	createCmd.Flags().String("name", "", "deployment name")
-	createCmd.MarkFlagRequired("name")
+	if err := createCmd.MarkFlagRequired("name"); err != nil {
+		errorExit(err.Error())
+	}
 
 	createCmd.Flags().StringP("namespace", "n", "default", "deployment namespace")
-	createCmd.MarkFlagRequired("namespace")
+	if err := createCmd.MarkFlagRequired("namespace"); err != nil {
+		errorExit(err.Error())
+	}
 
-	viper.BindPFlag("cConfig", createCmd.Flags().Lookup("config"))
-	viper.BindPFlag("cName", createCmd.Flags().Lookup("name"))
-	viper.BindPFlag("cNamespace", createCmd.Flags().Lookup("namespace"))
+	if err := viper.BindPFlag("cConfig", createCmd.Flags().Lookup("config")); err != nil {
+		errorExit(err.Error())
+	}
+
+	if err := viper.BindPFlag("cName", createCmd.Flags().Lookup("name")); err != nil {
+		errorExit(err.Error())
+	}
+
+	if err := viper.BindPFlag("cNamespace", createCmd.Flags().Lookup("namespace")); err != nil {
+		errorExit(err.Error())
+	}
 }
