@@ -54,6 +54,22 @@ Flags:
 Use "kratos [command] --help" for more information about a command.
 ```
 
+### Security restriction
+
+Kratos don't support deployment of container running as `root`. If you deploy a container running as `root`, it will fail to start, with this error:
+
+```text
+Error: container has runAsNonRoot and image will run as root (pod: "pacman-7dc78bcb9c-hwjhp_static(11b8ab59-0a7f-45ca-87fd-3c3348e9fc7f)", container: pacman)
+```
+
+Kratos don't mount the Kubernetes service account `token` in the containers. These `token` are useful only to application who need access to Kubernetes API.
+
+podSpec configurations:
+
+* RunAsNonRoot is `true`
+
+* AutomountServiceAccountToken is `false`
+
 ### Initialize a configuration file
 
 You need to create a configuration file, you can build it from scratch, or use the `init` command:

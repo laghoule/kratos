@@ -74,6 +74,8 @@ func (c *Client) CreateUpdateCronjob(name, namespace string, conf *config.Config
 		}
 	}
 
+	volumesMount, volumes := getVolumesConfForContainer(name, conf.Cronjob.Container, conf)
+
 	cronjobs := &batchv1.CronJob{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
@@ -119,11 +121,17 @@ func (c *Client) CreateUpdateCronjob(name, namespace string, conf *config.Config
 							RestartPolicy: corev1.RestartPolicyOnFailure,
 							Containers: []corev1.Container{
 								{
-									Name:      conf.Cronjob.Container.Name,
-									Image:     conf.Cronjob.Container.Image + ":" + conf.Cronjob.Container.Tag,
-									Resources: conf.Cronjob.Container.FormatResources(),
+									Name:         conf.Cronjob.Container.Name,
+									Image:        conf.Cronjob.Container.Image + ":" + conf.Cronjob.Container.Tag,
+									Resources:    conf.Cronjob.Container.FormatResources(),
+									VolumeMounts: volumesMount,
 								},
 							},
+							AutomountServiceAccountToken: boolPTR(false),
+							SecurityContext: &corev1.PodSecurityContext{
+								RunAsNonRoot: boolPTR(true),
+							},
+							Volumes: volumes,
 						},
 					},
 				},

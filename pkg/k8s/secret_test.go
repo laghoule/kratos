@@ -19,36 +19,37 @@ func createSecret() *corev1.Secret {
 		return nil
 	}
 
-	name := "credentials.yaml"
+	fileName := "credentials.yaml"
+	secretName := name + "-" + fileName
 
 	return &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
+			Name:      secretName,
 			Namespace: namespace,
 			Labels: labels.Merge(
 				kratosLabel,
 				labels.Set{
-					"app":           "myapp",
+					"app":           name,
 					"environment":   environment,
-					SecretLabelName: name,
+					SecretLabelName: secretName,
 				}),
 			Annotations: map[string]string{
 				"branch": environment,
 			},
 		},
 		StringData: map[string]string{
-			name: "usename: patate\npassword: poil\n",
+			fileName: "usename: patate\npassword: poil\n",
 		},
 		Type: "Opaque",
 	}
 }
 
-func createK8SSecret(c *Client, conf *config.Config) error {
+func loadConfigCreateSecret(c *Client, conf *config.Config) error {
 	if err := conf.Load(secretConfig); err != nil {
 		return err
 	}
 
-	if err := c.CreateUpdateSecrets(namespace, conf); err != nil {
+	if err := c.CreateUpdateSecrets(name, namespace, conf); err != nil {
 		return err
 	}
 
@@ -68,14 +69,14 @@ func TestCreateUpdateSecret(t *testing.T) {
 	c := new()
 	conf := &config.Config{}
 
-	if err := createK8SSecret(c, conf); err != nil {
+	if err := loadConfigCreateSecret(c, conf); err != nil {
 		t.Error(err)
 		return
 	}
 
-	name := conf.Secrets.Files[0].Name
+	secretName := name + "-" + conf.Secrets.Files[0].Name
 
-	secret, err := c.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	secret, err := c.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), secretName, metav1.GetOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -86,12 +87,12 @@ func TestCreateUpdateSecret(t *testing.T) {
 
 	// update
 	expected.StringData[config.ConfigKey] = "my updated secret data"
-	if err := c.CreateUpdateSecrets(namespace, conf); err != nil {
+	if err := c.CreateUpdateSecrets(name, namespace, conf); err != nil {
 		t.Error(err)
 		return
 	}
 
-	if _, err = c.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), name, metav1.GetOptions{}); err != nil {
+	if _, err = c.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), secretName, metav1.GetOptions{}); err != nil {
 		t.Error(err)
 		return
 	}
@@ -108,7 +109,7 @@ func TestDeleteSecret(t *testing.T) {
 	c := new()
 	conf := &config.Config{}
 
-	if err := createK8SSecret(c, conf); err != nil {
+	if err := loadConfigCreateSecret(c, conf); err != nil {
 		t.Error(err)
 		return
 	}
@@ -121,7 +122,7 @@ func TestDeleteSecret(t *testing.T) {
 
 	assert.Len(t, list.Items, 1)
 
-	if err := c.DeleteSecrets(namespace, conf); err != nil {
+	if err := c.DeleteSecrets(name, namespace, conf); err != nil {
 		t.Error(err)
 		return
 	}
@@ -140,14 +141,14 @@ func TestGetSecret(t *testing.T) {
 	c := new()
 	conf := &config.Config{}
 
-	if err := createK8SSecret(c, conf); err != nil {
+	if err := loadConfigCreateSecret(c, conf); err != nil {
 		t.Error(err)
 		return
 	}
 
-	name := conf.Secrets.Files[0].Name
+	secretName := name + "-" + conf.Secrets.Files[0].Name
 
-	secret, err := c.GetSecret(name, namespace)
+	secret, err := c.GetSecret(secretName, namespace)
 	if err != nil {
 		t.Error(err)
 		return

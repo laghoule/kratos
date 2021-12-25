@@ -16,10 +16,6 @@ import (
 	"github.com/jinzhu/copier"
 )
 
-const (
-	automountServiceAccount bool = false
-)
-
 // checkDeploymentOwnership check if it's safe to create, update or delete the deployment
 func (c *Client) checkDeploymentOwnership(name, namespace string) error {
 	svc, err := c.Clientset.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
@@ -82,9 +78,12 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 	}
 
 	containers := []corev1.Container{}
+	volumesMount := []corev1.VolumeMount{}
+	volumes := []corev1.Volume{}
 
 	for _, container := range conf.Deployment.Containers {
-		// FIXME all container use the same ContainerPort
+		volumesMount, volumes = getVolumesConfForContainer(name, &container, conf)
+
 		containers = append(containers, corev1.Container{
 			Name:  container.Name,
 			Image: container.Image + ":" + container.Tag,
@@ -96,10 +95,10 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 			Resources:      container.FormatResources(),
 			LivenessProbe:  container.FormatProbe(config.LiveProbe),
 			ReadinessProbe: container.FormatProbe(config.ReadyProbe),
+			VolumeMounts:   volumesMount,
 		})
 	}
 
-	automount := automountServiceAccount
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        name,
@@ -132,9 +131,12 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 					),
 				},
 				Spec: corev1.PodSpec{
-					Containers: containers,
-					// kratos should not be use to deploy app who need access au K8S API
-					AutomountServiceAccountToken: &automount,
+					Containers:                   containers,
+					AutomountServiceAccountToken: boolPTR(false),
+					SecurityContext: &corev1.PodSecurityContext{
+						RunAsNonRoot: boolPTR(true),
+					},
+					Volumes: volumes,
 				},
 			},
 		},

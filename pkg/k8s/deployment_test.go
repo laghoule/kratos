@@ -17,7 +17,6 @@ import (
 
 func createDeployment() *appsv1.Deployment {
 	var replicas int32 = 1
-	automount := automountServiceAccount
 	depLabels := map[string]string{
 		kratosLabelName: kratosLabelValue,
 		DepLabelName:    name,
@@ -100,9 +99,14 @@ func createDeployment() *appsv1.Deployment {
 								InitialDelaySeconds: 3,
 								PeriodSeconds:       3,
 							},
+							VolumeMounts: []corev1.VolumeMount{},
 						},
 					},
-					AutomountServiceAccountToken: &automount,
+					AutomountServiceAccountToken: boolPTR(false),
+					SecurityContext: &corev1.PodSecurityContext{
+						RunAsNonRoot: boolPTR(true),
+					},
+					Volumes: []corev1.Volume{},
 				},
 			},
 		},

@@ -97,7 +97,7 @@ func (c *Client) createUpdateSecret(secret *corev1.Secret) error {
 }
 
 // CreateUpdateSecrets create or update a secrets with value provided in conf
-func (c *Client) CreateUpdateSecrets(namespace string, conf *config.Config) error {
+func (c *Client) CreateUpdateSecrets(name, namespace string, conf *config.Config) error {
 	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
 	if err != nil {
 		return nil
@@ -129,14 +129,16 @@ func (c *Client) CreateUpdateSecrets(namespace string, conf *config.Config) erro
 	}
 
 	for _, file := range conf.Secrets.Files {
+		secretName := name + "-" + file.Name
+
 		secret := &corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      file.Name,
+				Name:      secretName,
 				Namespace: namespace,
 				Labels: labels.Merge(
 					conf.Secrets.Labels,
 					labels.Set{
-						SecretLabelName: file.Name,
+						SecretLabelName: secretName,
 					},
 				),
 				Annotations: conf.Common.Annotations,
@@ -156,9 +158,9 @@ func (c *Client) CreateUpdateSecrets(namespace string, conf *config.Config) erro
 }
 
 // DeletesSecrets delete the secrets contained in conf for the specified namespace
-func (c *Client) DeleteSecrets(namespace string, conf *config.Config) error {
+func (c *Client) DeleteSecrets(name, namespace string, conf *config.Config) error {
 	for _, file := range conf.Secrets.Files {
-		if err := c.deleteSecret(file.Name, namespace); err != nil {
+		if err := c.deleteSecret(name+"-"+file.Name, namespace); err != nil {
 			return err
 		}
 	}
