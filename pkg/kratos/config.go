@@ -11,7 +11,6 @@ import (
 )
 
 const (
-	configSuffix = "-kratos-config"
 	fileMode     = 0666
 	// YamlExt is the default yaml extension
 	YamlExt = ".yaml"
@@ -47,7 +46,7 @@ func (k *Kratos) saveConfigToSecret(name, namespace string) error {
 
 // SaveConfigToDisk get config from secret and write it to disk
 func (k *Kratos) SaveConfigToDisk(name, namespace, destination string) error {
-	secret, err := k.Client.GetSecret(name+configSuffix, namespace)
+	secret, err := k.Client.GetSecret(name+config.ConfigSuffix, namespace)
 	if err != nil {
 		return err
 	}

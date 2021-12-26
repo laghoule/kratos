@@ -24,6 +24,8 @@ func (c *Client) checkSecretOwnership(name, namespace string) error {
 		return fmt.Errorf("getting secret failed: %s", err)
 	}
 
+	// TODO: Should also check for config.DeployLabel
+
 	if svc.Labels[SecretLabelName] == name {
 		return nil
 	}
@@ -189,4 +191,14 @@ func (c *Client) GetSecret(name, namespace string) (*corev1.Secret, error) {
 	}
 
 	return secret, nil
+}
+
+// listSecrets list the secret in the specified namespace
+func (c *Client) listSecrets(namespace string) (*corev1.SecretList, error) {
+	list, err := c.Clientset.CoreV1().Secrets(namespace).List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("getting secrets list failed: %s", err)
+	}
+
+	return list, nil
 }

@@ -14,7 +14,9 @@ const (
 	LiveProbe = "live"
 	// ReadyProbe represent the ready config keyword
 	ReadyProbe = "ready"
-	// ConfigKey of the secret for the configuration of the release
+	// ConfigSuffix is the suffix of the kratos release secret
+	ConfigSuffix = "-kratos-config"
+	// ConfigKey is the key in the secret for the configuration of the release
 	ConfigKey = "config"
 )
 

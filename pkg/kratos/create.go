@@ -3,6 +3,8 @@ package kratos
 import (
 	"fmt"
 
+	"github.com/laghoule/kratos/pkg/config"
+
 	"github.com/pterm/pterm"
 )
 
@@ -12,7 +14,7 @@ func (k *Kratos) Create(name, namespace string) error {
 
 	// configuration is saved first
 	spinner, _ := pterm.DefaultSpinner.Start("saving configuration")
-	if err := k.saveConfigToSecret(name+configSuffix, namespace); err != nil {
+	if err := k.saveConfigToSecret(name+config.ConfigSuffix, namespace); err != nil {
 		spinner.Fail(err)
 		runWithError = true
 	} else {

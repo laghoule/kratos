@@ -71,12 +71,12 @@ func createSecretConfig() *corev1.Secret {
 
 	return &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      name + configSuffix,
+			Name:      name + config.ConfigSuffix,
 			Namespace: namespace,
 			Labels: labels.Merge(
 				kratosLabel,
 				labels.Set{
-					k8s.SecretLabelName: name + configSuffix,
+					k8s.SecretLabelName: name + config.ConfigSuffix,
 				}),
 		},
 		StringData: map[string]string{
@@ -90,12 +90,12 @@ func TestSaveConfigFile(t *testing.T) {
 	k := new()
 	k.Config = createConf()
 
-	if err := k.saveConfigToSecret(name+configSuffix, namespace); err != nil {
+	if err := k.saveConfigToSecret(name+config.ConfigSuffix, namespace); err != nil {
 		t.Error(err)
 		return
 	}
 
-	result, err := k.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), name+configSuffix, metav1.GetOptions{})
+	result, err := k.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), name+config.ConfigSuffix, metav1.GetOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -112,7 +112,7 @@ func TestSaveConfigFileToDisk(t *testing.T) {
 		return
 	}
 
-	if err := k.saveConfigToSecret(name+configSuffix, namespace); err != nil {
+	if err := k.saveConfigToSecret(name+config.ConfigSuffix, namespace); err != nil {
 		t.Error(err)
 		return
 	}

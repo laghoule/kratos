@@ -26,6 +26,8 @@ func (c *Client) checkServiceOwnership(name, namespace string) error {
 		return fmt.Errorf("getting service failed: %s", err)
 	}
 
+	// TODO: Should also check for config.DeployLabel
+
 	if svc.Labels[DepLabelName] == name {
 		return nil
 	}

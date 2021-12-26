@@ -12,7 +12,7 @@ import (
 func (k *Kratos) Delete(name, namespace string) error {
 	runWithError := false
 
-	secret, err := k.GetSecret(name+configSuffix, namespace)
+	secret, err := k.GetSecret(name+config.ConfigSuffix, namespace)
 	if err != nil {
 		return fmt.Errorf("getting config from secret failed: %s", err)
 	}
@@ -81,7 +81,7 @@ func (k *Kratos) Delete(name, namespace string) error {
 
 	// configuration
 	spinner, _ := pterm.DefaultSpinner.Start("deleting configuration ")
-	if err := k.DeleteConfig(name+configSuffix, namespace); err != nil {
+	if err := k.DeleteConfig(name+config.ConfigSuffix, namespace); err != nil {
 		pterm.Error.Println(err)
 		runWithError = true
 	}

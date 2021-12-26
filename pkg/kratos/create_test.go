@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/laghoule/kratos/pkg/config"
+
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -51,5 +53,5 @@ func TestCreate(t *testing.T) {
 	}
 
 	assert.Len(t, secList.Items, 1)
-	assert.Equal(t, name+configSuffix, secList.Items[0].Name)
+	assert.Equal(t, name+config.ConfigSuffix, secList.Items[0].Name)
 }

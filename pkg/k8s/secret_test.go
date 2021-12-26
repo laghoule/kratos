@@ -1,7 +1,6 @@
 package k8s
 
 import (
-	"context"
 	"testing"
 
 	"github.com/laghoule/kratos/pkg/config"
@@ -12,6 +11,12 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 )
 
+const (
+	secretData        = "usename: patate\npassword: poil\n"
+	secretUpdatedData = "my updated secret data"
+	secretFileName    = "credentials.yaml"
+)
+
 // createSecret return a secret object
 func createSecret() *corev1.Secret {
 	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
@@ -19,8 +24,7 @@ func createSecret() *corev1.Secret {
 		return nil
 	}
 
-	fileName := "credentials.yaml"
-	secretName := name + "-" + fileName
+	secretName := name + "-" + secretFileName
 
 	return &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
@@ -38,12 +42,39 @@ func createSecret() *corev1.Secret {
 			},
 		},
 		StringData: map[string]string{
-			fileName: "usename: patate\npassword: poil\n",
+			secretFileName: secretData,
 		},
-		Type: "Opaque",
+		Type: corev1.SecretTypeOpaque,
 	}
 }
 
+// createConfigSecret return a kratos release configuration secret object
+func createConfigSecret() *corev1.Secret {
+	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
+	if err != nil {
+		return nil
+	}
+
+	secretName := name + config.ConfigSuffix
+
+	return &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      secretName,
+			Namespace: namespace,
+			Labels: labels.Merge(
+				kratosLabel,
+				labels.Set{
+					SecretLabelName: secretName,
+				}),
+		},
+		StringData: map[string]string{
+			config.ConfigKey: secretData,
+		},
+		Type: corev1.SecretTypeOpaque,
+	}
+}
+
+// loadConfigCreateSecret load secretConfig file configuration and create secrets
 func loadConfigCreateSecret(c *Client, conf *config.Config) error {
 	if err := conf.Load(secretConfig); err != nil {
 		return err
@@ -56,12 +87,63 @@ func loadConfigCreateSecret(c *Client, conf *config.Config) error {
 	return nil
 }
 
-func TestSaveConfig(t *testing.T) {
-	// TODO: TestSaveConfig
+// loadSaveConfig load secretConfig and save release configuration in secret
+func loadSaveConfig(c *Client, name, namespace string, conf *config.Config) error {
+	if err := conf.Load(secretConfig); err != nil {
+		return err
+	}
+
+	if err := c.SaveConfig(name, namespace, config.ConfigKey, secretData, conf); err != nil {
+		return err
+	}
+
+	return nil
 }
 
+// TestSaveConfig test saving a release configuration
+func TestSaveConfig(t *testing.T) {
+	c := new()
+	conf := &config.Config{}
+
+	secretName := name + config.ConfigSuffix
+
+	if err := loadSaveConfig(c, secretName, namespace, conf); err != nil {
+		t.Error(err)
+		return
+	}
+
+	secret, err := c.GetSecret(secretName, namespace)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	expected := createConfigSecret()
+	assert.Equal(t, expected, secret)
+}
+
+// TestDeleteConfig test deleting a release configuration
 func TestDeleteConfig(t *testing.T) {
-	// TODO: TestDeleteConfig
+	c := new()
+	conf := &config.Config{}
+
+	if err := loadSaveConfig(c, name+config.ConfigSuffix, namespace, conf); err != nil {
+		t.Error(err)
+		return
+	}
+
+	if err := c.DeleteConfig(name+config.ConfigSuffix, namespace); err != nil {
+		t.Error(err)
+		return
+	}
+
+	list, err := c.listSecrets(namespace)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	assert.Empty(t, list.Items)
 }
 
 // TestCreateUpdateSecret test the creation and update of a secret
@@ -76,7 +158,7 @@ func TestCreateUpdateSecret(t *testing.T) {
 
 	secretName := name + "-" + conf.Secrets.Files[0].Name
 
-	secret, err := c.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), secretName, metav1.GetOptions{})
+	secret, err := c.GetSecret(secretName, namespace)
 	if err != nil {
 		t.Error(err)
 		return
@@ -86,26 +168,22 @@ func TestCreateUpdateSecret(t *testing.T) {
 	assert.Equal(t, expected, secret)
 
 	// update
-	expected.StringData[config.ConfigKey] = "my updated secret data"
+	expected.StringData[config.ConfigKey] = secretUpdatedData
 	if err := c.CreateUpdateSecrets(name, namespace, conf); err != nil {
 		t.Error(err)
 		return
 	}
 
-	if _, err = c.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), secretName, metav1.GetOptions{}); err != nil {
+	if _, err = c.GetSecret(secretName, namespace); err != nil {
 		t.Error(err)
 		return
 	}
 
-	assert.Equal(t, "my updated secret data", expected.StringData[config.ConfigKey])
+	assert.Equal(t, secretUpdatedData, expected.StringData[config.ConfigKey])
 }
 
+// TestDeleteSecrets test delete of a secret
 func TestDeleteSecrets(t *testing.T) {
-	// TODO: TestDeleteSecrets
-}
-
-// TestDeleteSecret test delete of a secret
-func TestDeleteSecret(t *testing.T) {
 	c := new()
 	conf := &config.Config{}
 
@@ -114,7 +192,7 @@ func TestDeleteSecret(t *testing.T) {
 		return
 	}
 
-	list, err := c.Clientset.CoreV1().Secrets(namespace).List(context.Background(), metav1.ListOptions{})
+	list, err := c.listSecrets(namespace)
 	if err != nil {
 		t.Error(err)
 		return
@@ -127,7 +205,7 @@ func TestDeleteSecret(t *testing.T) {
 		return
 	}
 
-	list, err = c.Clientset.CoreV1().Secrets(namespace).List(context.Background(), metav1.ListOptions{})
+	list, err = c.listSecrets(namespace)
 	if err != nil {
 		t.Error(err)
 		return

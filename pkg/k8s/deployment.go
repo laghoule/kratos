@@ -26,6 +26,8 @@ func (c *Client) checkDeploymentOwnership(name, namespace string) error {
 		return fmt.Errorf("getting deployment failed: %s", err)
 	}
 
+	// TODO: Should also check for config.DeployLabel
+
 	if svc.Labels[DepLabelName] == name {
 		return nil
 	}

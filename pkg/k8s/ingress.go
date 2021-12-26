@@ -29,6 +29,8 @@ func (c *Client) checkIngressOwnership(name, namespace string) error {
 		return fmt.Errorf("getting ingress failed: %s", err)
 	}
 
+	// TODO: Should also check for config.DeployLabel
+
 	if svc.Labels[DepLabelName] == name {
 		return nil
 	}
