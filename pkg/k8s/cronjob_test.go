@@ -136,7 +136,7 @@ func TestCreateUpdateCronjobNotOwnedByKratos(t *testing.T) {
 	}
 
 	if err := c.CreateUpdateCronjob(name, namespace, conf); assert.Error(t, err) {
-		assert.Equal(t, err.Error(), "cronjob is not owned by kratos")
+		assert.Equal(t, err.Error(), "cronjob is not managed by kratos")
 	}
 }
 
@@ -192,7 +192,7 @@ func TestDeleteCronjobNotOwnedByKratos(t *testing.T) {
 	}
 
 	if err := c.DeleteCronjob(name, namespace); assert.Error(t, err) {
-		assert.Equal(t, err.Error(), "cronjob is not owned by kratos")
+		assert.Equal(t, err.Error(), "cronjob is not managed by kratos")
 	}
 }
 

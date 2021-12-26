@@ -164,7 +164,7 @@ func TestCreateUpdateDeploymentNotOwnedByKratos(t *testing.T) {
 	}
 
 	if err := c.CreateUpdateDeployment(name, namespace, conf); assert.Error(t, err) {
-		assert.Equal(t, err.Error(), "deployment is not owned by kratos")
+		assert.Equal(t, err.Error(), "deployment is not managed by kratos")
 	}
 }
 
@@ -222,7 +222,7 @@ func TestDeleteDeploymentNotOwnedByKratos(t *testing.T) {
 	}
 
 	if err := c.DeleteDeployment(name, namespace); assert.Error(t, err) {
-		assert.Equal(t, err.Error(), "deployment is not owned by kratos")
+		assert.Equal(t, err.Error(), "deployment is not managed by kratos")
 	}
 }
 

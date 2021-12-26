@@ -18,7 +18,7 @@ import (
 
 // checkDeploymentOwnership check if it's safe to create, update or delete the deployment
 func (c *Client) checkDeploymentOwnership(name, namespace string) error {
-	svc, err := c.Clientset.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	dep, err := c.Clientset.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil
@@ -26,13 +26,17 @@ func (c *Client) checkDeploymentOwnership(name, namespace string) error {
 		return fmt.Errorf("getting deployment failed: %s", err)
 	}
 
-	// TODO: Should also check for config.DeployLabel
-
-	if svc.Labels[DepLabelName] == name {
+	// owned by the kratos release
+	if dep.Labels[DepLabelName] == name {
 		return nil
 	}
 
-	return fmt.Errorf("deployment is not owned by kratos")
+	// managed by kratos
+	if err := checkKratosManaged(dep.Labels); err == nil {
+		return nil
+	}
+
+	return fmt.Errorf("deployment is not managed by kratos")
 }
 
 // ListDeployments list deployments

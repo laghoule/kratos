@@ -17,7 +17,7 @@ import (
 
 // checkCronjobOwnership check if it's safe to create, update or delete the cronjob
 func (c *Client) checkCronjobOwnership(name, namespace string) error {
-	svc, err := c.Clientset.BatchV1().CronJobs(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	cron, err := c.Clientset.BatchV1().CronJobs(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil
@@ -25,13 +25,17 @@ func (c *Client) checkCronjobOwnership(name, namespace string) error {
 		return fmt.Errorf("getting cronjob failed: %s", err)
 	}
 
-	// TODO: Should also check for config.DeployLabel
-
-	if svc.Labels[CronLabelName] == name {
+	// owned by the kratos release
+	if cron.Labels[CronLabelName] == name {
 		return nil
 	}
 
-	return fmt.Errorf("cronjob is not owned by kratos")
+	// managed by kratos
+	if err := checkKratosManaged(cron.Labels); err == nil {
+		return nil
+	}
+
+	return fmt.Errorf("cronjob is not managed by kratos")
 }
 
 // ListCronjobs list cronjob
@@ -40,7 +44,7 @@ func (c *Client) ListCronjobs(namespace string) ([]batchv1.CronJob, error) {
 		LabelSelector: config.DeployLabel,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error getting list of cronjobs: %s", err)
+		return nil, fmt.Errorf("getting list of cronjobs failed: %s", err)
 	}
 
 	return list.Items, nil

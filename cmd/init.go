@@ -26,7 +26,7 @@ var initCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(initCmd)
-	
+
 	initCmd.Flags().String("name", "", "name of the configuration file")
 	if err := initCmd.MarkFlagRequired("name"); err != nil {
 		errorExit(err.Error())

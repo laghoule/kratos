@@ -62,7 +62,7 @@ func TestCreateUpdateServiceNotOwnedByKratos(t *testing.T) {
 
 	// create && fail
 	if err := c.CreateUpdateService(name, namespace, conf); assert.Error(t, err) {
-		assert.Equal(t, err.Error(), "service is not owned by kratos")
+		assert.Equal(t, err.Error(), "service is not managed by kratos")
 	}
 }
 
@@ -126,7 +126,7 @@ func TestDeleteServiceNotOwnedByKratos(t *testing.T) {
 	}
 
 	if err := c.DeleteService(name, namespace); assert.Error(t, err) {
-		assert.Equal(t, err.Error(), "service is not owned by kratos")
+		assert.Equal(t, err.Error(), "service is not managed by kratos")
 	}
 }
 

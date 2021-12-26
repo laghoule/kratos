@@ -227,7 +227,6 @@ configmaps:
       data: |
         my configuration data
 
-# not yet implemented
 secrets:
   labels: {}
   annotations: {}

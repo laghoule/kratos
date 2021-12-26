@@ -16,7 +16,7 @@ import (
 
 // checkSecretOwnership check if it's safe to create, update or delete the secret
 func (c *Client) checkSecretOwnership(name, namespace string) error {
-	svc, err := c.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	secret, err := c.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil
@@ -24,13 +24,17 @@ func (c *Client) checkSecretOwnership(name, namespace string) error {
 		return fmt.Errorf("getting secret failed: %s", err)
 	}
 
-	// TODO: Should also check for config.DeployLabel
-
-	if svc.Labels[SecretLabelName] == name {
+	// owned by the kratos release
+	if secret.Labels[SecretLabelName] == name {
 		return nil
 	}
 
-	return fmt.Errorf("secret is not owned by kratos")
+	// managed by kratos
+	if err := checkKratosManaged(secret.Labels); err == nil {
+		return nil
+	}
+
+	return fmt.Errorf("secret is not managed by kratos")
 }
 
 // SaveConfig save kratos release configuration
@@ -159,7 +163,7 @@ func (c *Client) CreateUpdateSecrets(name, namespace string, conf *config.Config
 	return nil
 }
 
-// DeletesSecrets delete the secrets contained in conf for the specified namespace
+// DeleteSecrets delete the secrets contained in conf for the specified namespace
 func (c *Client) DeleteSecrets(name, namespace string, conf *config.Config) error {
 	for _, file := range conf.Secrets.Files {
 		if err := c.deleteSecret(name+"-"+file.Name, namespace); err != nil {

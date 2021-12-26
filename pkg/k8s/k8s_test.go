@@ -33,6 +33,18 @@ func new() *Client {
 	return c
 }
 
+func TestBoolPTR(t *testing.T) {
+	// TODO: TestBoolPTR
+}
+
 func TestCheckVersionDepency(t *testing.T) {
 	// TODO: TestCheckVersionDepency
+}
+
+func TestMD5sum(t *testing.T) {
+	// TODO: TestMD5sum
+}
+
+func TestCheckKratosManaged(t *testing.T) {
+	// TODO: TestCheckKratosManaged
 }

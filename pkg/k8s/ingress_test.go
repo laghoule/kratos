@@ -112,7 +112,7 @@ func TestCreateUpdateIngressNotOwnedByKratos(t *testing.T) {
 	}
 
 	if err := c.CreateUpdateIngress(name, namespace, conf); assert.Error(t, err) {
-		assert.Equal(t, err.Error(), "ingress is not owned by kratos")
+		assert.Equal(t, err.Error(), "ingress is not managed by kratos")
 	}
 }
 
@@ -167,7 +167,7 @@ func TestDeleteIngressNotOwnedByKratos(t *testing.T) {
 	}
 
 	if err := c.CreateUpdateIngress(name, namespace, conf); assert.Error(t, err) {
-		assert.Equal(t, err.Error(), "ingress is not owned by kratos")
+		assert.Equal(t, err.Error(), "ingress is not managed by kratos")
 	}
 }
 

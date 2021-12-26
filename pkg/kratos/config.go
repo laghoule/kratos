@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	fileMode     = 0666
+	fileMode = 0666
 	// YamlExt is the default yaml extension
 	YamlExt = ".yaml"
 )

@@ -21,7 +21,7 @@ const (
 
 // checkIngressOwnership check if it's safe to create, update or delete the ingress
 func (c *Client) checkIngressOwnership(name, namespace string) error {
-	svc, err := c.Clientset.NetworkingV1().Ingresses(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	ing, err := c.Clientset.NetworkingV1().Ingresses(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil
@@ -29,13 +29,17 @@ func (c *Client) checkIngressOwnership(name, namespace string) error {
 		return fmt.Errorf("getting ingress failed: %s", err)
 	}
 
-	// TODO: Should also check for config.DeployLabel
-
-	if svc.Labels[DepLabelName] == name {
+	// owned by the kratos release
+	if ing.Labels[DepLabelName] == name {
 		return nil
 	}
 
-	return fmt.Errorf("ingress is not owned by kratos")
+	// managed by kratos
+	if err := checkKratosManaged(ing.Labels); err == nil {
+		return nil
+	}
+
+	return fmt.Errorf("ingress is not managed by kratos")
 }
 
 // CreateUpdateIngress create or update an ingress

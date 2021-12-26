@@ -236,3 +236,11 @@ func TestGetSecret(t *testing.T) {
 
 	assert.Equal(t, expected, secret)
 }
+
+func TestCreateUpdateSecretNotOwnedByKratos(t *testing.T) {
+	// TODO: TestCreateUpdateSecretNotOwnedByKratos
+}
+
+func TestDeleteSecretNotOwnedByKratos(t *testing.T) {
+	// TODO: TestDeleteSecretNotOwnedByKratos
+}

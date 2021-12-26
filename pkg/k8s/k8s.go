@@ -4,8 +4,11 @@ import (
 	"crypto/md5"
 	"fmt"
 
+	"github.com/laghoule/kratos/pkg/config"
+
 	"golang.org/x/mod/semver"
 
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -18,9 +21,13 @@ type Client struct {
 }
 
 const (
-	DepLabelName        = "kratos/deployment"
-	CronLabelName       = "kratos/cronjob"
-	SecretLabelName     = "kratos/secret"
+	// DepLabelName is label applied to deployment
+	DepLabelName = "kratos/deployment"
+	// CronLabelName is label applied to cronjob
+	CronLabelName = "kratos/cronjob"
+	// SecretLabelName is the label applied to secrets
+	SecretLabelName = "kratos/secret"
+	// ConfigmapsLabelName is the label applied to configmaps
 	ConfigmapsLabelName = "kratos/configmaps"
 	requiredK8SVersion  = "v1.19.0"
 	prefixSecretVolName = "secret-"
@@ -78,4 +85,24 @@ func boolPTR(b bool) *bool {
 func md5sum(input string) string {
 	hash := md5.New()
 	return fmt.Sprintf("%x", hash.Sum([]byte(input)))
+}
+
+// checkKratosManaged check if the object labels contains `app.kubernetes.io/managed-by=kratos` label
+func checkKratosManaged(objLabels map[string]string) error {
+	managedLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
+	if err != nil {
+		return fmt.Errorf("parsing labels failed: %s", err)
+	}
+
+	for cLabel, cValue := range objLabels {
+		for kLabel, kValue := range managedLabel {
+			if cLabel == kLabel {
+				if cValue == kValue {
+					return nil
+				}
+			}
+		}
+	}
+
+	return fmt.Errorf("not managed by kratos")
 }
