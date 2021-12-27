@@ -29,14 +29,11 @@ func (c *Client) checkIngressOwnership(name, namespace string) error {
 		return fmt.Errorf("getting ingress failed: %s", err)
 	}
 
-	// owned by the kratos release
-	if ing.Labels[DepLabelName] == name {
-		return nil
-	}
-
 	// managed by kratos
 	if err := checkKratosManaged(ing.Labels); err == nil {
-		return nil
+		if ing.Labels[DepLabelName] == name {
+			return nil
+		}
 	}
 
 	return fmt.Errorf("ingress is not managed by kratos")

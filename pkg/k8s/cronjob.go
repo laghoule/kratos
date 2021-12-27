@@ -25,14 +25,11 @@ func (c *Client) checkCronjobOwnership(name, namespace string) error {
 		return fmt.Errorf("getting cronjob failed: %s", err)
 	}
 
-	// owned by the kratos release
-	if cron.Labels[CronLabelName] == name {
-		return nil
-	}
-
 	// managed by kratos
 	if err := checkKratosManaged(cron.Labels); err == nil {
-		return nil
+		if cron.Labels[CronLabelName] == name {
+			return nil
+		}
 	}
 
 	return fmt.Errorf("cronjob is not managed by kratos")

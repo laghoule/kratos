@@ -26,14 +26,11 @@ func (c *Client) checkServiceOwnership(name, namespace string) error {
 		return fmt.Errorf("getting service failed: %s", err)
 	}
 
-	// owned by the kratos release
-	if svc.Labels[DepLabelName] == name {
-		return nil
-	}
-
 	// managed by kratos
 	if err := checkKratosManaged(svc.Labels); err == nil {
-		return nil
+		if svc.Labels[DepLabelName] == name {
+			return nil
+		}
 	}
 
 	return fmt.Errorf("service is not managed by kratos")

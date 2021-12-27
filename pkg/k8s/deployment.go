@@ -26,14 +26,11 @@ func (c *Client) checkDeploymentOwnership(name, namespace string) error {
 		return fmt.Errorf("getting deployment failed: %s", err)
 	}
 
-	// owned by the kratos release
-	if dep.Labels[DepLabelName] == name {
-		return nil
-	}
-
 	// managed by kratos
 	if err := checkKratosManaged(dep.Labels); err == nil {
-		return nil
+		if dep.Labels[DepLabelName] == name {
+			return nil
+		}
 	}
 
 	return fmt.Errorf("deployment is not managed by kratos")

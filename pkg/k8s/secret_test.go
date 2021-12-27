@@ -1,6 +1,7 @@
 package k8s
 
 import (
+	"context"
 	"testing"
 
 	"github.com/laghoule/kratos/pkg/config"
@@ -72,6 +73,21 @@ func createConfigSecret() *corev1.Secret {
 		},
 		Type: corev1.SecretTypeOpaque,
 	}
+}
+
+func createNotKratosSecret(c *Client, conf *config.Config) error {
+	if err := conf.Load(secretConfig); err != nil {
+		return err
+	}
+
+	secret := createSecret()
+	secret.Labels = nil
+
+	if _, err := c.Clientset.CoreV1().Secrets(namespace).Create(context.Background(), secret, metav1.CreateOptions{}); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // loadConfigCreateSecret load secretConfig file configuration and create secrets
@@ -238,9 +254,29 @@ func TestGetSecret(t *testing.T) {
 }
 
 func TestCreateUpdateSecretNotOwnedByKratos(t *testing.T) {
-	// TODO: TestCreateUpdateSecretNotOwnedByKratos
+	c := new()
+	conf := &config.Config{}
+
+	if err := createNotKratosSecret(c, conf); err != nil {
+		t.Error(err)
+		return
+	}
+
+	if err := c.CreateUpdateSecrets(name, namespace, conf); assert.Error(t, err) {
+		assert.Equal(t, "secret is not managed by kratos", err.Error())
+	}
 }
 
 func TestDeleteSecretNotOwnedByKratos(t *testing.T) {
-	// TODO: TestDeleteSecretNotOwnedByKratos
+	c := new()
+	conf := &config.Config{}
+
+	if err := createNotKratosSecret(c, conf); err != nil {
+		t.Error(err)
+		return
+	}
+
+	if err := c.DeleteSecrets(name, namespace, conf); assert.Error(t, err) {
+		assert.Equal(t, "secret is not managed by kratos", err.Error())
+	}
 }

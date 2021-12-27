@@ -24,14 +24,11 @@ func (c *Client) checkSecretOwnership(name, namespace string) error {
 		return fmt.Errorf("getting secret failed: %s", err)
 	}
 
-	// owned by the kratos release
-	if secret.Labels[SecretLabelName] == name {
-		return nil
-	}
-
 	// managed by kratos
 	if err := checkKratosManaged(secret.Labels); err == nil {
-		return nil
+		if secret.Labels[SecretLabelName] == name {
+			return nil
+		}
 	}
 
 	return fmt.Errorf("secret is not managed by kratos")
@@ -117,12 +114,12 @@ func (c *Client) CreateUpdateSecrets(name, namespace string, conf *config.Config
 
 		// merge kratosLabels & secrets labels
 		if err := mergo.Map(&conf.Secrets.Labels, map[string]string(kratosLabel)); err != nil {
-			return fmt.Errorf("merging ingress labels failed: %s", err)
+			return fmt.Errorf("merging secrets labels failed: %s", err)
 		}
 
 		// merge common & ingress annotations
 		if err := mergo.Map(&conf.Secrets.Annotations, conf.Common.Annotations); err != nil {
-			return fmt.Errorf("merging secret annotations failed: %s", err)
+			return fmt.Errorf("merging secrets annotations failed: %s", err)
 		}
 	} else {
 		// merge kratosLabels & common labels
