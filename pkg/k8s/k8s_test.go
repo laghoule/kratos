@@ -3,7 +3,7 @@ package k8s
 import (
 	"testing"
 
-	//"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
 	"k8s.io/client-go/kubernetes/fake"
 )
 
@@ -25,6 +25,8 @@ const (
 	deploymentConfig = "../config/testdata/deploymentConfig.yml"
 	cronjobConfig    = "../config/testdata/cronjobConfig.yml"
 	secretConfig     = "../config/testdata/secretsConfig.yml"
+
+	managedByLabel = "app.kubernetes.io/managed-by"
 )
 
 func new() *Client {
@@ -34,7 +36,8 @@ func new() *Client {
 }
 
 func TestBoolPTR(t *testing.T) {
-	// TODO: TestBoolPTR
+	expected := true
+	assert.Equal(t, &expected, boolPTR(true))
 }
 
 func TestCheckVersionDepency(t *testing.T) {
@@ -42,9 +45,18 @@ func TestCheckVersionDepency(t *testing.T) {
 }
 
 func TestMD5sum(t *testing.T) {
-	// TODO: TestMD5sum
+	expected := "74657374d41d8cd98f00b204e9800998ecf8427e"
+	assert.Equal(t, expected, md5sum("test"))
 }
 
 func TestCheckKratosManaged(t *testing.T) {
-	// TODO: TestCheckKratosManaged
+	labels := map[string]string{managedByLabel: "kratos"}
+	err := checkKratosManaged(labels)
+	assert.NoError(t, err)
+}
+
+func TestCheckNotKratosManaged(t *testing.T) {
+	labels := map[string]string{managedByLabel: "helm"}
+	err := checkKratosManaged(labels)
+	assert.Error(t, err)
 }
