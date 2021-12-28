@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/laghoule/kratos/pkg/common"
 	"github.com/laghoule/kratos/pkg/config"
 
 	batchv1 "k8s.io/api/batch/v1"
@@ -130,9 +131,9 @@ func (c *Client) CreateUpdateCronjob(name, namespace string, conf *config.Config
 									VolumeMounts: volumesMount,
 								},
 							},
-							AutomountServiceAccountToken: boolPTR(false),
+							AutomountServiceAccountToken: common.BoolPTR(false),
 							SecurityContext: &corev1.PodSecurityContext{
-								RunAsNonRoot: boolPTR(true),
+								RunAsNonRoot: common.BoolPTR(true),
 							},
 							Volumes: volumes,
 						},

@@ -2,8 +2,9 @@ package config
 
 import (
 	"fmt"
-
 	"regexp"
+
+	"github.com/laghoule/kratos/pkg/common"
 
 	validator "github.com/go-playground/validator/v10"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -64,7 +65,7 @@ func (c *Config) validateConfig() error {
 	}
 
 	if c.Secrets != nil {
-		if err := c.Secrets.validateConfig(c.Common); err != nil {
+		if err := c.Secrets.validateConfig(c); err != nil {
 			return err
 		}
 	}
@@ -221,7 +222,7 @@ func (r *ResourceType) validateConfig(container, rType string) error {
 }
 
 // validateConfig validate secrets labels & annotations
-func (s *Secrets) validateConfig(common *Common) error {
+func (s *Secrets) validateConfig(conf *Config) error {
 	if s.Labels != nil {
 		if err := labelsValidation(s.Labels); err != nil {
 			return err
@@ -229,17 +230,43 @@ func (s *Secrets) validateConfig(common *Common) error {
 	}
 
 	// common labels & annotations must be uniq
-	if common != nil {
-		if common.Labels != nil && s.Labels != nil {
-			if err := mapKeyUniq(common.Labels, s.Labels); err != nil {
+	if conf.Common != nil {
+		if conf.Common.Labels != nil && s.Labels != nil {
+			if err := mapKeyUniq(conf.Common.Labels, s.Labels); err != nil {
 				return err
 			}
 		}
-		if common.Annotations != nil && s.Annotations != nil {
-			if err := mapKeyUniq(common.Annotations, s.Annotations); err != nil {
+		if conf.Common.Annotations != nil && s.Annotations != nil {
+			if err := mapKeyUniq(conf.Common.Annotations, s.Annotations); err != nil {
 				return err
 			}
 		}
+	}
+
+	// check if exposedTo container exist in deployment or in cronjob
+	exposedToFound := false
+	for _, file := range s.Files {
+		for _, exposedTo := range file.ExposedTo {
+
+			if conf.Deployment != nil {
+				if common.ListContain(conf.Deployment.listContainerNames(), exposedTo) {
+					exposedToFound = true
+					continue
+				}
+			}
+
+			if conf.Cronjob != nil {
+				if conf.Cronjob.Container.Name == exposedTo {
+					exposedToFound = true
+					continue
+				}
+			}
+
+		}
+	}
+
+	if !exposedToFound {
+		return fmt.Errorf("exposedTo container don't exist")
 	}
 
 	return nil

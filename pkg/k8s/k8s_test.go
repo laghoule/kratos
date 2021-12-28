@@ -3,6 +3,8 @@ package k8s
 import (
 	"testing"
 
+	"github.com/laghoule/kratos/pkg/common"
+
 	"github.com/stretchr/testify/assert"
 	"k8s.io/client-go/kubernetes/fake"
 )
@@ -37,7 +39,7 @@ func new() *Client {
 
 func TestBoolPTR(t *testing.T) {
 	expected := true
-	assert.Equal(t, &expected, boolPTR(true))
+	assert.Equal(t, &expected, common.BoolPTR(true))
 }
 
 func TestCheckVersionDepency(t *testing.T) {
@@ -46,7 +48,7 @@ func TestCheckVersionDepency(t *testing.T) {
 
 func TestMD5sum(t *testing.T) {
 	expected := "74657374d41d8cd98f00b204e9800998ecf8427e"
-	assert.Equal(t, expected, md5sum("test"))
+	assert.Equal(t, expected, common.MD5Sum("test"))
 }
 
 func TestCheckKratosManaged(t *testing.T) {

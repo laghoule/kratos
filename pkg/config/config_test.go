@@ -270,3 +270,7 @@ func TestLoadConfigBadResources(t *testing.T) {
 		assert.Equal(t, expected, err.Error())
 	}
 }
+
+func TestListContainerNames(t *testing.T) {
+	// TODO: TestListContainerNames
+}

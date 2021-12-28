@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/laghoule/kratos/pkg/common"
 	"github.com/laghoule/kratos/pkg/config"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -135,9 +136,9 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 				},
 				Spec: corev1.PodSpec{
 					Containers:                   containers,
-					AutomountServiceAccountToken: boolPTR(false),
+					AutomountServiceAccountToken: common.BoolPTR(false),
 					SecurityContext: &corev1.PodSecurityContext{
-						RunAsNonRoot: boolPTR(true),
+						RunAsNonRoot: common.BoolPTR(true),
 					},
 					Volumes: volumes,
 				},

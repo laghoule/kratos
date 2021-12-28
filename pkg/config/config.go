@@ -263,3 +263,14 @@ func (c *Config) LoadFromString(conf string) error {
 
 	return nil
 }
+
+// listContainerNames list the names of the containers in the deployment
+func (d *Deployment) listContainerNames() []string {
+	containerName := []string{}
+
+	for _, container := range d.Containers {
+		containerName = append(containerName, container.Name)
+	}
+
+	return containerName
+}

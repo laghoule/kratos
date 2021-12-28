@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/laghoule/kratos/pkg/common"
 	"github.com/laghoule/kratos/pkg/config"
 	"github.com/stretchr/testify/assert"
 
@@ -84,9 +85,9 @@ func createCronjobs() *batchv1.CronJob {
 									VolumeMounts: []corev1.VolumeMount{},
 								},
 							},
-							AutomountServiceAccountToken: boolPTR(false),
+							AutomountServiceAccountToken: common.BoolPTR(false),
 							SecurityContext: &corev1.PodSecurityContext{
-								RunAsNonRoot: boolPTR(true),
+								RunAsNonRoot: common.BoolPTR(true),
 							},
 							Volumes: []corev1.Volume{},
 						},
