@@ -12,7 +12,7 @@ import (
 func (k *Kratos) Delete(name, namespace string) error {
 	runWithError := false
 
-	secret, err := k.GetSecret(name+config.ConfigSuffix, namespace)
+	secret, err := k.Get(name+config.ConfigSuffix, namespace)
 	if err != nil {
 		return fmt.Errorf("getting config from secret failed: %s", err)
 	}
@@ -36,7 +36,7 @@ func (k *Kratos) Delete(name, namespace string) error {
 	if k.Config.Deployment != nil {
 		// ingress
 		spinner, _ := pterm.DefaultSpinner.Start("deleting ingress ")
-		if err := k.DeleteIngress(name, namespace); err != nil {
+		if err := k.Client.Ingress.Delete(name, namespace); err != nil {
 			pterm.Error.Println(err)
 			runWithError = true
 		}
@@ -44,7 +44,7 @@ func (k *Kratos) Delete(name, namespace string) error {
 
 		// service
 		spinner, _ = pterm.DefaultSpinner.Start("deleting service ")
-		if err := k.DeleteService(name, namespace); err != nil {
+		if err := k.Client.Service.Delete(name, namespace); err != nil {
 			pterm.Error.Println(err)
 			runWithError = true
 		}
@@ -52,7 +52,7 @@ func (k *Kratos) Delete(name, namespace string) error {
 
 		// deployment
 		spinner, _ = pterm.DefaultSpinner.Start("deleting deployment ")
-		if err := k.DeleteDeployment(name, namespace); err != nil {
+		if err := k.Client.Deployment.Delete(name, namespace); err != nil {
 			pterm.Error.Println(err)
 			runWithError = true
 		}
@@ -62,7 +62,7 @@ func (k *Kratos) Delete(name, namespace string) error {
 	// cronjob
 	if k.Config.Cronjob != nil {
 		spinner, _ := pterm.DefaultSpinner.Start("deleting cronjob ")
-		if err := k.DeleteCronjob(name, namespace); err != nil {
+		if err := k.Client.Cronjob.Delete(name, namespace); err != nil {
 			pterm.Error.Println(err)
 			runWithError = true
 		}
@@ -72,7 +72,7 @@ func (k *Kratos) Delete(name, namespace string) error {
 	// secrets
 	if k.Config.Secrets != nil {
 		spinner, _ := pterm.DefaultSpinner.Start("deleting secrets ")
-		if err := k.DeleteSecrets(name, namespace, k.Config); err != nil {
+		if err := k.Client.Secret.Delete(name, namespace); err != nil {
 			pterm.Error.Println(err)
 			runWithError = true
 		}

@@ -10,6 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/kubernetes"
 
 	"github.com/imdario/mergo"
 )
@@ -19,9 +20,14 @@ const (
 	sslRedirectAnnotation   = "nginx.ingress.kubernetes.io/ssl-redirect"
 )
 
-// checkIngressOwnership check if it's safe to create, update or delete the ingress
-func (c *Client) checkIngressOwnership(name, namespace string) error {
-	ing, err := c.Clientset.NetworkingV1().Ingresses(namespace).Get(context.Background(), name, metav1.GetOptions{})
+type Ingress struct {
+	Clientset kubernetes.Interface
+	*config.Config
+}
+
+// checkOwnership check if it's safe to create, update or delete the ingress
+func (i *Ingress) checkOwnership(name, namespace string) error {
+	ing, err := i.Clientset.NetworkingV1().Ingresses(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil
@@ -39,9 +45,9 @@ func (c *Client) checkIngressOwnership(name, namespace string) error {
 	return fmt.Errorf("ingress is not managed by kratos")
 }
 
-// CreateUpdateIngress create or update an ingress
-func (c *Client) CreateUpdateIngress(name, namespace string, conf *config.Config) error {
-	if err := c.checkIngressOwnership(name, namespace); err != nil {
+// CreateUpdate create or update an ingress
+func (i *Ingress) CreateUpdate(name, namespace string) error {
+	if err := i.checkOwnership(name, namespace); err != nil {
 		return err
 	}
 
@@ -51,27 +57,27 @@ func (c *Client) CreateUpdateIngress(name, namespace string, conf *config.Config
 	}
 
 	// merge common & ingress labels
-	if err := mergo.Map(&conf.Deployment.Ingress.Labels, conf.Common.Labels); err != nil {
+	if err := mergo.Map(&i.Deployment.Ingress.Labels, i.Common.Labels); err != nil {
 		return fmt.Errorf("merging ingress labels failed: %s", err)
 	}
 
 	// merge kratosLabels & ingress labels
-	if err := mergo.Map(&conf.Deployment.Ingress.Labels, map[string]string(kratosLabel)); err != nil {
+	if err := mergo.Map(&i.Deployment.Ingress.Labels, map[string]string(kratosLabel)); err != nil {
 		return fmt.Errorf("merging ingress labels failed: %s", err)
 	}
 
 	// merge common & ingress annotations
-	if err := mergo.Map(&conf.Deployment.Ingress.Annotations, conf.Common.Annotations); err != nil {
+	if err := mergo.Map(&i.Deployment.Ingress.Annotations, i.Common.Annotations); err != nil {
 		return fmt.Errorf("merging ingress annotations failed: %s", err)
 	}
 
 	sslAnnotations := map[string]string{
-		clusterIssuerAnnotation: conf.Deployment.Ingress.ClusterIssuer,
+		clusterIssuerAnnotation: i.Deployment.Ingress.ClusterIssuer,
 		sslRedirectAnnotation:   "true",
 	}
 
 	// merge ingress annotations & sslAnnotations
-	if err := mergo.Map(&conf.Deployment.Ingress.Annotations, sslAnnotations); err != nil {
+	if err := mergo.Map(&i.Deployment.Ingress.Annotations, sslAnnotations); err != nil {
 		return fmt.Errorf("merging ingress annotations failed: %s", err)
 	}
 
@@ -79,7 +85,7 @@ func (c *Client) CreateUpdateIngress(name, namespace string, conf *config.Config
 	ingressRules := []netv1.IngressRule{}
 	pathType := netv1.PathTypePrefix
 
-	for _, hostname := range conf.Deployment.Ingress.Hostnames {
+	for _, hostname := range i.Deployment.Ingress.Hostnames {
 		ingressTLS = append(ingressTLS, netv1.IngressTLS{
 			Hosts:      []string{hostname},
 			SecretName: hostname + "-tls",
@@ -97,7 +103,7 @@ func (c *Client) CreateUpdateIngress(name, namespace string, conf *config.Config
 								Service: &netv1.IngressServiceBackend{
 									Name: name,
 									Port: netv1.ServiceBackendPort{
-										Number: conf.Deployment.Port,
+										Number: i.Deployment.Port,
 									},
 								},
 							},
@@ -113,24 +119,24 @@ func (c *Client) CreateUpdateIngress(name, namespace string, conf *config.Config
 			Name:      name,
 			Namespace: namespace,
 			Labels: labels.Merge(
-				conf.Deployment.Ingress.Labels,
+				i.Deployment.Ingress.Labels,
 				labels.Set{
 					DepLabelName: name,
 				},
 			),
-			Annotations: conf.Deployment.Ingress.Annotations,
+			Annotations: i.Deployment.Ingress.Annotations,
 		},
 		Spec: netv1.IngressSpec{
-			IngressClassName: &conf.Deployment.Ingress.IngressClass,
+			IngressClassName: &i.Deployment.Ingress.IngressClass,
 			TLS:              ingressTLS,
 			Rules:            ingressRules,
 		},
 	}
 
-	_, err = c.Clientset.NetworkingV1().Ingresses(namespace).Create(context.Background(), ingress, metav1.CreateOptions{})
+	_, err = i.Clientset.NetworkingV1().Ingresses(namespace).Create(context.Background(), ingress, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			_, err := c.Clientset.NetworkingV1().Ingresses(namespace).Update(context.Background(), ingress, metav1.UpdateOptions{})
+			_, err := i.Clientset.NetworkingV1().Ingresses(namespace).Update(context.Background(), ingress, metav1.UpdateOptions{})
 			if err != nil {
 				return fmt.Errorf("updating ingress failed: %s", err)
 			}
@@ -142,13 +148,13 @@ func (c *Client) CreateUpdateIngress(name, namespace string, conf *config.Config
 	return nil
 }
 
-// DeleteIngress delete specified ingress
-func (c *Client) DeleteIngress(name, namespace string) error {
-	if err := c.checkIngressOwnership(name, namespace); err != nil {
+// Delete specified ingress
+func (i *Ingress) Delete(name, namespace string) error {
+	if err := i.checkOwnership(name, namespace); err != nil {
 		return err
 	}
 
-	err := c.Clientset.NetworkingV1().Ingresses(namespace).Delete(context.Background(), name, metav1.DeleteOptions{})
+	err := i.Clientset.NetworkingV1().Ingresses(namespace).Delete(context.Background(), name, metav1.DeleteOptions{})
 	if err != nil {
 		return fmt.Errorf("deleting ingress failed: %s", err)
 	}
@@ -157,8 +163,8 @@ func (c *Client) DeleteIngress(name, namespace string) error {
 }
 
 // IsIngressClassExist check if an ingress class object exist
-func (c *Client) IsIngressClassExist(name string) error {
-	_, err := c.Clientset.NetworkingV1().IngressClasses().Get(context.Background(), name, metav1.GetOptions{})
+func (i *Ingress) IsIngressClassExist(name string) error {
+	_, err := i.Clientset.NetworkingV1().IngressClasses().Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("ingressClass %s not found", name)
 	}

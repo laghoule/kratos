@@ -24,7 +24,7 @@ func (k *Kratos) Create(name, namespace string) error {
 	// deployment
 	if k.Config.Deployment != nil {
 		spinner, _ := pterm.DefaultSpinner.Start("creating deployment")
-		if err := k.CreateUpdateDeployment(name, namespace, k.Config); err != nil {
+		if err := k.Client.Deployment.CreateUpdate(name, namespace); err != nil {
 			spinner.Fail(err)
 			runWithError = true
 		} else {
@@ -33,7 +33,7 @@ func (k *Kratos) Create(name, namespace string) error {
 
 		// service
 		spinner, _ = pterm.DefaultSpinner.Start("creating service")
-		if err := k.CreateUpdateService(name, namespace, k.Config); err != nil {
+		if err := k.Client.Service.CreateUpdate(name, namespace); err != nil {
 			spinner.Fail(err)
 			runWithError = true
 		} else {
@@ -42,7 +42,7 @@ func (k *Kratos) Create(name, namespace string) error {
 
 		// ingress
 		spinner, _ = pterm.DefaultSpinner.Start("creating ingress")
-		if err := k.CreateUpdateIngress(name, namespace, k.Config); err != nil {
+		if err := k.Client.Ingress.CreateUpdate(name, namespace); err != nil {
 			spinner.Fail(err)
 			runWithError = true
 		} else {
@@ -53,7 +53,7 @@ func (k *Kratos) Create(name, namespace string) error {
 	// cronjob
 	if k.Config.Cronjob != nil {
 		spinner, _ := pterm.DefaultSpinner.Start("creating cronjob")
-		if err := k.CreateUpdateCronjob(name, namespace, k.Config); err != nil {
+		if err := k.Client.Cronjob.CreateUpdate(name, namespace); err != nil {
 			spinner.Fail(err)
 			runWithError = true
 		} else {
@@ -64,7 +64,7 @@ func (k *Kratos) Create(name, namespace string) error {
 	// secrets
 	if k.Config.Secrets != nil {
 		spinner, _ := pterm.DefaultSpinner.Start("creating secrets")
-		if err := k.CreateUpdateSecrets(name, namespace, k.Config); err != nil {
+		if err := k.Client.Secret.CreateUpdate(name, namespace); err != nil {
 			spinner.Fail(err)
 			runWithError = true
 		} else {

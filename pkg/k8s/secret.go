@@ -10,13 +10,19 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/kubernetes"
 
 	"github.com/imdario/mergo"
 )
 
-// checkSecretOwnership check if it's safe to create, update or delete the secret
-func (c *Client) checkSecretOwnership(name, namespace string) error {
-	secret, err := c.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), name, metav1.GetOptions{})
+type Secret struct {
+	Clientset kubernetes.Interface
+	*config.Config
+}
+
+// checkOwnership check if it's safe to create, update or delete the secret
+func (s *Secret) checkOwnership(name, namespace string) error {
+	secret, err := s.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil
@@ -35,8 +41,8 @@ func (c *Client) checkSecretOwnership(name, namespace string) error {
 }
 
 // SaveConfig save kratos release configuration
-func (c *Client) SaveConfig(name, namespace, key, value string, conf *config.Config) error {
-	if err := c.checkSecretOwnership(name, namespace); err != nil {
+func (s *Secret) SaveConfig(name, namespace, key, value string) error {
+	if err := s.checkOwnership(name, namespace); err != nil {
 		return err
 	}
 
@@ -62,7 +68,7 @@ func (c *Client) SaveConfig(name, namespace, key, value string, conf *config.Con
 		Type: corev1.SecretTypeOpaque,
 	}
 
-	if err := c.createUpdateSecret(secret); err != nil {
+	if err := s.createUpdate(secret); err != nil {
 		return err
 	}
 
@@ -70,24 +76,24 @@ func (c *Client) SaveConfig(name, namespace, key, value string, conf *config.Con
 }
 
 // DeleteConfig delete kratos release configuration
-func (c *Client) DeleteConfig(name, namespace string) error {
-	if err := c.deleteSecret(name, namespace); err != nil {
+func (s *Secret) DeleteConfig(name, namespace string) error {
+	if err := s.delete(name, namespace); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// createUpdateSecret create or update a secret
-func (c *Client) createUpdateSecret(secret *corev1.Secret) error {
-	if err := c.checkSecretOwnership(secret.Name, secret.Namespace); err != nil {
+// createUpdate create or update a secret
+func (s *Secret) createUpdate(secret *corev1.Secret) error {
+	if err := s.checkOwnership(secret.Name, secret.Namespace); err != nil {
 		return err
 	}
 
-	_, err := c.Clientset.CoreV1().Secrets(secret.Namespace).Create(context.Background(), secret, metav1.CreateOptions{})
+	_, err := s.Clientset.CoreV1().Secrets(secret.Namespace).Create(context.Background(), secret, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			_, err := c.Clientset.CoreV1().Secrets(secret.Namespace).Update(context.Background(), secret, metav1.UpdateOptions{})
+			_, err := s.Clientset.CoreV1().Secrets(secret.Namespace).Update(context.Background(), secret, metav1.UpdateOptions{})
 			if err != nil {
 				return fmt.Errorf("updating secret %s failed: %s", secret.Name, err)
 			}
@@ -99,39 +105,39 @@ func (c *Client) createUpdateSecret(secret *corev1.Secret) error {
 	return nil
 }
 
-// CreateUpdateSecrets create or update a secrets with value provided in conf
-func (c *Client) CreateUpdateSecrets(name, namespace string, conf *config.Config) error {
+// CreateUpdate create or update a secrets with value provided in conf
+func (s *Secret) CreateUpdate(name, namespace string) error {
 	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
 	if err != nil {
 		return nil
 	}
 
-	if conf.Secrets != nil {
+	if s.Secrets != nil {
 		// merge common & secrets labels
-		if err := mergo.Map(&conf.Secrets.Labels, conf.Common.Labels); err != nil {
+		if err := mergo.Map(&s.Secrets.Labels, s.Common.Labels); err != nil {
 			return fmt.Errorf("merging secrets labels failed: %s", err)
 		}
 
 		// merge kratosLabels & secrets labels
-		if err := mergo.Map(&conf.Secrets.Labels, map[string]string(kratosLabel)); err != nil {
+		if err := mergo.Map(&s.Secrets.Labels, map[string]string(kratosLabel)); err != nil {
 			return fmt.Errorf("merging secrets labels failed: %s", err)
 		}
 
 		// merge common & ingress annotations
-		if err := mergo.Map(&conf.Secrets.Annotations, conf.Common.Annotations); err != nil {
+		if err := mergo.Map(&s.Secrets.Annotations, s.Common.Annotations); err != nil {
 			return fmt.Errorf("merging secrets annotations failed: %s", err)
 		}
 	} else {
 		// merge kratosLabels & common labels
-		conf.Secrets = &config.Secrets{
+		s.Secrets = &config.Secrets{
 			Labels: map[string]string(kratosLabel),
 		}
-		if err := mergo.Map(&conf.Secrets.Labels, conf.Common.Labels); err != nil {
+		if err := mergo.Map(&s.Secrets.Labels, s.Common.Labels); err != nil {
 			return fmt.Errorf("merging secrets labels failed: %s", err)
 		}
 	}
 
-	for _, file := range conf.Secrets.Files {
+	for _, file := range s.Secrets.Files {
 		secretName := name + "-" + file.Name
 
 		secret := &corev1.Secret{
@@ -139,12 +145,12 @@ func (c *Client) CreateUpdateSecrets(name, namespace string, conf *config.Config
 				Name:      secretName,
 				Namespace: namespace,
 				Labels: labels.Merge(
-					conf.Secrets.Labels,
+					s.Secrets.Labels,
 					labels.Set{
 						SecretLabelName: secretName,
 					},
 				),
-				Annotations: conf.Common.Annotations,
+				Annotations: s.Common.Annotations,
 			},
 			StringData: map[string]string{
 				file.Name: file.Data,
@@ -152,7 +158,7 @@ func (c *Client) CreateUpdateSecrets(name, namespace string, conf *config.Config
 			Type: corev1.SecretTypeOpaque,
 		}
 
-		if err := c.createUpdateSecret(secret); err != nil {
+		if err := s.createUpdate(secret); err != nil {
 			return err
 		}
 	}
@@ -160,10 +166,10 @@ func (c *Client) CreateUpdateSecrets(name, namespace string, conf *config.Config
 	return nil
 }
 
-// DeleteSecrets delete the secrets contained in conf for the specified namespace
-func (c *Client) DeleteSecrets(name, namespace string, conf *config.Config) error {
-	for _, file := range conf.Secrets.Files {
-		if err := c.deleteSecret(name+"-"+file.Name, namespace); err != nil {
+// Delete the secrets contained in conf for the specified namespace
+func (s *Secret) Delete(name, namespace string) error {
+	for _, file := range s.Secrets.Files {
+		if err := s.delete(name+"-"+file.Name, namespace); err != nil {
 			return err
 		}
 	}
@@ -171,22 +177,22 @@ func (c *Client) DeleteSecrets(name, namespace string, conf *config.Config) erro
 	return nil
 }
 
-// deleteSecret delete a secret from a namespace
-func (c *Client) deleteSecret(name, namespace string) error {
-	if err := c.checkSecretOwnership(name, namespace); err != nil {
+// delete a secret from a namespace
+func (s *Secret) delete(name, namespace string) error {
+	if err := s.checkOwnership(name, namespace); err != nil {
 		return err
 	}
 
-	if err := c.Clientset.CoreV1().Secrets(namespace).Delete(context.Background(), name, metav1.DeleteOptions{}); err != nil {
+	if err := s.Clientset.CoreV1().Secrets(namespace).Delete(context.Background(), name, metav1.DeleteOptions{}); err != nil {
 		return fmt.Errorf("deleting secret %s failed: %s", name, err)
 	}
 
 	return nil
 }
 
-// GetSecret get a secret from a namespace
-func (c *Client) GetSecret(name, namespace string) (*corev1.Secret, error) {
-	secret, err := c.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), name, metav1.GetOptions{})
+// Get a secret from a namespace
+func (s *Secret) Get(name, namespace string) (*corev1.Secret, error) {
+	secret, err := s.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("getting secret %s failed: %s", name, err)
 	}
@@ -194,9 +200,9 @@ func (c *Client) GetSecret(name, namespace string) (*corev1.Secret, error) {
 	return secret, nil
 }
 
-// listSecrets list the secret in the specified namespace
-func (c *Client) listSecrets(namespace string) (*corev1.SecretList, error) {
-	list, err := c.Clientset.CoreV1().Secrets(namespace).List(context.Background(), metav1.ListOptions{})
+// list the secret in the specified namespace
+func (s *Secret) list(namespace string) (*corev1.SecretList, error) {
+	list, err := s.Clientset.CoreV1().Secrets(namespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("getting secrets list failed: %s", err)
 	}

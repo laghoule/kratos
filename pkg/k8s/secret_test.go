@@ -10,6 +10,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/kubernetes/fake"
 )
 
 const (
@@ -17,6 +18,19 @@ const (
 	secretUpdatedData = "my updated secret data"
 	secretFileName    = "credentials.yaml"
 )
+
+func newSecret() (*Secret, error) {
+	conf := &config.Config{}
+
+	if err := conf.Load(secretConfig); err != nil {
+		return nil, err
+	}
+
+	return &Secret{
+		Clientset: fake.NewSimpleClientset(),
+		Config:    conf,
+	}, nil
+}
 
 // createSecret return a secret object
 func createSecret() *corev1.Secret {
@@ -75,41 +89,15 @@ func createConfigSecret() *corev1.Secret {
 	}
 }
 
-func createNotKratosSecret(c *Client, conf *config.Config) error {
-	if err := conf.Load(secretConfig); err != nil {
+func createNotKratosSecret(s *Secret) error {
+	if err := s.Load(secretConfig); err != nil {
 		return err
 	}
 
 	secret := createSecret()
 	secret.Labels = nil
 
-	if _, err := c.Clientset.CoreV1().Secrets(namespace).Create(context.Background(), secret, metav1.CreateOptions{}); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// loadConfigCreateSecret load secretConfig file configuration and create secrets
-func loadConfigCreateSecret(c *Client, conf *config.Config) error {
-	if err := conf.Load(secretConfig); err != nil {
-		return err
-	}
-
-	if err := c.CreateUpdateSecrets(name, namespace, conf); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// loadSaveConfig load secretConfig and save release configuration in secret
-func loadSaveConfig(c *Client, name, namespace string, conf *config.Config) error {
-	if err := conf.Load(secretConfig); err != nil {
-		return err
-	}
-
-	if err := c.SaveConfig(name, namespace, config.ConfigKey, secretData, conf); err != nil {
+	if _, err := s.Clientset.CoreV1().Secrets(namespace).Create(context.Background(), secret, metav1.CreateOptions{}); err != nil {
 		return err
 	}
 
@@ -118,17 +106,20 @@ func loadSaveConfig(c *Client, name, namespace string, conf *config.Config) erro
 
 // TestSaveConfig test saving a release configuration
 func TestSaveConfig(t *testing.T) {
-	c := new()
-	conf := &config.Config{}
-
-	secretName := name + config.ConfigSuffix
-
-	if err := loadSaveConfig(c, secretName, namespace, conf); err != nil {
+	s, err := newSecret()
+	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	secret, err := c.GetSecret(secretName, namespace)
+	secretName := name + config.ConfigSuffix
+
+	if err := s.SaveConfig(secretName, namespace, config.ConfigKey, secretData); err != nil {
+		t.Error(err)
+		return
+	}
+
+	secret, err := s.Get(secretName, namespace)
 	if err != nil {
 		t.Error(err)
 		return
@@ -140,20 +131,25 @@ func TestSaveConfig(t *testing.T) {
 
 // TestDeleteConfig test deleting a release configuration
 func TestDeleteConfig(t *testing.T) {
-	c := new()
-	conf := &config.Config{}
-
-	if err := loadSaveConfig(c, name+config.ConfigSuffix, namespace, conf); err != nil {
+	s, err := newSecret()
+	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	if err := c.DeleteConfig(name+config.ConfigSuffix, namespace); err != nil {
+	secretName := name + config.ConfigSuffix
+
+	if err := s.SaveConfig(secretName, namespace, config.ConfigKey, secretData); err != nil {
 		t.Error(err)
 		return
 	}
 
-	list, err := c.listSecrets(namespace)
+	if err := s.DeleteConfig(secretName, namespace); err != nil {
+		t.Error(err)
+		return
+	}
+
+	list, err := s.list(namespace)
 	if err != nil {
 		t.Error(err)
 		return
@@ -164,17 +160,20 @@ func TestDeleteConfig(t *testing.T) {
 
 // TestCreateUpdateSecret test the creation and update of a secret
 func TestCreateUpdateSecret(t *testing.T) {
-	c := new()
-	conf := &config.Config{}
-
-	if err := loadConfigCreateSecret(c, conf); err != nil {
+	s, err := newSecret()
+	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	secretName := name + "-" + conf.Secrets.Files[0].Name
+	if err := s.CreateUpdate(name, namespace); err != nil {
+		t.Error(err)
+		return
+	}
 
-	secret, err := c.GetSecret(secretName, namespace)
+	secretName := name + "-" + s.Secrets.Files[0].Name
+
+	secret, err := s.Get(secretName, namespace)
 	if err != nil {
 		t.Error(err)
 		return
@@ -185,12 +184,12 @@ func TestCreateUpdateSecret(t *testing.T) {
 
 	// update
 	expected.StringData[config.ConfigKey] = secretUpdatedData
-	if err := c.CreateUpdateSecrets(name, namespace, conf); err != nil {
+	if err := s.CreateUpdate(name, namespace); err != nil {
 		t.Error(err)
 		return
 	}
 
-	if _, err = c.GetSecret(secretName, namespace); err != nil {
+	if _, err = s.Get(secretName, namespace); err != nil {
 		t.Error(err)
 		return
 	}
@@ -200,15 +199,18 @@ func TestCreateUpdateSecret(t *testing.T) {
 
 // TestDeleteSecrets test delete of a secret
 func TestDeleteSecrets(t *testing.T) {
-	c := new()
-	conf := &config.Config{}
-
-	if err := loadConfigCreateSecret(c, conf); err != nil {
+	s, err := newSecret()
+	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	list, err := c.listSecrets(namespace)
+	if err := s.CreateUpdate(name, namespace); err != nil {
+		t.Error(err)
+		return
+	}
+
+	list, err := s.list(namespace)
 	if err != nil {
 		t.Error(err)
 		return
@@ -216,12 +218,12 @@ func TestDeleteSecrets(t *testing.T) {
 
 	assert.Len(t, list.Items, 1)
 
-	if err := c.DeleteSecrets(name, namespace, conf); err != nil {
+	if err := s.Delete(name, namespace); err != nil {
 		t.Error(err)
 		return
 	}
 
-	list, err = c.listSecrets(namespace)
+	list, err = s.list(namespace)
 	if err != nil {
 		t.Error(err)
 		return
@@ -232,17 +234,20 @@ func TestDeleteSecrets(t *testing.T) {
 
 // TestGetSecret test getting a secret
 func TestGetSecret(t *testing.T) {
-	c := new()
-	conf := &config.Config{}
-
-	if err := loadConfigCreateSecret(c, conf); err != nil {
+	s, err := newSecret()
+	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	secretName := name + "-" + conf.Secrets.Files[0].Name
+	if err := s.CreateUpdate(name, namespace); err != nil {
+		t.Error(err)
+		return
+	}
 
-	secret, err := c.GetSecret(secretName, namespace)
+	secretName := name + "-" + s.Secrets.Files[0].Name
+
+	secret, err := s.Get(secretName, namespace)
 	if err != nil {
 		t.Error(err)
 		return
@@ -254,29 +259,35 @@ func TestGetSecret(t *testing.T) {
 }
 
 func TestCreateUpdateSecretNotOwnedByKratos(t *testing.T) {
-	c := new()
-	conf := &config.Config{}
-
-	if err := createNotKratosSecret(c, conf); err != nil {
+	s, err := newSecret()
+	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	if err := c.CreateUpdateSecrets(name, namespace, conf); assert.Error(t, err) {
+	if err := createNotKratosSecret(s); err != nil {
+		t.Error(err)
+		return
+	}
+
+	if err := s.CreateUpdate(name, namespace); assert.Error(t, err) {
 		assert.Equal(t, "secret is not managed by kratos", err.Error())
 	}
 }
 
 func TestDeleteSecretNotOwnedByKratos(t *testing.T) {
-	c := new()
-	conf := &config.Config{}
-
-	if err := createNotKratosSecret(c, conf); err != nil {
+	s, err := newSecret()
+	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	if err := c.DeleteSecrets(name, namespace, conf); assert.Error(t, err) {
+	if err := createNotKratosSecret(s); err != nil {
+		t.Error(err)
+		return
+	}
+
+	if err := s.Delete(name, namespace); assert.Error(t, err) {
 		assert.Equal(t, "secret is not managed by kratos", err.Error())
 	}
 }

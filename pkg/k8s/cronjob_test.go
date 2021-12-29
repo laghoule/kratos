@@ -13,7 +13,21 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/fake"
 )
+
+func newCronjob() (*Cronjob, error) {
+	conf := &config.Config{}
+
+	if err := conf.Load(cronjobConfig); err != nil {
+		return nil, err
+	}
+
+	return &Cronjob{
+		Clientset: fake.NewSimpleClientset(),
+		Config:    conf,
+	}, nil
+}
 
 func createCronjobs() *batchv1.CronJob {
 	var retry int32 = 3
@@ -99,22 +113,20 @@ func createCronjobs() *batchv1.CronJob {
 	}
 }
 
-// TestListCronjobs test the listing of cronjobs
+// TestList test the listing of cronjobs
 func TestListCronjobs(t *testing.T) {
-	c := new()
-	conf := &config.Config{}
-
-	if err := conf.Load(cronjobConfig); err != nil {
+	c, err := newCronjob()
+	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	if err := c.CreateUpdateCronjob(name, namespace, conf); err != nil {
+	if err := c.CreateUpdate(name, namespace); err != nil {
 		t.Error(err)
 		return
 	}
 
-	list, err := c.ListCronjobs(namespace)
+	list, err := c.List(namespace)
 	if err != nil {
 		t.Error(err)
 		return
@@ -124,33 +136,34 @@ func TestListCronjobs(t *testing.T) {
 }
 
 func TestCreateUpdateCronjobNotOwnedByKratos(t *testing.T) {
-	c := new()
-	conf := &config.Config{}
-
-	cron := createCronjobs()
-	cron.Labels = nil
-
-	_, err := c.Clientset.BatchV1().CronJobs(namespace).Create(context.Background(), cron, metav1.CreateOptions{})
+	c, err := newCronjob()
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	if err := c.CreateUpdateCronjob(name, namespace, conf); assert.Error(t, err) {
+	cron := createCronjobs()
+	cron.Labels = nil
+
+	_, err = c.Clientset.BatchV1().CronJobs(namespace).Create(context.Background(), cron, metav1.CreateOptions{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if err := c.CreateUpdate(name, namespace); assert.Error(t, err) {
 		assert.Equal(t, err.Error(), "cronjob is not managed by kratos")
 	}
 }
 
 func TestCreateUpdateCronjob(t *testing.T) {
-	c := new()
-	conf := &config.Config{}
-
-	if err := conf.Load(cronjobConfig); err != nil {
+	c, err := newCronjob()
+	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	if err := c.CreateUpdateCronjob(name, namespace, conf); err != nil {
+	if err := c.CreateUpdate(name, namespace); err != nil {
 		t.Error(err)
 		return
 	}
@@ -164,9 +177,9 @@ func TestCreateUpdateCronjob(t *testing.T) {
 	expected := createCronjobs()
 	assert.Equal(t, expected, result)
 
-	conf.Cronjob.Container.Tag = tagV1
+	c.Cronjob.Container.Tag = tagV1
 
-	if err := c.CreateUpdateCronjob(name, namespace, conf); err != nil {
+	if err := c.CreateUpdate(name, namespace); err != nil {
 		t.Error(err)
 		return
 	}
@@ -181,32 +194,34 @@ func TestCreateUpdateCronjob(t *testing.T) {
 }
 
 func TestDeleteCronjobNotOwnedByKratos(t *testing.T) {
-	c := new()
-
-	cron := createCronjobs()
-	cron.Labels = nil
-
-	_, err := c.Clientset.BatchV1().CronJobs(namespace).Create(context.Background(), cron, metav1.CreateOptions{})
+	c, err := newCronjob()
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	if err := c.DeleteCronjob(name, namespace); assert.Error(t, err) {
-		assert.Equal(t, err.Error(), "cronjob is not managed by kratos")
-	}
-}
+	cron := createCronjobs()
+	cron.Labels = nil
 
-func TestDeleteCronjob(t *testing.T) {
-	c := new()
-	conf := &config.Config{}
-
-	if err := conf.Load(cronjobConfig); err != nil {
+	_, err = c.Clientset.BatchV1().CronJobs(namespace).Create(context.Background(), cron, metav1.CreateOptions{})
+	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	if err := c.CreateUpdateCronjob(name, namespace, conf); err != nil {
+	if err := c.Delete(name, namespace); assert.Error(t, err) {
+		assert.Equal(t, "cronjob is not managed by kratos", err.Error())
+	}
+}
+
+func TestDeleteCronjob(t *testing.T) {
+	c, err := newCronjob()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if err := c.CreateUpdate(name, namespace); err != nil {
 		t.Error(err)
 		return
 	}
@@ -220,7 +235,7 @@ func TestDeleteCronjob(t *testing.T) {
 	expected := createCronjobs()
 	assert.Equal(t, expected, result)
 
-	if err := c.DeleteCronjob(name, namespace); err != nil {
+	if err := c.Delete(name, namespace); err != nil {
 		t.Error(err)
 		return
 	}

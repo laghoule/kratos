@@ -12,12 +12,18 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/kubernetes"
 
 	"github.com/imdario/mergo"
 )
 
-// checkCronjobOwnership check if it's safe to create, update or delete the cronjob
-func (c *Client) checkCronjobOwnership(name, namespace string) error {
+type Cronjob struct {
+	Clientset kubernetes.Interface
+	*config.Config
+}
+
+// checkOwnership check if it's safe to create, update or delete the cronjob
+func (c *Cronjob) checkOwnership(name, namespace string) error {
 	cron, err := c.Clientset.BatchV1().CronJobs(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -36,8 +42,8 @@ func (c *Client) checkCronjobOwnership(name, namespace string) error {
 	return fmt.Errorf("cronjob is not managed by kratos")
 }
 
-// ListCronjobs list cronjob
-func (c *Client) ListCronjobs(namespace string) ([]batchv1.CronJob, error) {
+// List cronjob
+func (c *Cronjob) List(namespace string) ([]batchv1.CronJob, error) {
 	list, err := c.Clientset.BatchV1().CronJobs(namespace).List(context.Background(), metav1.ListOptions{
 		LabelSelector: config.DeployLabel,
 	})
@@ -48,9 +54,9 @@ func (c *Client) ListCronjobs(namespace string) ([]batchv1.CronJob, error) {
 	return list.Items, nil
 }
 
-// CreateUpdateCronjob create or update a cronjobs
-func (c *Client) CreateUpdateCronjob(name, namespace string, conf *config.Config) error {
-	if err := c.checkCronjobOwnership(name, namespace); err != nil {
+// CreateUpdate create or update a cronjobs
+func (c *Cronjob) CreateUpdate(name, namespace string) error {
+	if err := c.checkOwnership(name, namespace); err != nil {
 		return err
 	}
 
@@ -60,74 +66,74 @@ func (c *Client) CreateUpdateCronjob(name, namespace string, conf *config.Config
 	}
 
 	// merge common & cronjob labels
-	if conf.Common != nil && conf.Common.Labels != nil {
-		if err := mergo.Map(&conf.Cronjob.Labels, conf.Common.Labels); err != nil {
+	if c.Common != nil && c.Common.Labels != nil {
+		if err := mergo.Map(&c.Cronjob.Labels, c.Common.Labels); err != nil {
 			return fmt.Errorf("merging cronjob labels failed: %s", err)
 		}
 	}
 
 	// merge kratosLabels & cronjob labels
-	if err := mergo.Map(&conf.Cronjob.Labels, map[string]string(kratosLabel)); err != nil {
+	if err := mergo.Map(&c.Cronjob.Labels, map[string]string(kratosLabel)); err != nil {
 		return fmt.Errorf("merging cronjob labels failed: %s", err)
 	}
 
 	// merge common & cronjob annotations
-	if conf.Common != nil && conf.Common.Annotations != nil {
-		if err := mergo.Map(&conf.Cronjob.Annotations, conf.Common.Annotations); err != nil {
+	if c.Common != nil && c.Common.Annotations != nil {
+		if err := mergo.Map(&c.Cronjob.Annotations, c.Common.Annotations); err != nil {
 			return fmt.Errorf("merging cronjob annotations failed: %s", err)
 		}
 	}
 
-	volumesMount, volumes := getVolumesConfForContainer(name, conf.Cronjob.Container, conf)
+	volumesMount, volumes := getVolumesConfForContainer(name, c.Cronjob.Container, c.Config)
 
 	cronjobs := &batchv1.CronJob{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 			Labels: labels.Merge(
-				conf.Cronjob.Labels,
+				c.Cronjob.Labels,
 				labels.Set{
 					CronLabelName: name,
 				},
 			),
-			Annotations: conf.Cronjob.Annotations,
+			Annotations: c.Cronjob.Annotations,
 		},
 		Spec: batchv1.CronJobSpec{
-			Schedule:          conf.Cronjob.Schedule,
+			Schedule:          c.Cronjob.Schedule,
 			ConcurrencyPolicy: batchv1.ForbidConcurrent,
 			JobTemplate: batchv1.JobTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      name,
 					Namespace: namespace,
 					Labels: labels.Merge(
-						conf.Cronjob.Labels,
+						c.Cronjob.Labels,
 						labels.Set{
 							CronLabelName: name,
 						},
 					),
-					Annotations: conf.Cronjob.Annotations,
+					Annotations: c.Cronjob.Annotations,
 				},
 				Spec: batchv1.JobSpec{
-					BackoffLimit: &conf.Cronjob.Retry,
+					BackoffLimit: &c.Cronjob.Retry,
 					Template: corev1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
-							Name:      conf.Cronjob.Container.Name,
+							Name:      c.Cronjob.Container.Name,
 							Namespace: namespace,
 							Labels: labels.Merge(
-								conf.Cronjob.Labels,
+								c.Cronjob.Labels,
 								labels.Set{
 									CronLabelName: name,
 								},
 							),
-							Annotations: conf.Cronjob.Annotations,
+							Annotations: c.Cronjob.Annotations,
 						},
 						Spec: corev1.PodSpec{
 							RestartPolicy: corev1.RestartPolicyOnFailure,
 							Containers: []corev1.Container{
 								{
-									Name:         conf.Cronjob.Container.Name,
-									Image:        conf.Cronjob.Container.Image + ":" + conf.Cronjob.Container.Tag,
-									Resources:    conf.Cronjob.Container.FormatResources(),
+									Name:         c.Cronjob.Container.Name,
+									Image:        c.Cronjob.Container.Image + ":" + c.Cronjob.Container.Tag,
+									Resources:    c.Cronjob.Container.FormatResources(),
 									VolumeMounts: volumesMount,
 								},
 							},
@@ -158,9 +164,9 @@ func (c *Client) CreateUpdateCronjob(name, namespace string, conf *config.Config
 	return nil
 }
 
-// DeleteCronjob delete the specified cronjobs
-func (c *Client) DeleteCronjob(name, namespace string) error {
-	if err := c.checkCronjobOwnership(name, namespace); err != nil {
+// Delete the specified cronjobs
+func (c *Cronjob) Delete(name, namespace string) error {
+	if err := c.checkOwnership(name, namespace); err != nil {
 		return err
 	}
 

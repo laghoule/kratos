@@ -28,12 +28,34 @@ const (
 )
 
 func new() *Kratos {
-	kratos := &Kratos{
-		Client: &k8s.Client{},
+	conf := createConf()
+	clientset := fake.NewSimpleClientset()
+	return &Kratos{
+		Client: &k8s.Client{
+			Clientset: clientset,
+			Cronjob: &k8s.Cronjob{
+				Clientset: clientset,
+				Config:    conf,
+			},
+			Deployment: &k8s.Deployment{
+				Clientset: clientset,
+				Config:    conf,
+			},
+			Ingress: &k8s.Ingress{
+				Clientset: clientset,
+				Config:    conf,
+			},
+			Secret: &k8s.Secret{
+				Clientset: clientset,
+				Config:    conf,
+			},
+			Service: &k8s.Service{
+				Clientset: clientset,
+				Config:    conf,
+			},
+		},
 		Config: &config.Config{},
 	}
-	kratos.Clientset = fake.NewSimpleClientset()
-	return kratos
 }
 
 func TestCreateInit(t *testing.T) {

@@ -37,7 +37,7 @@ func (k *Kratos) saveConfigToSecret(name, namespace string) error {
 		return fmt.Errorf("saving configuration to kubernetes secret failed: %s", err)
 	}
 
-	if err := k.Client.SaveConfig(name, namespace, config.ConfigKey, string(b), k.Config); err != nil {
+	if err := k.Client.SaveConfig(name, namespace, config.ConfigKey, string(b)); err != nil {
 		return err
 	}
 
@@ -46,7 +46,7 @@ func (k *Kratos) saveConfigToSecret(name, namespace string) error {
 
 // SaveConfigToDisk get config from secret and write it to disk
 func (k *Kratos) SaveConfigToDisk(name, namespace, destination string) error {
-	secret, err := k.Client.GetSecret(name+config.ConfigSuffix, namespace)
+	secret, err := k.Client.Get(name+config.ConfigSuffix, namespace)
 	if err != nil {
 		return err
 	}

@@ -11,14 +11,20 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/client-go/kubernetes"
 
 	"github.com/imdario/mergo"
 	"github.com/jinzhu/copier"
 )
 
-// checkServiceOwnership check if it's safe to create, update or delete the service
-func (c *Client) checkServiceOwnership(name, namespace string) error {
-	svc, err := c.Clientset.CoreV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})
+type Service struct {
+	Clientset kubernetes.Interface
+	*config.Config
+}
+
+// checkOwnership check if it's safe to create, update or delete the service
+func (s *Service) checkOwnership(name, namespace string) error {
+	svc, err := s.Clientset.CoreV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil
@@ -36,9 +42,9 @@ func (c *Client) checkServiceOwnership(name, namespace string) error {
 	return fmt.Errorf("service is not managed by kratos")
 }
 
-// CreateUpdateService create or update a service
-func (c *Client) CreateUpdateService(name, namespace string, conf *config.Config) error {
-	if err := c.checkServiceOwnership(name, namespace); err != nil {
+// CreateUpdate create or update a service
+func (s *Service) CreateUpdate(name, namespace string) error {
+	if err := s.checkOwnership(name, namespace); err != nil {
 		return err
 	}
 
@@ -62,9 +68,9 @@ func (c *Client) CreateUpdateService(name, namespace string, conf *config.Config
 			Ports: []corev1.ServicePort{
 				{
 					Name: name,
-					Port: conf.Deployment.Port,
+					Port: s.Deployment.Port,
 					TargetPort: intstr.IntOrString{
-						IntVal: conf.Deployment.Port,
+						IntVal: s.Deployment.Port,
 					},
 				},
 			},
@@ -74,11 +80,11 @@ func (c *Client) CreateUpdateService(name, namespace string, conf *config.Config
 		},
 	}
 
-	_, err = c.Clientset.CoreV1().Services(namespace).Create(context.Background(), svc, metav1.CreateOptions{})
+	_, err = s.Clientset.CoreV1().Services(namespace).Create(context.Background(), svc, metav1.CreateOptions{})
 	if err != nil {
 		// if service exist, we call update
 		if errors.IsAlreadyExists(err) {
-			if err := c.updateService(name, namespace, conf); err != nil {
+			if err := s.update(name, namespace); err != nil {
 				return fmt.Errorf("updating service failed: %s", err)
 			}
 		} else {
@@ -89,8 +95,8 @@ func (c *Client) CreateUpdateService(name, namespace string, conf *config.Config
 	return nil
 }
 
-// updateService update an existing service. Used by CreateUpdateService.
-func (c *Client) updateService(name, namespace string, conf *config.Config) error {
+// update an existing service. Used by CreateUpdateService.
+func (s *Service) update(name, namespace string) error {
 	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
 	if err != nil {
 		return nil
@@ -98,7 +104,7 @@ func (c *Client) updateService(name, namespace string, conf *config.Config) erro
 
 	// deep copy of map for svcLabels
 	svcLabels := map[string]string{}
-	if err := copier.Copy(&svcLabels, &conf.Common.Labels); err != nil {
+	if err := copier.Copy(&svcLabels, &s.Common.Labels); err != nil {
 		return fmt.Errorf("copying common labels values failed: %s", err)
 	}
 
@@ -110,11 +116,11 @@ func (c *Client) updateService(name, namespace string, conf *config.Config) erro
 	}
 
 	// merge common & service labels
-	if err := mergo.Map(&svcLabels, conf.Common.Labels); err != nil {
+	if err := mergo.Map(&svcLabels, s.Common.Labels); err != nil {
 		return fmt.Errorf("merging common labels failed: %s", err)
 	}
 
-	svcInfo, err := c.Clientset.CoreV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	svcInfo, err := s.Clientset.CoreV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("getting service informations failed: %s", err)
 	}
@@ -129,7 +135,7 @@ func (c *Client) updateService(name, namespace string, conf *config.Config) erro
 					DepLabelName: name,
 				},
 			),
-			Annotations:     conf.Common.Annotations,
+			Annotations:     s.Common.Annotations,
 			ResourceVersion: svcInfo.ResourceVersion,
 		},
 		Spec: corev1.ServiceSpec{
@@ -137,9 +143,9 @@ func (c *Client) updateService(name, namespace string, conf *config.Config) erro
 			Ports: []corev1.ServicePort{
 				{
 					Name: name,
-					Port: conf.Deployment.Port,
+					Port: s.Deployment.Port,
 					TargetPort: intstr.IntOrString{
-						IntVal: conf.Deployment.Port,
+						IntVal: s.Deployment.Port,
 					},
 				},
 			},
@@ -149,7 +155,7 @@ func (c *Client) updateService(name, namespace string, conf *config.Config) erro
 		},
 	}
 
-	_, err = c.Clientset.CoreV1().Services(namespace).Update(context.Background(), svc, metav1.UpdateOptions{})
+	_, err = s.Clientset.CoreV1().Services(namespace).Update(context.Background(), svc, metav1.UpdateOptions{})
 	if err != nil {
 		return fmt.Errorf("updating service failed: %s", err)
 	}
@@ -157,13 +163,13 @@ func (c *Client) updateService(name, namespace string, conf *config.Config) erro
 	return nil
 }
 
-// DeleteService delete the specified service
-func (c *Client) DeleteService(name, namespace string) error {
-	if err := c.checkServiceOwnership(name, namespace); err != nil {
+// Delete the specified service
+func (s *Service) Delete(name, namespace string) error {
+	if err := s.checkOwnership(name, namespace); err != nil {
 		return err
 	}
 
-	if err := c.Clientset.CoreV1().Services(namespace).Delete(context.Background(), name, metav1.DeleteOptions{}); err != nil {
+	if err := s.Clientset.CoreV1().Services(namespace).Delete(context.Background(), name, metav1.DeleteOptions{}); err != nil {
 		return fmt.Errorf("delete service failed: %s", err)
 	}
 

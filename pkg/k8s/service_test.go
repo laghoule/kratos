@@ -11,7 +11,21 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/client-go/kubernetes/fake"
 )
+
+func newService() (*Service, error) {
+	conf := &config.Config{}
+
+	if err := conf.Load(secretConfig); err != nil {
+		return nil, err
+	}
+
+	return &Service{
+		Clientset: fake.NewSimpleClientset(),
+		Config:    conf,
+	}, nil
+}
 
 // createService return a service object
 func createService() *corev1.Service {
@@ -43,10 +57,13 @@ func createService() *corev1.Service {
 
 // TestCreateUpdateServiceNotOwnedByKratos test update of a service not owned by kratos
 func TestCreateUpdateServiceNotOwnedByKratos(t *testing.T) {
-	c := new()
-	conf := &config.Config{}
+	s, err := newService()
+	if err != nil {
+		t.Error(err)
+		return
+	}
 
-	if err := conf.Load(deploymentConfig); err != nil {
+	if err := s.Load(deploymentConfig); err != nil {
 		t.Error(err)
 		return
 	}
@@ -54,35 +71,33 @@ func TestCreateUpdateServiceNotOwnedByKratos(t *testing.T) {
 	extSvc := createService()
 	extSvc.Labels = nil
 
-	_, err := c.Clientset.CoreV1().Services(namespace).Create(context.Background(), extSvc, metav1.CreateOptions{})
+	_, err = s.Clientset.CoreV1().Services(namespace).Create(context.Background(), extSvc, metav1.CreateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
 	// create && fail
-	if err := c.CreateUpdateService(name, namespace, conf); assert.Error(t, err) {
+	if err := s.CreateUpdate(name, namespace); assert.Error(t, err) {
 		assert.Equal(t, err.Error(), "service is not managed by kratos")
 	}
 }
 
 // TestCreateUpdateDeployment test creation and update of a service
 func TestCreateUpdateService(t *testing.T) {
-	c := new()
-	conf := &config.Config{}
-
-	if err := conf.Load(deploymentConfig); err != nil {
+	s, err := newService()
+	if err != nil {
 		t.Error(err)
 		return
 	}
 
 	// create
-	if err := c.CreateUpdateService(name, namespace, conf); err != nil {
+	if err := s.CreateUpdate(name, namespace); err != nil {
 		t.Error(err)
 		return
 	}
 
-	svc, err := c.Clientset.CoreV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	svc, err := s.Clientset.CoreV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -91,13 +106,13 @@ func TestCreateUpdateService(t *testing.T) {
 	assert.Equal(t, createService(), svc)
 
 	// update
-	conf.Deployment.Port = 443
-	if err := c.CreateUpdateService(name, namespace, conf); err != nil {
+	s.Deployment.Port = 443
+	if err := s.CreateUpdate(name, namespace); err != nil {
 		t.Error(err)
 		return
 	}
 
-	svc, err = c.Clientset.CoreV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	svc, err = s.Clientset.CoreV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -108,10 +123,8 @@ func TestCreateUpdateService(t *testing.T) {
 
 // TestDeleteService test delete of a service not owned by kratos
 func TestDeleteServiceNotOwnedByKratos(t *testing.T) {
-	c := new()
-	conf := &config.Config{}
-
-	if err := conf.Load(deploymentConfig); err != nil {
+	s, err := newService()
+	if err != nil {
 		t.Error(err)
 		return
 	}
@@ -119,33 +132,31 @@ func TestDeleteServiceNotOwnedByKratos(t *testing.T) {
 	extSvc := createService()
 	extSvc.Labels = nil
 
-	_, err := c.Clientset.CoreV1().Services(namespace).Create(context.Background(), extSvc, metav1.CreateOptions{})
+	_, err = s.Clientset.CoreV1().Services(namespace).Create(context.Background(), extSvc, metav1.CreateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	if err := c.DeleteService(name, namespace); assert.Error(t, err) {
+	if err := s.Delete(name, namespace); assert.Error(t, err) {
 		assert.Equal(t, err.Error(), "service is not managed by kratos")
 	}
 }
 
 // TestDeleteService test delete of a service
 func TestDeleteService(t *testing.T) {
-	c := new()
-	conf := &config.Config{}
-
-	if err := conf.Load(deploymentConfig); err != nil {
+	s, err := newService()
+	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	if err := c.CreateUpdateService(name, namespace, conf); err != nil {
+	if err := s.CreateUpdate(name, namespace); err != nil {
 		t.Error(err)
 		return
 	}
 
-	svc, err := c.Clientset.CoreV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	svc, err := s.Clientset.CoreV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -153,12 +164,12 @@ func TestDeleteService(t *testing.T) {
 
 	assert.NotEmpty(t, svc)
 
-	if err := c.DeleteService(name, namespace); err != nil {
+	if err := s.Delete(name, namespace); err != nil {
 		t.Error(err)
 		return
 	}
 
-	_, err = c.Clientset.CoreV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	_, err = s.Clientset.CoreV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil && !errors.IsNotFound(err) {
 		t.Error(err)
 		return

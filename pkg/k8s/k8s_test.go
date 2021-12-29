@@ -6,7 +6,6 @@ import (
 	"github.com/laghoule/kratos/pkg/common"
 
 	"github.com/stretchr/testify/assert"
-	"k8s.io/client-go/kubernetes/fake"
 )
 
 const (
@@ -30,12 +29,6 @@ const (
 
 	managedByLabel = "app.kubernetes.io/managed-by"
 )
-
-func new() *Client {
-	c := &Client{}
-	c.Clientset = fake.NewSimpleClientset()
-	return c
-}
 
 func TestBoolPTR(t *testing.T) {
 	expected := true

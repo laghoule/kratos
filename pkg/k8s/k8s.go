@@ -17,6 +17,11 @@ import (
 type Client struct {
 	Clientset  kubernetes.Interface
 	RestConfig *rest.Config
+	*Cronjob
+	*Deployment
+	*Ingress
+	*Secret
+	*Service
 }
 
 const (
@@ -33,7 +38,7 @@ const (
 )
 
 // New return a a Client
-func New(kubeconfig string) (*Client, error) {
+func New(kubeconfig string, conf *config.Config) (*Client, error) {
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
 	if err != nil {
 		return nil, fmt.Errorf("unable get kubernetes client configuration: %s", err)
@@ -45,8 +50,28 @@ func New(kubeconfig string) (*Client, error) {
 	}
 
 	return &Client{
-		Clientset:  clientset,
-		RestConfig: config,
+		Clientset:  clientset, // TODO: Check to eliminate the Clientset
+		RestConfig: config,    // TODO: Needed for certmanager client, check to better integrate this
+		Cronjob: &Cronjob{
+			Clientset: clientset,
+			Config:    conf,
+		},
+		Deployment: &Deployment{
+			Clientset: clientset,
+			Config:    conf,
+		},
+		Ingress: &Ingress{
+			Clientset: clientset,
+			Config:    conf,
+		},
+		Secret: &Secret{
+			Clientset: clientset,
+			Config:    conf,
+		},
+		Service: &Service{
+			Clientset: clientset,
+			Config:    conf,
+		},
 	}, nil
 }
 
@@ -63,8 +88,6 @@ func (c *Client) CheckVersionDepency() error {
 
 	return nil
 }
-
-
 
 // checkKratosManaged check if the object labels contains `app.kubernetes.io/managed-by=kratos` label
 func checkKratosManaged(objLabels map[string]string) error {

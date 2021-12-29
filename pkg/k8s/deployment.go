@@ -12,14 +12,20 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/kubernetes"
 
 	"github.com/imdario/mergo"
 	"github.com/jinzhu/copier"
 )
 
-// checkDeploymentOwnership check if it's safe to create, update or delete the deployment
-func (c *Client) checkDeploymentOwnership(name, namespace string) error {
-	dep, err := c.Clientset.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
+type Deployment struct {
+	Clientset kubernetes.Interface
+	*config.Config
+}
+
+// checkOwnership check if it's safe to create, update or delete the deployment
+func (d *Deployment) checkOwnership(name, namespace string) error {
+	dep, err := d.Clientset.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil
@@ -37,9 +43,9 @@ func (c *Client) checkDeploymentOwnership(name, namespace string) error {
 	return fmt.Errorf("deployment is not managed by kratos")
 }
 
-// ListDeployments list deployments
-func (c *Client) ListDeployments(namespace string) ([]appsv1.Deployment, error) {
-	list, err := c.Clientset.AppsV1().Deployments(namespace).List(context.Background(), metav1.ListOptions{
+// List deployments
+func (d *Deployment) List(namespace string) ([]appsv1.Deployment, error) {
+	list, err := d.Clientset.AppsV1().Deployments(namespace).List(context.Background(), metav1.ListOptions{
 		LabelSelector: config.DeployLabel,
 	})
 	if err != nil {
@@ -49,9 +55,9 @@ func (c *Client) ListDeployments(namespace string) ([]appsv1.Deployment, error) 
 	return list.Items, nil
 }
 
-// CreateUpdateDeployment create or update a deployment
-func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Config) error {
-	if err := c.checkDeploymentOwnership(name, namespace); err != nil {
+// CreateUpdate create or update a deployment
+func (d *Deployment) CreateUpdate(name, namespace string) error {
+	if err := d.checkOwnership(name, namespace); err != nil {
 		return err
 	}
 
@@ -61,23 +67,23 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 	}
 
 	// merge common & deployments labels
-	if err := mergo.Map(&conf.Deployment.Labels, conf.Common.Labels); err != nil {
+	if err := mergo.Map(&d.Deployment.Labels, d.Common.Labels); err != nil {
 		return fmt.Errorf("merging deployment labels failed: %s", err)
 	}
 
 	// deep copy of map for podLabels
 	podLabels := map[string]string{}
-	if err := copier.Copy(&podLabels, &conf.Deployment.Labels); err != nil {
+	if err := copier.Copy(&podLabels, &d.Deployment.Labels); err != nil {
 		return fmt.Errorf("copying deployment labels values failed: %s", err)
 	}
 
 	// merge kratosLabels & deployment labels
-	if err := mergo.Map(&conf.Deployment.Labels, map[string]string(kratosLabel)); err != nil {
+	if err := mergo.Map(&d.Deployment.Labels, map[string]string(kratosLabel)); err != nil {
 		return fmt.Errorf("merging deployment labels failed: %s", err)
 	}
 
 	// merge common & deployments annotations
-	if err := mergo.Map(&conf.Deployment.Annotations, conf.Common.Annotations); err != nil {
+	if err := mergo.Map(&d.Deployment.Annotations, d.Common.Annotations); err != nil {
 		return fmt.Errorf("merging deployment annotations failed: %s", err)
 	}
 
@@ -85,15 +91,15 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 	volumesMount := []corev1.VolumeMount{}
 	volumes := []corev1.Volume{}
 
-	for _, container := range conf.Deployment.Containers {
-		volumesMount, volumes = getVolumesConfForContainer(name, &container, conf)
+	for _, container := range d.Deployment.Containers {
+		volumesMount, volumes = getVolumesConfForContainer(name, &container, d.Config)
 
 		containers = append(containers, corev1.Container{
 			Name:  container.Name,
 			Image: container.Image + ":" + container.Tag,
 			Ports: []corev1.ContainerPort{
 				{
-					ContainerPort: conf.Deployment.Port,
+					ContainerPort: d.Deployment.Port,
 				},
 			},
 			Resources:      container.FormatResources(),
@@ -107,16 +113,16 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        name,
 			Namespace:   namespace,
-			Annotations: conf.Deployment.Annotations,
+			Annotations: d.Deployment.Annotations,
 			Labels: labels.Merge(
-				conf.Deployment.Labels,
+				d.Deployment.Labels,
 				labels.Set{
 					DepLabelName: name,
 				},
 			),
 		},
 		Spec: appsv1.DeploymentSpec{
-			Replicas: &conf.Replicas,
+			Replicas: &d.Replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
 					DepLabelName: name,
@@ -126,7 +132,7 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        name,
 					Namespace:   namespace,
-					Annotations: conf.Deployment.Annotations,
+					Annotations: d.Deployment.Annotations,
 					Labels: labels.Merge(
 						podLabels,
 						labels.Set{
@@ -146,10 +152,10 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 		},
 	}
 
-	_, err = c.Clientset.AppsV1().Deployments(namespace).Create(context.Background(), deployment, metav1.CreateOptions{})
+	_, err = d.Clientset.AppsV1().Deployments(namespace).Create(context.Background(), deployment, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			_, err = c.Clientset.AppsV1().Deployments(namespace).Update(context.Background(), deployment, metav1.UpdateOptions{})
+			_, err = d.Clientset.AppsV1().Deployments(namespace).Update(context.Background(), deployment, metav1.UpdateOptions{})
 			if err != nil {
 				return fmt.Errorf("updating deployment failed: %s", err)
 			}
@@ -161,13 +167,13 @@ func (c *Client) CreateUpdateDeployment(name, namespace string, conf *config.Con
 	return nil
 }
 
-// DeleteDeployment delete the specified deployment
-func (c *Client) DeleteDeployment(name, namespace string) error {
-	if err := c.checkDeploymentOwnership(name, namespace); err != nil {
+// Delete the specified deployment
+func (d *Deployment) Delete(name, namespace string) error {
+	if err := d.checkOwnership(name, namespace); err != nil {
 		return err
 	}
 
-	if err := c.Clientset.AppsV1().Deployments(namespace).Delete(context.Background(), name, metav1.DeleteOptions{}); err != nil {
+	if err := d.Clientset.AppsV1().Deployments(namespace).Delete(context.Background(), name, metav1.DeleteOptions{}); err != nil {
 		return fmt.Errorf("deleting deployment failed: %s", err)
 	}
 

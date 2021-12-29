@@ -28,7 +28,7 @@ func (k *Kratos) GetList(namespace string) ([]string, error) {
 	list := []string{}
 
 	// deployments
-	depList, err := k.ListDeployments(namespace)
+	depList, err := k.Client.Deployment.List(namespace)
 	if err != nil {
 		return []string{}, err
 	}
@@ -38,7 +38,7 @@ func (k *Kratos) GetList(namespace string) ([]string, error) {
 	}
 
 	// cronjobs
-	cronList, err := k.ListCronjobs(namespace)
+	cronList, err := k.Client.Cronjob.List(namespace)
 	if err != nil {
 		return []string{}, err
 	}
@@ -52,12 +52,12 @@ func (k *Kratos) GetList(namespace string) ([]string, error) {
 
 // PrintList list deployment to stdout
 func (k *Kratos) PrintList(namespace string) error {
-	depList, err := k.ListDeployments(namespace)
+	depList, err := k.Client.Deployment.List(namespace)
 	if err != nil {
 		pterm.Error.Println(err)
 	}
 
-	cronList, err := k.ListCronjobs(namespace)
+	cronList, err := k.Client.Cronjob.List(namespace)
 	if err != nil {
 		pterm.Error.Println(err)
 	}

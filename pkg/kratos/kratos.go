@@ -13,23 +13,23 @@ type Kratos struct {
 }
 
 // New return a kratos struct
-func New(conf, kubeconfig string) (*Kratos, error) {
-	kclient, err := k8s.New(kubeconfig)
-	if err != nil {
-		return nil, err
-	}
-
-	// loading configuration
-	confYAML := &config.Config{}
-	if conf != "" {
-		if err := confYAML.Load(conf); err != nil {
+func New(confFile, kubeconfig string) (*Kratos, error) {
+	conf := &config.Config{}
+	
+	if confFile != "" {
+		if err := conf.Load(confFile); err != nil {
 			return nil, err
 		}
 	}
 
+	kClient, err := k8s.New(kubeconfig, conf)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Kratos{
-		Client: kclient,
-		Config: confYAML,
+		Client: kClient,
+		Config: conf,
 	}, nil
 }
 
