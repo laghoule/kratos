@@ -90,10 +90,6 @@ func createConfigSecret() *corev1.Secret {
 }
 
 func createNotKratosSecret(s *Secret) error {
-	if err := s.Load(secretConfig); err != nil {
-		return err
-	}
-
 	secret := createSecret()
 	secret.Labels = nil
 
@@ -256,6 +252,10 @@ func TestGetSecret(t *testing.T) {
 	expected := createSecret()
 
 	assert.Equal(t, expected, secret)
+}
+
+func TestListSecrets(t *testing.T) {
+	// TODO: TestListSecrets
 }
 
 func TestCreateUpdateSecretNotOwnedByKratos(t *testing.T) {

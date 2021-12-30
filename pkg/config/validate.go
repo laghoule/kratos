@@ -30,6 +30,8 @@ func mapKeyUniq(m1, m2 map[string]string) error {
 	return nil
 }
 
+// FIXME: too many repeated statement in labels & annotations validation. Don't repeat yourself...
+
 func (c *Config) validateConfig() error {
 	validate := validator.New()
 
@@ -66,6 +68,12 @@ func (c *Config) validateConfig() error {
 
 	if c.Secrets != nil {
 		if err := c.Secrets.validateConfig(c); err != nil {
+			return err
+		}
+	}
+
+	if c.ConfigMaps != nil {
+		if err := c.ConfigMaps.validateConfig(c); err != nil {
 			return err
 		}
 	}
@@ -243,9 +251,46 @@ func (s *Secrets) validateConfig(conf *Config) error {
 		}
 	}
 
-	// check if exposedTo container exist in deployment or in cronjob
+	if err := validateExposedTo(s.Files, conf); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateConfig validate configmaps labels & annotations
+func (c *ConfigMaps) validateConfig(conf *Config) error {
+	if c.Labels != nil {
+		if err := labelsValidation(c.Labels); err != nil {
+			return err
+		}
+	}
+
+	// common labels & annotations must be uniq
+	if conf.Common != nil {
+		if conf.Common.Labels != nil && c.Labels != nil {
+			if err := mapKeyUniq(conf.Common.Labels, c.Labels); err != nil {
+				return err
+			}
+		}
+		if conf.Common.Annotations != nil && c.Annotations != nil {
+			if err := mapKeyUniq(conf.Common.Annotations, c.Annotations); err != nil {
+				return err
+			}
+		}
+	}
+
+	if err := validateExposedTo(c.Files, conf); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateExposedTo check if exposedTo container exist in deployment or in cronjob
+func validateExposedTo(files []File, conf *Config) error {
 	exposedToFound := false
-	for _, file := range s.Files {
+	for _, file := range files {
 		for _, exposedTo := range file.ExposedTo {
 
 			if conf.Deployment != nil {
@@ -264,7 +309,7 @@ func (s *Secrets) validateConfig(conf *Config) error {
 
 		}
 	}
-
+	
 	if !exposedToFound {
 		return fmt.Errorf("exposedTo container don't exist")
 	}

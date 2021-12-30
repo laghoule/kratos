@@ -15,7 +15,7 @@ import (
 	"github.com/imdario/mergo"
 )
 
-type Secret struct {
+type Secret struct { // TODO: change to Secrets
 	Clientset kubernetes.Interface
 	*config.Config
 }

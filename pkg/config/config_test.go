@@ -35,6 +35,7 @@ const (
 	readyPath           = "/isReady"
 )
 
+// TODO: add Secrets && ConfigMaps
 func createDeploymentConf() *Config {
 	commonLabels := map[string]string{"environment": environment}
 	commonAnnotations := map[string]string{"branch": environment}

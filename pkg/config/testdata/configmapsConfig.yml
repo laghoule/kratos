@@ -1,0 +1,58 @@
+common:
+  labels:
+    environment: dev
+  annotations:
+    branch: dev
+
+deployment:
+  labels:
+    app: myapp
+  annotations:
+    revision: 22
+  replicas: 1
+  port: 80
+  containers:
+    - name: myapp
+      image: myimage
+      tag: latest
+      resources:
+        requests:
+          cpu: 25m
+          memory: 32Mi
+        limits:
+          cpu: 50m
+          memory: 64Mi
+      health:
+        live:
+          probe: /isLive
+          port: 80
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        ready:
+          probe: /isReady
+          port: 80
+          initialDelaySeconds: 3
+          periodSeconds: 3
+  ingress:
+    labels:
+      cloudflare: enabled
+    annotations:
+      hsts: true
+    ingressClass: nginx
+    clusterIssuer: letsencrypt
+    hostnames:
+      - example.com
+configmaps:
+  labels:
+    app: myapp
+  annotations:
+    renew: 2023
+  files:
+    - name: settings.yaml
+      mount:
+        path: /etc/cfg
+        exposedTo:
+          - myapp
+      data: |
+        setting1: patate
+        setting2: poil

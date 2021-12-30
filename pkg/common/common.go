@@ -16,7 +16,7 @@ func ListContain(list []string, searchItem string) bool {
 	return false
 }
 
-// boolPTR return a bool pointer
+// BoolPTR return a bool pointer
 func BoolPTR(b bool) *bool {
 	return &b
 }

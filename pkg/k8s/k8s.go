@@ -32,7 +32,7 @@ const (
 	// SecretLabelName is the label applied to secrets
 	SecretLabelName = "kratos/secret"
 	// ConfigmapsLabelName is the label applied to configmaps
-	ConfigmapsLabelName = "kratos/configmaps"
+	ConfigMapsLabelName = "kratos/configmaps"
 	requiredK8SVersion  = "v1.19.0"
 	prefixSecretVolName = "secret-"
 )

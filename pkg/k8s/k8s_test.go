@@ -3,8 +3,6 @@ package k8s
 import (
 	"testing"
 
-	"github.com/laghoule/kratos/pkg/common"
-
 	"github.com/stretchr/testify/assert"
 )
 
@@ -26,22 +24,13 @@ const (
 	deploymentConfig = "../config/testdata/deploymentConfig.yml"
 	cronjobConfig    = "../config/testdata/cronjobConfig.yml"
 	secretConfig     = "../config/testdata/secretsConfig.yml"
+	configMapsConfig = "../config/testdata/configmapsConfig.yml"
 
 	managedByLabel = "app.kubernetes.io/managed-by"
 )
 
-func TestBoolPTR(t *testing.T) {
-	expected := true
-	assert.Equal(t, &expected, common.BoolPTR(true))
-}
-
 func TestCheckVersionDepency(t *testing.T) {
 	// TODO: TestCheckVersionDepency
-}
-
-func TestMD5sum(t *testing.T) {
-	expected := "74657374d41d8cd98f00b204e9800998ecf8427e"
-	assert.Equal(t, expected, common.MD5Sum("test"))
 }
 
 func TestCheckKratosManaged(t *testing.T) {

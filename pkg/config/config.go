@@ -25,6 +25,7 @@ type Config struct {
 	*Common     `yaml:"common,omitempty"`
 	*Cronjob    `yaml:"cronjob,omitempty"`
 	*Deployment `yaml:"deployment,omitempty"`
+	*ConfigMaps `yaml:"configmaps,omitempty"`
 	*Secrets    `yaml:"secrets,omitempty"`
 }
 
@@ -97,11 +98,11 @@ type Cronjob struct {
 	Container   *Container        `yaml:"container" validate:"required"`
 }
 
-// Configmaps represent the Kubernetes configmaps
-type Configmaps struct {
+// ConfigMaps represent the Kubernetes configmaps
+type ConfigMaps struct {
 	Labels      map[string]string `yaml:"labels,omitempty"`
 	Annotations map[string]string `yaml:"annotations,omitempty"`
-	*File       `yaml:"files" validate:"required,dive"`
+	Files       []File            `yaml:"files" validate:"required,dive"`
 }
 
 // Secrets represent the Kubernetes secrets
@@ -210,6 +211,26 @@ func CreateInit() *Config {
 					Limits: &ResourceType{
 						CPU:    "50m",
 						Memory: "64Mi",
+					},
+				},
+			},
+		},
+		ConfigMaps: &ConfigMaps{
+			Labels: map[string]string{
+				"label": "value",
+			},
+			Annotations: map[string]string{
+				"annotation": "value",
+			},
+			Files: []File{
+				{
+					Name: "configuration.yaml",
+					Data: "my configuration data",
+					Mount: Mount{
+						Path: "/etc/cfg",
+						ExposedTo: []string{
+							"example",
+						},
 					},
 				},
 			},
