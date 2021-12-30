@@ -17,6 +17,7 @@ import (
 	"github.com/jinzhu/copier"
 )
 
+// Service contain the kubernetes clientset and configuration of the release
 type Service struct {
 	Clientset kubernetes.Interface
 	*config.Config

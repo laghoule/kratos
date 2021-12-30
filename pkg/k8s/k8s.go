@@ -13,7 +13,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-// Client is the Kubernetes client
+// Client contain the kubernetes clientset and the supported Kubernetes objects
 type Client struct {
 	Clientset  kubernetes.Interface
 	RestConfig *rest.Config
@@ -31,7 +31,7 @@ const (
 	CronLabelName = "kratos/cronjob"
 	// SecretLabelName is the label applied to secrets
 	SecretLabelName = "kratos/secret"
-	// ConfigmapsLabelName is the label applied to configmaps
+	// ConfigMapsLabelName is the label applied to configmaps
 	ConfigMapsLabelName = "kratos/configmaps"
 	requiredK8SVersion  = "v1.19.0"
 	prefixSecretVolName = "secret-"

@@ -15,7 +15,7 @@ type Kratos struct {
 // New return a kratos struct
 func New(confFile, kubeconfig string) (*Kratos, error) {
 	conf := &config.Config{}
-	
+
 	if confFile != "" {
 		if err := conf.Load(confFile); err != nil {
 			return nil, err

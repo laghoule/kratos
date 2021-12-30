@@ -20,6 +20,7 @@ const (
 	sslRedirectAnnotation   = "nginx.ingress.kubernetes.io/ssl-redirect"
 )
 
+// Ingress contain the kubernetes clientset and configuration of the release
 type Ingress struct {
 	Clientset kubernetes.Interface
 	*config.Config

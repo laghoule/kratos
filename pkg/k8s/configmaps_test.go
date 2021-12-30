@@ -27,7 +27,7 @@ func newConfigMaps() (*ConfigMaps, error) {
 	}
 
 	return &ConfigMaps{
-		clientset: fake.NewSimpleClientset(),
+		Clientset: fake.NewSimpleClientset(),
 		Config:    conf,
 	}, nil
 }
@@ -66,7 +66,7 @@ func createNotKratosConfigMaps(c *ConfigMaps) error {
 	configmap := createConfigMap()
 	configmap.Labels = nil
 
-	if _, err := c.clientset.CoreV1().ConfigMaps(namespace).Create(context.Background(), configmap, metav1.CreateOptions{}); err != nil {
+	if _, err := c.Clientset.CoreV1().ConfigMaps(namespace).Create(context.Background(), configmap, metav1.CreateOptions{}); err != nil {
 		return err
 	}
 

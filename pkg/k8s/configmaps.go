@@ -15,14 +15,15 @@ import (
 	"github.com/imdario/mergo"
 )
 
+// ConfigMaps contain the kubernetes clientset and configuration of the release
 type ConfigMaps struct {
-	clientset kubernetes.Interface
+	Clientset kubernetes.Interface
 	*config.Config
 }
 
 // checkOwnership check if it's safe to create, update or delete the configmaps
 func (c *ConfigMaps) checkOwnership(name, namespace string) error {
-	configmap, err := c.clientset.CoreV1().ConfigMaps(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	configmap, err := c.Clientset.CoreV1().ConfigMaps(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil
@@ -90,10 +91,10 @@ func (c *ConfigMaps) CreateUpdate(name, namespace string) error {
 			return err
 		}
 
-		_, err = c.clientset.CoreV1().ConfigMaps(namespace).Create(context.Background(), configmaps, metav1.CreateOptions{})
+		_, err = c.Clientset.CoreV1().ConfigMaps(namespace).Create(context.Background(), configmaps, metav1.CreateOptions{})
 		if err != nil {
 			if errors.IsAlreadyExists(err) {
-				_, err = c.clientset.CoreV1().ConfigMaps(namespace).Update(context.Background(), configmaps, metav1.UpdateOptions{})
+				_, err = c.Clientset.CoreV1().ConfigMaps(namespace).Update(context.Background(), configmaps, metav1.UpdateOptions{})
 				if err != nil {
 					return fmt.Errorf("updating configmaps failed: %s", err)
 				}
@@ -123,7 +124,7 @@ func (c *ConfigMaps) delete(name, namespace string) error {
 		return err
 	}
 
-	if err := c.clientset.CoreV1().ConfigMaps(namespace).Delete(context.Background(), name, metav1.DeleteOptions{}); err != nil {
+	if err := c.Clientset.CoreV1().ConfigMaps(namespace).Delete(context.Background(), name, metav1.DeleteOptions{}); err != nil {
 		return fmt.Errorf("deleting configmaps %s failed: %s", name, err)
 	}
 
@@ -132,7 +133,7 @@ func (c *ConfigMaps) delete(name, namespace string) error {
 
 // Get a configmap from a namespace
 func (c *ConfigMaps) get(name, namespace string) (*corev1.ConfigMap, error) {
-	configmap, err := c.clientset.CoreV1().ConfigMaps(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	configmap, err := c.Clientset.CoreV1().ConfigMaps(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("getting configmap %s failed: %s", name, err)
 	}
@@ -142,7 +143,7 @@ func (c *ConfigMaps) get(name, namespace string) (*corev1.ConfigMap, error) {
 
 // list the configmaps in the specified namespace
 func (c *ConfigMaps) list(namespace string) (*corev1.ConfigMapList, error) {
-	list, err := c.clientset.CoreV1().ConfigMaps(namespace).List(context.Background(), metav1.ListOptions{})
+	list, err := c.Clientset.CoreV1().ConfigMaps(namespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("getting configmaps list failed: %s", err)
 	}

@@ -17,6 +17,7 @@ import (
 	"github.com/imdario/mergo"
 )
 
+// Cronjob contain the kubernetes clientset and configuration of the release
 type Cronjob struct {
 	Clientset kubernetes.Interface
 	*config.Config

@@ -18,6 +18,7 @@ import (
 	"github.com/jinzhu/copier"
 )
 
+// Deployment contain the kubernetes clientset and configuration of the release
 type Deployment struct {
 	Clientset kubernetes.Interface
 	*config.Config
