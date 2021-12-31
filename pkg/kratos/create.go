@@ -70,7 +70,7 @@ func (k *Kratos) Create(name, namespace string) error {
 		} else {
 			spinner.Success()
 		}
-	}	
+	}
 
 	// secrets
 	if k.Config.Secrets != nil {
