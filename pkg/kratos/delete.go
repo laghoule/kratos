@@ -69,6 +69,16 @@ func (k *Kratos) Delete(name, namespace string) error {
 		spinner.Success()
 	}
 
+	// configmaps
+	if k.Config.ConfigMaps != nil {
+		spinner, _ := pterm.DefaultSpinner.Start("deleting configmaps ")
+		if err := k.Client.ConfigMaps.Delete(name, namespace); err != nil {
+			pterm.Error.Println(err)
+			runWithError = true
+		}
+		spinner.Success()
+	}
+
 	// secrets
 	if k.Config.Secrets != nil {
 		spinner, _ := pterm.DefaultSpinner.Start("deleting secrets ")

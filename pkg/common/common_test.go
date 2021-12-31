@@ -11,9 +11,9 @@ func TestBoolPTR(t *testing.T) {
 	assert.Equal(t, &expected, BoolPTR(true))
 }
 
-func TestMD5sum(t *testing.T) {
-	expected := "74657374d41d8cd98f00b204e9800998ecf8427e"
-	assert.Equal(t, expected, MD5Sum("test"))
+func TestMD5Sum16(t *testing.T) {
+	expected := "74657374d41d8cd9"
+	assert.Equal(t, expected, MD5Sum16("test"))
 }
 
 func TestListContain(t *testing.T) {

@@ -42,3 +42,27 @@ deployment:
     clusterIssuer: letsencrypt
     hostnames:
       - example.com
+configmaps:
+  labels:
+    mylabels: myvalue
+  annotations:
+    myannotations: myvalue
+  files:
+    - name:  configuration.yaml
+      data: my configuration data
+      mount:
+        path: /etc/config
+        exposedTo:
+          - myapp
+secrets:
+  labels:
+    mylabels: myvalue
+  annotations:
+    myannotations: myvalue
+  files:
+    - name:  secret.yaml
+      data: my secret data
+      mount:
+        path: /etc/secret
+        exposedTo:
+          - myapp

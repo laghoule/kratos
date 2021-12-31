@@ -35,7 +35,6 @@ const (
 	readyPath           = "/isReady"
 )
 
-// TODO: add Secrets && ConfigMaps
 func createDeploymentConf() *Config {
 	commonLabels := map[string]string{"environment": environment}
 	commonAnnotations := map[string]string{"branch": environment}
@@ -43,6 +42,8 @@ func createDeploymentConf() *Config {
 	depAnnotations := map[string]string{"revision": "22"}
 	ingLabels := map[string]string{"cloudflare": "enabled"}
 	ingAnnotation := map[string]string{"hsts": "true"}
+	labels := map[string]string{"mylabels": "myvalue"}
+	annotations := map[string]string{"myannotations": "myvalue"}
 	return &Config{
 		Common: &Common{
 			Labels:      commonLabels,
@@ -90,6 +91,38 @@ func createDeploymentConf() *Config {
 				IngressClass:  ingresClass,
 				ClusterIssuer: clusterIssuer,
 				Hostnames:     []string{hostname},
+			},
+		},
+		ConfigMaps: &ConfigMaps{
+			Labels:      labels,
+			Annotations: annotations,
+			Files: []File{
+				{
+					Name: "configuration.yaml",
+					Data: "my configuration data",
+					Mount: Mount{
+						Path: "/etc/config",
+						ExposedTo: []string{
+							name,
+						},
+					},
+				},
+			},
+		},
+		Secrets: &Secrets{
+			Labels:      labels,
+			Annotations: annotations,
+			Files: []File{
+				{
+					Name: "secret.yaml",
+					Data: "my secret data",
+					Mount: Mount{
+						Path: "/etc/secret",
+						ExposedTo: []string{
+							name,
+						},
+					},
+				},
 			},
 		},
 	}

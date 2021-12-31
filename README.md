@@ -213,7 +213,6 @@ cronjob:
         cpu: 50m
         memory: 64Mi
 
-# not yet implemented
 configmaps:
   labels: {}
   annotations: {}

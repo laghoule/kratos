@@ -46,12 +46,6 @@ func TestCreate(t *testing.T) {
 	assert.Len(t, ingList.Items, 1)
 	assert.Equal(t, name, ingList.Items[0].Name)
 
-	secList, err := k.Clientset.CoreV1().Secrets(namespace).List(context.Background(), metav1.ListOptions{})
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	assert.Len(t, secList.Items, 1)
-	assert.Equal(t, name+config.ConfigSuffix, secList.Items[0].Name)
+	 _, err = k.Client.Secret.Get(name+config.ConfigSuffix, namespace)
+	 assert.NoError(t, err)
 }

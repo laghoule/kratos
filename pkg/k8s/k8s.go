@@ -17,6 +17,7 @@ import (
 type Client struct {
 	Clientset  kubernetes.Interface
 	RestConfig *rest.Config
+	*ConfigMaps
 	*Cronjob
 	*Deployment
 	*Ingress
@@ -32,9 +33,10 @@ const (
 	// SecretLabelName is the label applied to secrets
 	SecretLabelName = "kratos/secret"
 	// ConfigMapsLabelName is the label applied to configmaps
-	ConfigMapsLabelName = "kratos/configmaps"
-	requiredK8SVersion  = "v1.19.0"
-	prefixSecretVolName = "secret-"
+	ConfigMapsLabelName     = "kratos/configmaps"
+	requiredK8SVersion      = "v1.19.0"
+	prefixConfigMapsVolName = "configmap-"
+	prefixSecretVolName     = "secret-"
 )
 
 // New return a a Client
@@ -52,6 +54,10 @@ func New(kubeconfig string, conf *config.Config) (*Client, error) {
 	return &Client{
 		Clientset:  clientset, // TODO: Check to eliminate the Clientset
 		RestConfig: config,    // TODO: Needed for certmanager client, check to better integrate this
+		ConfigMaps: &ConfigMaps{
+			Clientset: clientset,
+			Config:    conf,
+		},
 		Cronjob: &Cronjob{
 			Clientset: clientset,
 			Config:    conf,

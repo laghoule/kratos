@@ -43,3 +43,7 @@ func TestResourceTypeValidateConfig(t *testing.T) {
 func TestSecretValidateConfig(t *testing.T) {
 	// TODO: TestSecretValidateConfig
 }
+
+func TestValidateMountPath(t *testing.T) {
+	// TODO: TestValidateMountPath
+}

@@ -114,14 +114,44 @@ func createDeployment() *appsv1.Deployment {
 								InitialDelaySeconds: 3,
 								PeriodSeconds:       3,
 							},
-							VolumeMounts: []corev1.VolumeMount{},
+							VolumeMounts: []corev1.VolumeMount{
+								{
+									Name:      "configmap-636f6e6669677572",
+									MountPath: "/etc/config",
+									ReadOnly:  true,
+								},
+								{
+									Name:      "secret-7365637265742e79",
+									MountPath: "/etc/secret",
+									ReadOnly:  true,
+								},
+							},
 						},
 					},
 					AutomountServiceAccountToken: common.BoolPTR(false),
 					SecurityContext: &corev1.PodSecurityContext{
 						RunAsNonRoot: common.BoolPTR(true),
 					},
-					Volumes: []corev1.Volume{},
+					Volumes: []corev1.Volume{
+						{
+							Name: "configmap-636f6e6669677572",
+							VolumeSource: corev1.VolumeSource{
+								ConfigMap: &corev1.ConfigMapVolumeSource{
+									LocalObjectReference: corev1.LocalObjectReference{
+										Name: "myapp-configuration.yaml",
+									},
+								},
+							},
+						},
+						{
+							Name: "secret-7365637265742e79",
+							VolumeSource: corev1.VolumeSource{
+								Secret: &corev1.SecretVolumeSource{
+									SecretName: "myapp-secret.yaml",
+								},
+							},
+						},
+					},
 				},
 			},
 		},

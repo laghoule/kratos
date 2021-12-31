@@ -33,6 +33,10 @@ func new() *Kratos {
 	return &Kratos{
 		Client: &k8s.Client{
 			Clientset: clientset,
+			ConfigMaps: &k8s.ConfigMaps{
+				Clientset: clientset,
+				Config:    conf,
+			},
 			Cronjob: &k8s.Cronjob{
 				Clientset: clientset,
 				Config:    conf,

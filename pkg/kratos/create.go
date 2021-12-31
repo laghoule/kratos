@@ -61,6 +61,17 @@ func (k *Kratos) Create(name, namespace string) error {
 		}
 	}
 
+	// configmaps
+	if k.Config.ConfigMaps != nil {
+		spinner, _ := pterm.DefaultSpinner.Start("creating configmaps")
+		if err := k.Client.ConfigMaps.CreateUpdate(name, namespace); err != nil {
+			spinner.Fail(err)
+			runWithError = true
+		} else {
+			spinner.Success()
+		}
+	}	
+
 	// secrets
 	if k.Config.Secrets != nil {
 		spinner, _ := pterm.DefaultSpinner.Start("creating secrets")

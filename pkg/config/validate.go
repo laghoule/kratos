@@ -30,8 +30,6 @@ func mapKeyUniq(m1, m2 map[string]string) error {
 	return nil
 }
 
-// FIXME: too many repeated statement in labels & annotations validation. Don't repeat yourself...
-
 func (c *Config) validateConfig() error {
 	validate := validator.New()
 
@@ -66,16 +64,21 @@ func (c *Config) validateConfig() error {
 		}
 	}
 
+	if c.ConfigMaps != nil {
+		if err := c.ConfigMaps.validateConfig(c); err != nil {
+			return err
+		}
+	}
+
 	if c.Secrets != nil {
 		if err := c.Secrets.validateConfig(c); err != nil {
 			return err
 		}
 	}
 
-	if c.ConfigMaps != nil {
-		if err := c.ConfigMaps.validateConfig(c); err != nil {
-			return err
-		}
+	// validate that mount path are uniq by container for configmaps & secrets
+	if err := c.validateMountPath(); err != nil {
+		return err
 	}
 
 	return nil
@@ -98,26 +101,33 @@ func (c *Common) validateConfig() error {
 	return nil
 }
 
-// validateConfig validate deployment config
-func (d *Deployment) validateConfig(common *Common) error {
-	if d.Labels != nil {
-		if err := labelsValidation(d.Labels); err != nil {
-			return err
-		}
+// validateLabelsAnnotations validate labels and annotations
+func validateLabelsAnnotations(common *Common, labels, annotations map[string]string) error {
+	if err := labelsValidation(labels); err != nil {
+		return err
 	}
 
 	// common labels & annotations must be uniq
 	if common != nil {
-		if common.Labels != nil && d.Labels != nil {
-			if err := mapKeyUniq(common.Labels, d.Labels); err != nil {
+		if common.Labels != nil && labels != nil {
+			if err := mapKeyUniq(common.Labels, labels); err != nil {
 				return err
 			}
 		}
-		if common.Annotations != nil && d.Annotations != nil {
-			if err := mapKeyUniq(common.Annotations, d.Annotations); err != nil {
+		if common.Annotations != nil && annotations != nil {
+			if err := mapKeyUniq(common.Annotations, annotations); err != nil {
 				return err
 			}
 		}
+	}
+
+	return nil
+}
+
+// validateConfig validate deployment config
+func (d *Deployment) validateConfig(common *Common) error {
+	if err := validateLabelsAnnotations(common, d.Labels, d.Annotations); err != nil {
+		return err
 	}
 
 	// containers
@@ -141,24 +151,8 @@ func (d *Deployment) validateConfig(common *Common) error {
 
 // validateConfig validate deployment config
 func (c *Cronjob) validateConfig(common *Common) error {
-	if c.Labels != nil {
-		if err := labelsValidation(c.Labels); err != nil {
-			return err
-		}
-	}
-
-	// common labels & annotations must be uniq
-	if common != nil {
-		if common.Labels != nil && c.Labels != nil {
-			if err := mapKeyUniq(common.Labels, c.Labels); err != nil {
-				return err
-			}
-		}
-		if common.Annotations != nil && c.Annotations != nil {
-			if err := mapKeyUniq(common.Annotations, c.Annotations); err != nil {
-				return err
-			}
-		}
+	if err := validateLabelsAnnotations(common, c.Labels, c.Annotations); err != nil {
+		return err
 	}
 
 	// cronjob schedule validation
@@ -179,24 +173,8 @@ func (c *Cronjob) validateConfig(common *Common) error {
 
 // validateConfig validate ingress labels & annotations
 func (i *Ingress) validateConfig(common *Common) error {
-	if i.Labels != nil {
-		if err := labelsValidation(i.Labels); err != nil {
-			return err
-		}
-	}
-
-	// common labels & annotations must be uniq
-	if common != nil {
-		if common.Labels != nil && i.Labels != nil {
-			if err := mapKeyUniq(common.Labels, i.Labels); err != nil {
-				return err
-			}
-		}
-		if common.Annotations != nil && i.Annotations != nil {
-			if err := mapKeyUniq(common.Annotations, i.Annotations); err != nil {
-				return err
-			}
-		}
+	if err := validateLabelsAnnotations(common, i.Labels, i.Annotations); err != nil {
+		return err
 	}
 
 	return nil
@@ -231,24 +209,8 @@ func (r *ResourceType) validateConfig(container, rType string) error {
 
 // validateConfig validate secrets labels & annotations
 func (s *Secrets) validateConfig(conf *Config) error {
-	if s.Labels != nil {
-		if err := labelsValidation(s.Labels); err != nil {
-			return err
-		}
-	}
-
-	// common labels & annotations must be uniq
-	if conf.Common != nil {
-		if conf.Common.Labels != nil && s.Labels != nil {
-			if err := mapKeyUniq(conf.Common.Labels, s.Labels); err != nil {
-				return err
-			}
-		}
-		if conf.Common.Annotations != nil && s.Annotations != nil {
-			if err := mapKeyUniq(conf.Common.Annotations, s.Annotations); err != nil {
-				return err
-			}
-		}
+	if err := validateLabelsAnnotations(conf.Common, s.Labels, s.Annotations); err != nil {
+		return err
 	}
 
 	if err := validateExposedTo(s.Files, conf); err != nil {
@@ -260,24 +222,8 @@ func (s *Secrets) validateConfig(conf *Config) error {
 
 // validateConfig validate configmaps labels & annotations
 func (c *ConfigMaps) validateConfig(conf *Config) error {
-	if c.Labels != nil {
-		if err := labelsValidation(c.Labels); err != nil {
-			return err
-		}
-	}
-
-	// common labels & annotations must be uniq
-	if conf.Common != nil {
-		if conf.Common.Labels != nil && c.Labels != nil {
-			if err := mapKeyUniq(conf.Common.Labels, c.Labels); err != nil {
-				return err
-			}
-		}
-		if conf.Common.Annotations != nil && c.Annotations != nil {
-			if err := mapKeyUniq(conf.Common.Annotations, c.Annotations); err != nil {
-				return err
-			}
-		}
+	if err := validateLabelsAnnotations(conf.Common, c.Labels, c.Annotations); err != nil {
+		return err
 	}
 
 	if err := validateExposedTo(c.Files, conf); err != nil {
@@ -309,9 +255,34 @@ func validateExposedTo(files []File, conf *Config) error {
 
 		}
 	}
-	
+
 	if !exposedToFound {
 		return fmt.Errorf("exposedTo container don't exist")
+	}
+
+	return nil
+}
+
+// validateMountPath ensure mount path are uniq in container
+func (c *Config) validateMountPath() error {
+	mountPathFound := map[string]map[string]bool{}
+	files := []File{}
+
+	if c.ConfigMaps != nil {
+		files = append(files, c.ConfigMaps.Files...)
+	}
+
+	if c.Secrets != nil {
+		files = append(files, c.Secrets.Files...)
+	}
+
+	for _, file := range files {
+		for _, exposedTo := range file.ExposedTo {
+			if _, found := mountPathFound[exposedTo][file.Path]; found {
+				return fmt.Errorf("mount.path %s must be uniq", file.Path)
+			}
+			mountPathFound[exposedTo] = map[string]bool{file.Path: true}
+		}
 	}
 
 	return nil

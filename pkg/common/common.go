@@ -21,8 +21,14 @@ func BoolPTR(b bool) *bool {
 	return &b
 }
 
-// MD5Sum return a md5sum from the input string
-func MD5Sum(input string) string {
+// MD5Sum16 return a md5sum cut to 16 caracters
+func MD5Sum16(input string) string {
 	hash := md5.New()
-	return fmt.Sprintf("%x", hash.Sum([]byte(input)))
+	md5sum := fmt.Sprintf("%x", hash.Sum([]byte(input)))
+
+	if len(md5sum) > 16 {
+		return md5sum[0:16]
+	}
+
+	return md5sum
 }

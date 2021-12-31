@@ -16,6 +16,8 @@ import (
 )
 
 func createConf() *config.Config {
+	labels := map[string]string{"mylabels": "myvalue"}
+	annotations := map[string]string{"myannotations": "myvalue"}
 	return &config.Config{
 		Common: &config.Common{
 			Labels: map[string]string{
@@ -59,6 +61,38 @@ func createConf() *config.Config {
 				Hostnames:     []string{hostname},
 			},
 		},
+		ConfigMaps: &config.ConfigMaps{
+			Labels:      labels,
+			Annotations: annotations,
+			Files: []config.File{
+				{
+					Name: "configuration.yaml",
+					Data: "my configuration data",
+					Mount: config.Mount{
+						Path: "/etc/config",
+						ExposedTo: []string{
+							name,
+						},
+					},
+				},
+			},
+		},
+		Secrets: &config.Secrets{
+			Labels:      labels,
+			Annotations: annotations,
+			Files: []config.File{
+				{
+					Name: "secret.yaml",
+					Data: "my secret data",
+					Mount: config.Mount{
+						Path: "/etc/secret",
+						ExposedTo: []string{
+							name,
+						},
+					},
+				},
+			},
+		},
 	}
 }
 
@@ -80,7 +114,7 @@ func createSecretConfig() *corev1.Secret {
 				}),
 		},
 		StringData: map[string]string{
-			config.ConfigKey: "common:\n    labels:\n        app: myapp\n    annotations:\n        branch: dev\ndeployment:\n    replicas: 1\n    port: 80\n    containers:\n        - name: myapp\n          image: myimage\n          tag: latest\n          resources:\n            requests: {}\n            limits: {}\n          health:\n            live:\n                probe: /isLive\n                port: 80\n                initialDelaySeconds: 10\n                periodSeconds: 5\n            ready:\n                probe: /isReady\n                port: 80\n                initialDelaySeconds: 5\n                periodSeconds: 5\n    ingress:\n        ingressClass: nginx\n        clusterIssuer: letsencrypt\n        hostnames:\n            - example.com\n",
+			config.ConfigKey: "common:\n    labels:\n        app: myapp\n    annotations:\n        branch: dev\ndeployment:\n    replicas: 1\n    port: 80\n    containers:\n        - name: myapp\n          image: myimage\n          tag: latest\n          resources:\n            requests: {}\n            limits: {}\n          health:\n            live:\n                probe: /isLive\n                port: 80\n                initialDelaySeconds: 10\n                periodSeconds: 5\n            ready:\n                probe: /isReady\n                port: 80\n                initialDelaySeconds: 5\n                periodSeconds: 5\n    ingress:\n        ingressClass: nginx\n        clusterIssuer: letsencrypt\n        hostnames:\n            - example.com\nconfigmaps:\n    labels:\n        mylabels: myvalue\n    annotations:\n        myannotations: myvalue\n    files:\n        - name: configuration.yaml\n          data: my configuration data\n          mount:\n            path: /etc/config\n            exposedTo:\n                - myapp\nsecrets:\n    labels:\n        mylabels: myvalue\n    annotations:\n        myannotations: myvalue\n    files:\n        - name: secret.yaml\n          data: my secret data\n          mount:\n            path: /etc/secret\n            exposedTo:\n                - myapp\n",
 		},
 		Type: "Opaque",
 	}

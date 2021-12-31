@@ -68,7 +68,7 @@ configmaps:
         - name: configuration.yaml
           data: my configuration data
           mount:
-            path: /etc/cfg
+            path: /etc/config
             exposedTo:
                 - example
 secrets:
@@ -80,6 +80,6 @@ secrets:
         - name: secret.yaml
           data: my secret data
           mount:
-            path: /etc/cfg
+            path: /etc/secret
             exposedTo:
                 - example

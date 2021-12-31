@@ -227,7 +227,7 @@ func CreateInit() *Config {
 					Name: "configuration.yaml",
 					Data: "my configuration data",
 					Mount: Mount{
-						Path: "/etc/cfg",
+						Path: "/etc/config",
 						ExposedTo: []string{
 							"example",
 						},
@@ -247,7 +247,7 @@ func CreateInit() *Config {
 					Name: "secret.yaml",
 					Data: "my secret data",
 					Mount: Mount{
-						Path: "/etc/cfg",
+						Path: "/etc/secret",
 						ExposedTo: []string{
 							"example",
 						},
