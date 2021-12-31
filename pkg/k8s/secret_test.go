@@ -228,36 +228,6 @@ func TestDeleteSecrets(t *testing.T) {
 	assert.Len(t, list.Items, 0)
 }
 
-// TestGetSecret test getting a secret
-func TestGetSecret(t *testing.T) {
-	s, err := newSecret()
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	if err := s.CreateUpdate(name, namespace); err != nil {
-		t.Error(err)
-		return
-	}
-
-	secretName := name + "-" + s.Secrets.Files[0].Name
-
-	secret, err := s.Get(secretName, namespace)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	expected := createSecret()
-
-	assert.Equal(t, expected, secret)
-}
-
-func TestListSecrets(t *testing.T) {
-	// TODO: TestListSecrets
-}
-
 func TestCreateUpdateSecretNotOwnedByKratos(t *testing.T) {
 	s, err := newSecret()
 	if err != nil {

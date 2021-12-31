@@ -125,20 +125,12 @@ func TestDeleteConfigMaps(t *testing.T) {
 		return
 	}
 
-	list, err := c.list(namespace)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	assert.Len(t, list.Items, 1)
-
 	if err := c.Delete(name, namespace); err != nil {
 		t.Error(err)
 		return
 	}
 
-	list, err = c.list(namespace)
+	list, err := c.list(namespace)
 	if err != nil {
 		t.Error(err)
 		return
@@ -179,34 +171,4 @@ func TestDeleteConfigMapsNotOwnedByKratos(t *testing.T) {
 	if err := c.Delete(name, namespace); assert.Error(t, err) {
 		assert.Equal(t, "configmap is not managed by kratos", err.Error())
 	}
-}
-
-// TestGetConfigMap test getting a configmap
-func TestGetConfigMap(t *testing.T) {
-	c, err := newConfigMaps()
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	if err := c.CreateUpdate(name, namespace); err != nil {
-		t.Error(err)
-		return
-	}
-
-	cmName := name + "-" + c.ConfigMaps.Files[0].Name
-
-	configmap, err := c.get(cmName, namespace)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	expected := createConfigMap()
-
-	assert.Equal(t, expected, configmap)
-}
-
-func TestListConfigMaps(t *testing.T) {
-	// TODO: TestListConfigMaps
 }

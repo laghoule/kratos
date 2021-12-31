@@ -226,15 +226,6 @@ func TestDeleteCronjob(t *testing.T) {
 		return
 	}
 
-	result, err := c.Clientset.BatchV1().CronJobs(namespace).Get(context.Background(), name, metav1.GetOptions{})
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	expected := createCronjobs()
-	assert.Equal(t, expected, result)
-
 	if err := c.Delete(name, namespace); err != nil {
 		t.Error(err)
 		return
