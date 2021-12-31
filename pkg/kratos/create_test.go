@@ -1,13 +1,11 @@
 package kratos
 
 import (
-	"context"
 	"testing"
 
 	"github.com/laghoule/kratos/pkg/config"
 
 	"github.com/stretchr/testify/assert"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestCreate(t *testing.T) {
@@ -19,33 +17,32 @@ func TestCreate(t *testing.T) {
 		return
 	}
 
-	depList, err := k.Clientset.AppsV1().Deployments(namespace).List(context.Background(), metav1.ListOptions{})
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	// deployment
+	depList, err := k.Client.Deployment.List(namespace)
+	assert.NoError(t, err)
+	assert.Equal(t, name, depList[0].Name)
 
-	assert.Len(t, depList.Items, 1)
-	assert.Equal(t, name, depList.Items[0].Name)
+	// service
+	svcList, err := k.Client.Service.List(namespace)
+	assert.NoError(t, err)
+	assert.Equal(t, name, svcList[0].Name)
 
-	svcList, err := k.Clientset.CoreV1().Services(namespace).List(context.Background(), metav1.ListOptions{})
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	// ingress
+	ingList, err := k.Client.Ingress.List(namespace)
+	assert.NoError(t, err)
+	assert.Equal(t, name, ingList[0].Name)
 
-	assert.Len(t, svcList.Items, 1)
-	assert.Equal(t, name, svcList.Items[0].Name)
+	// configmaps
+	cmList, err := k.Client.ConfigMaps.List(namespace)
+	assert.NoError(t, err)
+	assert.Equal(t, "myapp-configuration.yaml", cmList[0].Name)
 
-	ingList, err := k.Clientset.NetworkingV1().Ingresses(namespace).List(context.Background(), metav1.ListOptions{})
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	// secrets (index 1)
+	secList, err := k.Client.Secret.List(namespace)
+	assert.NoError(t, err)
+	assert.Equal(t, "myapp-secret.yaml", secList[1].Name)
 
-	assert.Len(t, ingList.Items, 1)
-	assert.Equal(t, name, ingList.Items[0].Name)
-
+	// kratos release configuration (index 0)
 	_, err = k.Client.Secret.Get(name+config.ConfigSuffix, namespace)
 	assert.NoError(t, err)
 }

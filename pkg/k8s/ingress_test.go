@@ -215,7 +215,7 @@ func TestDeleteIngress(t *testing.T) {
 		return
 	}
 
-	list, err := i.Clientset.NetworkingV1().Ingresses(namespace).List(context.Background(), metav1.ListOptions{})
+	list, err := i.List(namespace)
 	if err != nil {
 		t.Error(err)
 		return

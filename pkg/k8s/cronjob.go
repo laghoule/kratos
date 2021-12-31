@@ -43,18 +43,6 @@ func (c *Cronjob) checkOwnership(name, namespace string) error {
 	return fmt.Errorf("cronjob is not managed by kratos")
 }
 
-// List cronjob
-func (c *Cronjob) List(namespace string) ([]batchv1.CronJob, error) {
-	list, err := c.Clientset.BatchV1().CronJobs(namespace).List(context.Background(), metav1.ListOptions{
-		LabelSelector: config.DeployLabel,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("getting list of cronjobs failed: %s", err)
-	}
-
-	return list.Items, nil
-}
-
 // CreateUpdate create or update a cronjobs
 func (c *Cronjob) CreateUpdate(name, namespace string) error {
 	if err := c.checkOwnership(name, namespace); err != nil {
@@ -176,4 +164,16 @@ func (c *Cronjob) Delete(name, namespace string) error {
 	}
 
 	return nil
+}
+
+// List cronjob of the specified namespace
+func (c *Cronjob) List(namespace string) ([]batchv1.CronJob, error) {
+	list, err := c.Clientset.BatchV1().CronJobs(namespace).List(context.Background(), metav1.ListOptions{
+		LabelSelector: config.DeployLabel,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("getting cronjobs list failed: %s", err)
+	}
+
+	return list.Items, nil
 }

@@ -44,18 +44,6 @@ func (d *Deployment) checkOwnership(name, namespace string) error {
 	return fmt.Errorf("deployment is not managed by kratos")
 }
 
-// List deployments
-func (d *Deployment) List(namespace string) ([]appsv1.Deployment, error) {
-	list, err := d.Clientset.AppsV1().Deployments(namespace).List(context.Background(), metav1.ListOptions{
-		LabelSelector: config.DeployLabel,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("error getting list of deployment: %s", err)
-	}
-
-	return list.Items, nil
-}
-
 // CreateUpdate create or update a deployment
 func (d *Deployment) CreateUpdate(name, namespace string) error {
 	if err := d.checkOwnership(name, namespace); err != nil {
@@ -179,4 +167,16 @@ func (d *Deployment) Delete(name, namespace string) error {
 	}
 
 	return nil
+}
+
+// List the deployments of the specified namespace
+func (d *Deployment) List(namespace string) ([]appsv1.Deployment, error) {
+	list, err := d.Clientset.AppsV1().Deployments(namespace).List(context.Background(), metav1.ListOptions{
+		LabelSelector: config.DeployLabel,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("getting deployments list failed: %s", err)
+	}
+
+	return list.Items, nil
 }

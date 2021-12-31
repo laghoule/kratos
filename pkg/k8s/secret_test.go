@@ -145,13 +145,13 @@ func TestDeleteConfig(t *testing.T) {
 		return
 	}
 
-	list, err := s.list(namespace)
+	list, err := s.List(namespace)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	assert.Empty(t, list.Items)
+	assert.Empty(t, list)
 }
 
 // TestCreateUpdateSecret test the creation and update of a secret
@@ -206,26 +206,26 @@ func TestDeleteSecrets(t *testing.T) {
 		return
 	}
 
-	list, err := s.list(namespace)
+	list, err := s.List(namespace)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	assert.Len(t, list.Items, 1)
+	assert.Len(t, list, 1)
 
 	if err := s.Delete(name, namespace); err != nil {
 		t.Error(err)
 		return
 	}
 
-	list, err = s.list(namespace)
+	list, err = s.List(namespace)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	assert.Len(t, list.Items, 0)
+	assert.Len(t, list, 0)
 }
 
 func TestCreateUpdateSecretNotOwnedByKratos(t *testing.T) {

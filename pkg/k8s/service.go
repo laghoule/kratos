@@ -176,3 +176,15 @@ func (s *Service) Delete(name, namespace string) error {
 
 	return nil
 }
+
+// List services of the specified namespace
+func (s *Service) List(namespace string) ([]corev1.Service, error) {
+	list, err := s.Clientset.CoreV1().Services(namespace).List(context.Background(), metav1.ListOptions{
+		LabelSelector: config.DeployLabel,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("getting services list failed: %s", err)
+	}
+
+	return list.Items, nil
+}

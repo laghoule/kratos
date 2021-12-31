@@ -142,11 +142,13 @@ func (c *ConfigMaps) get(name, namespace string) (*corev1.ConfigMap, error) {
 }
 
 // list the configmaps in the specified namespace
-func (c *ConfigMaps) list(namespace string) (*corev1.ConfigMapList, error) {
-	list, err := c.Clientset.CoreV1().ConfigMaps(namespace).List(context.Background(), metav1.ListOptions{})
+func (c *ConfigMaps) List(namespace string) ([]corev1.ConfigMap, error) {
+	list, err := c.Clientset.CoreV1().ConfigMaps(namespace).List(context.Background(), metav1.ListOptions{
+		LabelSelector: config.DeployLabel,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("getting configmaps list failed: %s", err)
 	}
 
-	return list, nil
+	return list.Items, nil
 }

@@ -172,3 +172,15 @@ func (i *Ingress) IsIngressClassExist(name string) error {
 
 	return nil
 }
+
+// List ingress of the specified namespace
+func (i *Ingress) List(namespace string) ([]netv1.Ingress, error) {
+	list, err := i.Clientset.NetworkingV1().Ingresses(namespace).List(context.Background(), metav1.ListOptions{
+		LabelSelector: config.DeployLabel,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("getting ingress list failed: %s", err)
+	}
+
+	return list.Items, nil
+}

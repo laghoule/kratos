@@ -130,13 +130,13 @@ func TestDeleteConfigMaps(t *testing.T) {
 		return
 	}
 
-	list, err := c.list(namespace)
+	list, err := c.List(namespace)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	assert.Len(t, list.Items, 0)
+	assert.Len(t, list, 0)
 }
 
 func TestCreateUpdateConfigMapsNotOwnedByKratos(t *testing.T) {

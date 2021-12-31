@@ -201,12 +201,14 @@ func (s *Secret) Get(name, namespace string) (*corev1.Secret, error) {
 	return secret, nil
 }
 
-// list the secret in the specified namespace
-func (s *Secret) list(namespace string) (*corev1.SecretList, error) {
-	list, err := s.Clientset.CoreV1().Secrets(namespace).List(context.Background(), metav1.ListOptions{})
+// List the secret in the specified namespace
+func (s *Secret) List(namespace string) ([]corev1.Secret, error) {
+	list, err := s.Clientset.CoreV1().Secrets(namespace).List(context.Background(), metav1.ListOptions{
+		LabelSelector: config.DeployLabel,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("getting secrets list failed: %s", err)
 	}
 
-	return list, nil
+	return list.Items, nil
 }
