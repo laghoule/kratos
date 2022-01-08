@@ -22,7 +22,7 @@ var createCmd = &cobra.Command{
 			errorExit(err.Error())
 		}
 
-		if err := k.IsDependencyMeet(); err != nil {
+		if err := k.CheckDependency(); err != nil {
 			errorExit(err.Error())
 		}
 
