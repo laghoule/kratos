@@ -75,7 +75,7 @@ func (k *Kratos) Create(name, namespace string) error {
 	// secrets
 	if k.Config.Secrets != nil {
 		spinner, _ := pterm.DefaultSpinner.Start("creating secrets")
-		if err := k.Client.Secret.CreateUpdate(name, namespace); err != nil {
+		if err := k.Client.Secrets.CreateUpdate(name, namespace); err != nil {
 			spinner.Fail(err)
 			runWithError = true
 		} else {

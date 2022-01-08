@@ -38,11 +38,11 @@ func TestCreate(t *testing.T) {
 	assert.Equal(t, "myapp-configuration.yaml", cmList[0].Name)
 
 	// secrets (index 1)
-	secList, err := k.Client.Secret.List(namespace)
+	secList, err := k.Client.Secrets.List(namespace)
 	assert.NoError(t, err)
 	assert.Equal(t, "myapp-secret.yaml", secList[1].Name)
 
 	// kratos release configuration (index 0)
-	_, err = k.Client.Secret.Get(name+config.ConfigSuffix, namespace)
+	_, err = k.Client.Secrets.Get(name+config.ConfigSuffix, namespace)
 	assert.NoError(t, err)
 }

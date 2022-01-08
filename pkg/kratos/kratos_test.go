@@ -49,7 +49,7 @@ func new() *Kratos {
 				Clientset: clientset,
 				Config:    conf,
 			},
-			Secret: &k8s.Secret{
+			Secrets: &k8s.Secrets{
 				Clientset: clientset,
 				Config:    conf,
 			},

@@ -82,7 +82,7 @@ func (k *Kratos) Delete(name, namespace string) error {
 	// secrets
 	if k.Config.Secrets != nil {
 		spinner, _ := pterm.DefaultSpinner.Start("deleting secrets ")
-		if err := k.Client.Secret.Delete(name, namespace); err != nil {
+		if err := k.Client.Secrets.Delete(name, namespace); err != nil {
 			pterm.Error.Println(err)
 			runWithError = true
 		}

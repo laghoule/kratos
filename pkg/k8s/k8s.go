@@ -21,7 +21,7 @@ type Client struct {
 	*Cronjob
 	*Deployment
 	*Ingress
-	*Secret
+	*Secrets
 	*Service
 }
 
@@ -70,7 +70,7 @@ func New(kubeconfig string, conf *config.Config) (*Client, error) {
 			Clientset: clientset,
 			Config:    conf,
 		},
-		Secret: &Secret{
+		Secrets: &Secrets{
 			Clientset: clientset,
 			Config:    conf,
 		},

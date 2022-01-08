@@ -15,14 +15,14 @@ import (
 	"github.com/imdario/mergo"
 )
 
-// Secret contain the kubernetes clientset and configuration of the release
-type Secret struct { // TODO: change to Secrets
+// Secrets contain the kubernetes clientset and configuration of the release
+type Secrets struct {
 	Clientset kubernetes.Interface
 	*config.Config
 }
 
 // checkOwnership check if it's safe to create, update or delete the secret
-func (s *Secret) checkOwnership(name, namespace string) error {
+func (s *Secrets) checkOwnership(name, namespace string) error {
 	secret, err := s.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -42,7 +42,7 @@ func (s *Secret) checkOwnership(name, namespace string) error {
 }
 
 // SaveConfig save kratos release configuration
-func (s *Secret) SaveConfig(name, namespace, key, value string) error {
+func (s *Secrets) SaveConfig(name, namespace, key, value string) error {
 	if err := s.checkOwnership(name, namespace); err != nil {
 		return err
 	}
@@ -77,7 +77,7 @@ func (s *Secret) SaveConfig(name, namespace, key, value string) error {
 }
 
 // DeleteConfig delete kratos release configuration
-func (s *Secret) DeleteConfig(name, namespace string) error {
+func (s *Secrets) DeleteConfig(name, namespace string) error {
 	if err := s.delete(name, namespace); err != nil {
 		return err
 	}
@@ -86,7 +86,7 @@ func (s *Secret) DeleteConfig(name, namespace string) error {
 }
 
 // createUpdate create or update a secret
-func (s *Secret) createUpdate(secret *corev1.Secret) error {
+func (s *Secrets) createUpdate(secret *corev1.Secret) error {
 	if err := s.checkOwnership(secret.Name, secret.Namespace); err != nil {
 		return err
 	}
@@ -107,7 +107,7 @@ func (s *Secret) createUpdate(secret *corev1.Secret) error {
 }
 
 // CreateUpdate create or update a secrets with value provided in conf
-func (s *Secret) CreateUpdate(name, namespace string) error {
+func (s *Secrets) CreateUpdate(name, namespace string) error {
 	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
 	if err != nil {
 		return nil
@@ -168,7 +168,7 @@ func (s *Secret) CreateUpdate(name, namespace string) error {
 }
 
 // Delete the secrets contained in conf for the specified namespace
-func (s *Secret) Delete(name, namespace string) error {
+func (s *Secrets) Delete(name, namespace string) error {
 	for _, file := range s.Secrets.Files {
 		if err := s.delete(name+"-"+file.Name, namespace); err != nil {
 			return err
@@ -179,7 +179,7 @@ func (s *Secret) Delete(name, namespace string) error {
 }
 
 // delete a secret from a namespace
-func (s *Secret) delete(name, namespace string) error {
+func (s *Secrets) delete(name, namespace string) error {
 	if err := s.checkOwnership(name, namespace); err != nil {
 		return err
 	}
@@ -192,7 +192,7 @@ func (s *Secret) delete(name, namespace string) error {
 }
 
 // Get a secret from a namespace
-func (s *Secret) Get(name, namespace string) (*corev1.Secret, error) {
+func (s *Secrets) Get(name, namespace string) (*corev1.Secret, error) {
 	secret, err := s.Clientset.CoreV1().Secrets(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("getting secret %s failed: %s", name, err)
@@ -202,7 +202,7 @@ func (s *Secret) Get(name, namespace string) (*corev1.Secret, error) {
 }
 
 // List the secret in the specified namespace
-func (s *Secret) List(namespace string) ([]corev1.Secret, error) {
+func (s *Secrets) List(namespace string) ([]corev1.Secret, error) {
 	list, err := s.Clientset.CoreV1().Secrets(namespace).List(context.Background(), metav1.ListOptions{
 		LabelSelector: config.DeployLabel,
 	})
