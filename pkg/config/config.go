@@ -121,7 +121,7 @@ type File struct {
 
 // Mount contains the information how to exposed the secrets
 type Mount struct {
-	Path      string   `yaml:"path" validate:"required"` // TODO: Add directory validation
+	Path      string   `yaml:"path" validate:"required"`
 	ExposedTo []string `yaml:"exposedTo" validate:"required"`
 }
 
