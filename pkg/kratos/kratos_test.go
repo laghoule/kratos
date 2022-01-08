@@ -85,6 +85,6 @@ func TestCreateInit(t *testing.T) {
 	assert.Equal(t, string(expected), string(result))
 }
 
-func TestIsDependencyMeet(t *testing.T) {
-	// TODO TestIsDependencyMeet
+func TestCheckDependency(t *testing.T) {
+	// TODO TestCheckDependency
 }

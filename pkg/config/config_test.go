@@ -306,5 +306,7 @@ func TestLoadConfigBadResources(t *testing.T) {
 }
 
 func TestListContainerNames(t *testing.T) {
-	// TODO: TestListContainerNames
+	d := createDeploymentConf()
+	list := d.listContainerNames()
+	assert.Contains(t, list, name)
 }
