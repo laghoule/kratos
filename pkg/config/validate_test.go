@@ -159,7 +159,7 @@ func TestSecretValidateConfig(t *testing.T) {
 func TestSecretValidateConfigError(t *testing.T) {
 	c := createDeploymentConf()
 	secret := c.Secrets
-	secret.Files[0].ExposedTo = []string{"error"}
+	secret.Files[0].Mount.ExposedTo = []string{"error"}
 	err := secret.validateConfig(c)
 	assert.Error(t, err)
 }
@@ -174,7 +174,7 @@ func TestConfigMapsValidateConfig(t *testing.T) {
 func TestConfigMapsValidateConfigError(t *testing.T) {
 	c := createDeploymentConf()
 	cm := c.ConfigMaps
-	cm.Files[0].ExposedTo = []string{"error"}
+	cm.Files[0].Mount.ExposedTo = []string{"error"}
 	err := cm.validateConfig(c)
 	assert.Error(t, err)
 }
@@ -189,7 +189,7 @@ func TestValidateExposedToError(t *testing.T) {
 	c := createDeploymentConf()
 	files := []File{
 		{
-			Mount: Mount{
+			Mount: &Mount{
 				Path: "/etc/cfg",
 			},
 		},
@@ -208,13 +208,13 @@ func TestValidateMountPathError(t *testing.T) {
 	c := createDeploymentConf()
 	c.Secrets.Files = []File{
 		{
-			Mount: Mount{
+			Mount: &Mount{
 				Path:      "/etc/cfg",
 				ExposedTo: []string{"myapp"},
 			},
 		},
 		{
-			Mount: Mount{
+			Mount: &Mount{
 				Path:      "/etc/cfg",
 				ExposedTo: []string{"myapp"},
 			},

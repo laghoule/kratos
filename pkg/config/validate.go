@@ -237,7 +237,7 @@ func (c *ConfigMaps) validateConfig(conf *Config) error {
 func validateExposedTo(files []File, conf *Config) error {
 	exposedToFound := false
 	for _, file := range files {
-		for _, exposedTo := range file.ExposedTo {
+		for _, exposedTo := range file.Mount.ExposedTo {
 
 			if conf.Deployment != nil {
 				if common.ListContain(conf.Deployment.listContainerNames(), exposedTo) {
@@ -277,11 +277,11 @@ func (c *Config) validateMountPath() error {
 	}
 
 	for _, file := range files {
-		for _, exposedTo := range file.ExposedTo {
-			if _, found := mountPathFound[exposedTo][file.Path]; found {
-				return fmt.Errorf("mount.path %s must be uniq", file.Path)
+		for _, exposedTo := range file.Mount.ExposedTo {
+			if _, found := mountPathFound[exposedTo][file.Mount.Path]; found {
+				return fmt.Errorf("mount.path %s must be uniq", file.Mount.Path)
 			}
-			mountPathFound[exposedTo] = map[string]bool{file.Path: true}
+			mountPathFound[exposedTo] = map[string]bool{file.Mount.Path: true}
 		}
 	}
 

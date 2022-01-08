@@ -68,7 +68,7 @@ func createConf() *config.Config {
 				{
 					Name: "configuration.yaml",
 					Data: "my configuration data",
-					Mount: config.Mount{
+					Mount: &config.Mount{
 						Path: "/etc/config",
 						ExposedTo: []string{
 							name,
@@ -84,7 +84,7 @@ func createConf() *config.Config {
 				{
 					Name: "secret.yaml",
 					Data: "my secret data",
-					Mount: config.Mount{
+					Mount: &config.Mount{
 						Path: "/etc/secret",
 						ExposedTo: []string{
 							name,

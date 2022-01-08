@@ -116,7 +116,7 @@ type Secrets struct {
 type File struct {
 	Name  string `yaml:"name" validate:"required"`
 	Data  string `yaml:"data" validate:"required"`
-	Mount `yaml:"mount" validate:"required,dive"`
+	Mount *Mount `yaml:"mount" validate:"required,dive"`
 }
 
 // Mount contains the information how to exposed the secrets
@@ -226,7 +226,7 @@ func CreateInit() *Config {
 				{
 					Name: "configuration.yaml",
 					Data: "my configuration data",
-					Mount: Mount{
+					Mount: &Mount{
 						Path: "/etc/config",
 						ExposedTo: []string{
 							"example",
@@ -246,7 +246,7 @@ func CreateInit() *Config {
 				{
 					Name: "secret.yaml",
 					Data: "my secret data",
-					Mount: Mount{
+					Mount: &Mount{
 						Path: "/etc/secret",
 						ExposedTo: []string{
 							"example",

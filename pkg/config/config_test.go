@@ -100,7 +100,7 @@ func createDeploymentConf() *Config {
 				{
 					Name: "configuration.yaml",
 					Data: "my configuration data",
-					Mount: Mount{
+					Mount: &Mount{
 						Path: "/etc/config",
 						ExposedTo: []string{
 							name,
@@ -116,7 +116,7 @@ func createDeploymentConf() *Config {
 				{
 					Name: "secret.yaml",
 					Data: "my secret data",
-					Mount: Mount{
+					Mount: &Mount{
 						Path: "/etc/secret",
 						ExposedTo: []string{
 							name,
