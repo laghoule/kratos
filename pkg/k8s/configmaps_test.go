@@ -34,7 +34,7 @@ func newConfigMaps() (*ConfigMaps, error) {
 
 // createConfigmap return a configmap object
 func createConfigMap() *corev1.ConfigMap {
-	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
+	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.ManagedLabel)
 	if err != nil {
 		return nil
 	}

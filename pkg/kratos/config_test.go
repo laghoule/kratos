@@ -98,7 +98,7 @@ func createConf() *config.Config {
 
 // createSecretConfig return a secret object representing a release configuration
 func createSecretConfig() *corev1.Secret {
-	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
+	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.ManagedLabel)
 	if err != nil {
 		return nil
 	}

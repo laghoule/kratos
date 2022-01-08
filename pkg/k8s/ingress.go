@@ -52,7 +52,7 @@ func (i *Ingress) CreateUpdate(name, namespace string) error {
 		return err
 	}
 
-	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
+	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.ManagedLabel)
 	if err != nil {
 		return nil
 	}
@@ -176,7 +176,7 @@ func (i *Ingress) IsIngressClassExist(name string) error {
 // List ingress of the specified namespace
 func (i *Ingress) List(namespace string) ([]netv1.Ingress, error) {
 	list, err := i.Clientset.NetworkingV1().Ingresses(namespace).List(context.Background(), metav1.ListOptions{
-		LabelSelector: config.DeployLabel,
+		LabelSelector: config.ManagedLabel,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("getting ingress list failed: %s", err)

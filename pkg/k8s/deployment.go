@@ -50,7 +50,7 @@ func (d *Deployment) CreateUpdate(name, namespace string) error {
 		return err
 	}
 
-	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
+	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.ManagedLabel)
 	if err != nil {
 		return fmt.Errorf("converting label failed: %s", err)
 	}
@@ -172,7 +172,7 @@ func (d *Deployment) Delete(name, namespace string) error {
 // List the deployments of the specified namespace
 func (d *Deployment) List(namespace string) ([]appsv1.Deployment, error) {
 	list, err := d.Clientset.AppsV1().Deployments(namespace).List(context.Background(), metav1.ListOptions{
-		LabelSelector: config.DeployLabel,
+		LabelSelector: config.ManagedLabel,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("getting deployments list failed: %s", err)

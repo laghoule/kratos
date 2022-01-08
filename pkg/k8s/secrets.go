@@ -47,7 +47,7 @@ func (s *Secrets) SaveConfig(name, namespace, key, value string) error {
 		return err
 	}
 
-	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
+	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.ManagedLabel)
 	if err != nil {
 		return nil
 	}
@@ -108,7 +108,7 @@ func (s *Secrets) createUpdate(secret *corev1.Secret) error {
 
 // CreateUpdate create or update a secrets with value provided in conf
 func (s *Secrets) CreateUpdate(name, namespace string) error {
-	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
+	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.ManagedLabel)
 	if err != nil {
 		return nil
 	}
@@ -204,7 +204,7 @@ func (s *Secrets) Get(name, namespace string) (*corev1.Secret, error) {
 // List the secret in the specified namespace
 func (s *Secrets) List(namespace string) ([]corev1.Secret, error) {
 	list, err := s.Clientset.CoreV1().Secrets(namespace).List(context.Background(), metav1.ListOptions{
-		LabelSelector: config.DeployLabel,
+		LabelSelector: config.ManagedLabel,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("getting secrets list failed: %s", err)

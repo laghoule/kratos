@@ -49,7 +49,7 @@ func (s *Service) CreateUpdate(name, namespace string) error {
 		return err
 	}
 
-	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
+	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.ManagedLabel)
 	if err != nil {
 		return nil
 	}
@@ -98,7 +98,7 @@ func (s *Service) CreateUpdate(name, namespace string) error {
 
 // update an existing service. Used by CreateUpdateService.
 func (s *Service) update(name, namespace string) error {
-	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
+	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.ManagedLabel)
 	if err != nil {
 		return nil
 	}
@@ -180,7 +180,7 @@ func (s *Service) Delete(name, namespace string) error {
 // List services of the specified namespace
 func (s *Service) List(namespace string) ([]corev1.Service, error) {
 	list, err := s.Clientset.CoreV1().Services(namespace).List(context.Background(), metav1.ListOptions{
-		LabelSelector: config.DeployLabel,
+		LabelSelector: config.ManagedLabel,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("getting services list failed: %s", err)

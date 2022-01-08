@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	// DeployLabel is a managed-by k8s label for kratos
-	DeployLabel = "app.kubernetes.io/managed-by=kratos" // TODO: Change to ManageLabel
+	// ManagedLabel is a managed-by k8s label for kratos
+	ManagedLabel = "app.kubernetes.io/managed-by=kratos"
 	// LiveProbe represent the live config keyword
 	LiveProbe = "live"
 	// ReadyProbe represent the ready config keyword

@@ -49,7 +49,7 @@ func (c *Cronjob) CreateUpdate(name, namespace string) error {
 		return err
 	}
 
-	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
+	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.ManagedLabel)
 	if err != nil {
 		return fmt.Errorf("converting label failed: %s", err)
 	}
@@ -169,7 +169,7 @@ func (c *Cronjob) Delete(name, namespace string) error {
 // List cronjob of the specified namespace
 func (c *Cronjob) List(namespace string) ([]batchv1.CronJob, error) {
 	list, err := c.Clientset.BatchV1().CronJobs(namespace).List(context.Background(), metav1.ListOptions{
-		LabelSelector: config.DeployLabel,
+		LabelSelector: config.ManagedLabel,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("getting cronjobs list failed: %s", err)

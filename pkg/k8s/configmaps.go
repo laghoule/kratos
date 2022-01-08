@@ -43,7 +43,7 @@ func (c *ConfigMaps) checkOwnership(name, namespace string) error {
 
 // CreateUpdate create or update a configmaps
 func (c *ConfigMaps) CreateUpdate(name, namespace string) error {
-	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
+	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.ManagedLabel)
 	if err != nil {
 		return fmt.Errorf("converting label failed: %s", err)
 	}
@@ -144,7 +144,7 @@ func (c *ConfigMaps) get(name, namespace string) (*corev1.ConfigMap, error) {
 // list the configmaps in the specified namespace
 func (c *ConfigMaps) List(namespace string) ([]corev1.ConfigMap, error) {
 	list, err := c.Clientset.CoreV1().ConfigMaps(namespace).List(context.Background(), metav1.ListOptions{
-		LabelSelector: config.DeployLabel,
+		LabelSelector: config.ManagedLabel,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("getting configmaps list failed: %s", err)

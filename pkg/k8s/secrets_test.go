@@ -34,7 +34,7 @@ func newSecret() (*Secrets, error) {
 
 // createSecret return a secret object
 func createSecret() *corev1.Secret {
-	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
+	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.ManagedLabel)
 	if err != nil {
 		return nil
 	}
@@ -65,7 +65,7 @@ func createSecret() *corev1.Secret {
 
 // createConfigSecret return a kratos release configuration secret object
 func createConfigSecret() *corev1.Secret {
-	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
+	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.ManagedLabel)
 	if err != nil {
 		return nil
 	}

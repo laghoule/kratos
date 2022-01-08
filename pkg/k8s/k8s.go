@@ -97,7 +97,7 @@ func (c *Client) CheckVersionDepency() error {
 
 // checkKratosManaged check if the object labels contains `app.kubernetes.io/managed-by=kratos` label
 func checkKratosManaged(objLabels map[string]string) error {
-	managedLabel, err := labels.ConvertSelectorToLabelsMap(config.DeployLabel)
+	managedLabel, err := labels.ConvertSelectorToLabelsMap(config.ManagedLabel)
 	if err != nil {
 		return fmt.Errorf("parsing labels failed: %s", err)
 	}
