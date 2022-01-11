@@ -3,7 +3,7 @@ module github.com/laghoule/kratos
 go 1.17
 
 require (
-	github.com/go-playground/validator/v10 v10.9.0
+	github.com/go-playground/validator/v10 v10.10.0
 	github.com/imdario/mergo v0.3.12
 	github.com/jetstack/cert-manager v1.6.1
 	github.com/jinzhu/copier v0.3.4
