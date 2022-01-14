@@ -18,7 +18,7 @@ func TestMD5Sum16(t *testing.T) {
 
 func TestListContain(t *testing.T) {
 	list := []string{"one", "two", "three"}
-	found := ListContain(list, "two"); 
+	found := ListContain(list, "two")
 	assert.True(t, found)
 
 	found = ListContain(list, "four")

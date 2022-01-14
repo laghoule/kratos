@@ -141,7 +141,7 @@ func (c *ConfigMaps) get(name, namespace string) (*corev1.ConfigMap, error) {
 	return configmap, nil
 }
 
-// list the configmaps in the specified namespace
+// List the configmaps in the specified namespace
 func (c *ConfigMaps) List(namespace string) ([]corev1.ConfigMap, error) {
 	list, err := c.Clientset.CoreV1().ConfigMaps(namespace).List(context.Background(), metav1.ListOptions{
 		LabelSelector: config.ManagedLabel,
