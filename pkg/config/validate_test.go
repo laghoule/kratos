@@ -6,14 +6,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	mountPath = "/etc/cfg"
+)
+
 func TestLabelsValidation(t *testing.T) {
-	label := map[string]string{"app": "myapp"}
+	label := map[string]string{"app": name}
 	err := labelsValidation(label)
 	assert.NoError(t, err)
 }
 
 func TestLabelsValidationError(t *testing.T) {
-	label := map[string]string{"APP!": "myapp"}
+	label := map[string]string{"APP!": name}
 	err := labelsValidation(label)
 	assert.Error(t, err)
 }
@@ -120,7 +124,7 @@ func TestIngressValidateConfigError(t *testing.T) {
 func TestResourcesValidateConfig(t *testing.T) {
 	c := createDeploymentConf()
 	res := c.Deployment.Containers[0].Resources
-	err := res.validateConfig("myapp")
+	err := res.validateConfig(name)
 	assert.NoError(t, err)
 }
 
@@ -130,14 +134,14 @@ func TestResourcesValidateConfigError(t *testing.T) {
 	res.Limits = &ResourceType{
 		CPU: "error",
 	}
-	err := res.validateConfig("myapp")
+	err := res.validateConfig(name)
 	assert.Error(t, err)
 }
 
 func TestResourceTypeValidateConfig(t *testing.T) {
 	c := createDeploymentConf()
 	resType := c.Deployment.Containers[0].Resources.Limits
-	err := resType.validateConfig("myapp", "CPU")
+	err := resType.validateConfig(name, "CPU")
 	assert.NoError(t, err)
 }
 
@@ -145,7 +149,7 @@ func TestResourceTypeValidateConfigERROR(t *testing.T) {
 	c := createDeploymentConf()
 	resType := c.Deployment.Containers[0].Resources.Limits
 	resType.CPU = "error"
-	err := resType.validateConfig("myapp", "CPU")
+	err := resType.validateConfig(name, "CPU")
 	assert.Error(t, err)
 }
 
@@ -190,7 +194,7 @@ func TestValidateExposedToError(t *testing.T) {
 	files := []File{
 		{
 			Mount: &Mount{
-				Path: "/etc/cfg",
+				Path: mountPath,
 			},
 		},
 	}
@@ -209,14 +213,14 @@ func TestValidateMountPathError(t *testing.T) {
 	c.Secrets.Files = []File{
 		{
 			Mount: &Mount{
-				Path:      "/etc/cfg",
-				ExposedTo: []string{"myapp"},
+				Path:      mountPath,
+				ExposedTo: []string{name},
 			},
 		},
 		{
 			Mount: &Mount{
-				Path:      "/etc/cfg",
-				ExposedTo: []string{"myapp"},
+				Path:      mountPath,
+				ExposedTo: []string{name},
 			},
 		},
 	}

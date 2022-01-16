@@ -184,7 +184,7 @@ func TestDeleteIngressNotOwnedByKratos(t *testing.T) {
 		return
 	}
 
-	if err := i.CreateUpdate(name, namespace); assert.Error(t, err) {
+	if err := i.Delete(name, namespace); assert.Error(t, err) {
 		assert.Equal(t, err.Error(), "ingress is not managed by kratos")
 	}
 }

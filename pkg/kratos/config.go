@@ -16,6 +16,10 @@ const (
 	YamlExt = ".yaml"
 )
 
+func yamlWriteERR(err error) error {
+	return fmt.Errorf("writing yaml init file failed: %s", err)
+}
+
 // CreateInit create sample configuration file
 func (k *Kratos) CreateInit(file string) error {
 	b, err := yaml.Marshal(config.CreateInit())
@@ -24,7 +28,7 @@ func (k *Kratos) CreateInit(file string) error {
 	}
 
 	if err := os.WriteFile(file, b, fileMode); err != nil {
-		return fmt.Errorf("writing yaml init file failed: %s", err)
+		return yamlWriteERR(err)
 	}
 
 	return nil
@@ -53,12 +57,12 @@ func (k *Kratos) SaveConfigToDisk(name, namespace, destination string) error {
 
 	if _, ok := secret.Data[config.ConfigKey]; ok {
 		if err := os.WriteFile(filepath.Join(destination, name)+YamlExt, []byte(secret.Data[config.ConfigKey]), fileMode); err != nil {
-			return fmt.Errorf("writing yaml init file failed: %s", err)
+			return yamlWriteERR(err)
 		}
 	} else {
 		if _, ok := secret.StringData[config.ConfigKey]; ok {
 			if err := os.WriteFile(filepath.Join(destination, name)+YamlExt, []byte(secret.StringData[config.ConfigKey]), fileMode); err != nil {
-				return fmt.Errorf("writing yaml init file failed: %s", err)
+				return yamlWriteERR(err)
 			}
 		} else {
 			return fmt.Errorf("unexpected missing data in secret %s", secret.Name)
