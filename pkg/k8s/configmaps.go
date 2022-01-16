@@ -11,8 +11,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
-
-	"github.com/imdario/mergo"
 )
 
 // ConfigMaps contain the kubernetes clientset and configuration of the release
@@ -48,21 +46,16 @@ func (c *ConfigMaps) CreateUpdate(name, namespace string) error {
 		return fmt.Errorf("converting label failed: %s", err)
 	}
 
-	// merge common & configmaps labels
+	// merge labels
 	if c.Common != nil && c.Common.Labels != nil {
-		if err := mergo.Map(&c.ConfigMaps.Labels, c.Common.Labels); err != nil {
+		if err := mergeStringMaps(&c.ConfigMaps.Labels, c.Common.Labels, kratosLabel); err != nil {
 			return fmt.Errorf("merging configmaps labels failed: %s", err)
 		}
 	}
 
-	// merge kratosLabels & configmaps labels
-	if err := mergo.Map(&c.ConfigMaps.Labels, map[string]string(kratosLabel)); err != nil {
-		return fmt.Errorf("merging configmaps labels failed: %s", err)
-	}
-
-	// merge common & configmaps annotations
+	// merge annotations
 	if c.Common != nil && c.Common.Annotations != nil {
-		if err := mergo.Map(&c.ConfigMaps.Annotations, c.Common.Annotations); err != nil {
+		if err := mergeStringMaps(&c.ConfigMaps.Annotations, c.Common.Annotations); err != nil {
 			return fmt.Errorf("merging configmaps annotations failed: %s", err)
 		}
 	}

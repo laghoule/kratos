@@ -38,11 +38,6 @@ func createDeployment() *appsv1.Deployment {
 		"environment":   environment,
 		"app":           name,
 	}
-	podLabels := map[string]string{
-		DepLabelName:  name,
-		"environment": environment,
-		"app":         name,
-	}
 	annotations := map[string]string{
 		"branch":   environment,
 		"revision": "22",
@@ -65,7 +60,7 @@ func createDeployment() *appsv1.Deployment {
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        name,
 					Namespace:   namespace,
-					Labels:      podLabels,
+					Labels:      depLabels,
 					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{

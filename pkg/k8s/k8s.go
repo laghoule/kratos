@@ -7,6 +7,7 @@ import (
 
 	"golang.org/x/mod/semver"
 
+	"github.com/imdario/mergo"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -113,4 +114,15 @@ func checkKratosManaged(objLabels map[string]string) error {
 	}
 
 	return fmt.Errorf("not managed by kratos")
+}
+
+// mergeStringMaps to destination string map
+func mergeStringMaps(dst *map[string]string, sources ...map[string]string) error {
+	for _, src := range sources {
+		if err := mergo.Map(dst, src); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

@@ -11,8 +11,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
-
-	"github.com/imdario/mergo"
 )
 
 const (
@@ -57,19 +55,9 @@ func (i *Ingress) CreateUpdate(name, namespace string) error {
 		return nil
 	}
 
-	// merge common & ingress labels
-	if err := mergo.Map(&i.Deployment.Ingress.Labels, i.Common.Labels); err != nil {
+	// merge labels
+	if err := mergeStringMaps(&i.Deployment.Ingress.Labels, i.Common.Labels, kratosLabel); err != nil {
 		return fmt.Errorf("merging ingress labels failed: %s", err)
-	}
-
-	// merge kratosLabels & ingress labels
-	if err := mergo.Map(&i.Deployment.Ingress.Labels, map[string]string(kratosLabel)); err != nil {
-		return fmt.Errorf("merging ingress labels failed: %s", err)
-	}
-
-	// merge common & ingress annotations
-	if err := mergo.Map(&i.Deployment.Ingress.Annotations, i.Common.Annotations); err != nil {
-		return fmt.Errorf("merging ingress annotations failed: %s", err)
 	}
 
 	sslAnnotations := map[string]string{
@@ -77,8 +65,8 @@ func (i *Ingress) CreateUpdate(name, namespace string) error {
 		sslRedirectAnnotation:   "true",
 	}
 
-	// merge ingress annotations & sslAnnotations
-	if err := mergo.Map(&i.Deployment.Ingress.Annotations, sslAnnotations); err != nil {
+	// merge annotations
+	if err := mergeStringMaps(&i.Deployment.Ingress.Annotations, i.Common.Annotations, sslAnnotations); err != nil {
 		return fmt.Errorf("merging ingress annotations failed: %s", err)
 	}
 

@@ -13,8 +13,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
-
-	"github.com/imdario/mergo"
 )
 
 // Cronjob contain the kubernetes clientset and configuration of the release
@@ -54,21 +52,16 @@ func (c *Cronjob) CreateUpdate(name, namespace string) error {
 		return fmt.Errorf("converting label failed: %s", err)
 	}
 
-	// merge common & cronjob labels
+	// merge labels
 	if c.Common != nil && c.Common.Labels != nil {
-		if err := mergo.Map(&c.Cronjob.Labels, c.Common.Labels); err != nil {
+		if err := mergeStringMaps(&c.Cronjob.Labels, c.Common.Labels, kratosLabel); err != nil {
 			return fmt.Errorf("merging cronjob labels failed: %s", err)
 		}
 	}
 
-	// merge kratosLabels & cronjob labels
-	if err := mergo.Map(&c.Cronjob.Labels, map[string]string(kratosLabel)); err != nil {
-		return fmt.Errorf("merging cronjob labels failed: %s", err)
-	}
-
-	// merge common & cronjob annotations
+	// merge annotations
 	if c.Common != nil && c.Common.Annotations != nil {
-		if err := mergo.Map(&c.Cronjob.Annotations, c.Common.Annotations); err != nil {
+		if err := mergeStringMaps(&c.Cronjob.Annotations, c.Common.Annotations); err != nil {
 			return fmt.Errorf("merging cronjob annotations failed: %s", err)
 		}
 	}

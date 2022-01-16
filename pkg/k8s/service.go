@@ -12,9 +12,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
-
-	"github.com/imdario/mergo"
-	"github.com/jinzhu/copier"
 )
 
 // Service contain the kubernetes clientset and configuration of the release
@@ -103,22 +100,9 @@ func (s *Service) update(name, namespace string) error {
 		return nil
 	}
 
-	// deep copy of map for svcLabels
 	svcLabels := map[string]string{}
-	if err := copier.Copy(&svcLabels, &s.Common.Labels); err != nil {
-		return fmt.Errorf("copying common labels values failed: %s", err)
-	}
-
-	// TODO create a func for merge
-
-	// merge kratosLabel & service labels
-	if err := mergo.Map(&svcLabels, kratosLabel); err != nil {
-		return fmt.Errorf("merging common labels failed: %s", err)
-	}
-
-	// merge common & service labels
-	if err := mergo.Map(&svcLabels, s.Common.Labels); err != nil {
-		return fmt.Errorf("merging common labels failed: %s", err)
+	if err := mergeStringMaps(&svcLabels, s.Common.Labels, kratosLabel); err != nil {
+		return err
 	}
 
 	svcInfo, err := s.Clientset.CoreV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})

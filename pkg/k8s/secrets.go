@@ -11,8 +11,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
-
-	"github.com/imdario/mergo"
 )
 
 // Secrets contain the kubernetes clientset and configuration of the release
@@ -114,18 +112,13 @@ func (s *Secrets) CreateUpdate(name, namespace string) error {
 	}
 
 	if s.Secrets != nil {
-		// merge common & secrets labels
-		if err := mergo.Map(&s.Secrets.Labels, s.Common.Labels); err != nil {
-			return fmt.Errorf("merging secrets labels failed: %s", err)
+		// merge labels
+		if err := mergeStringMaps(&s.Secrets.Labels, s.Common.Labels, kratosLabel); err != nil {
+			return fmt.Errorf("merging secret labels failed: %s", err)
 		}
 
-		// merge kratosLabels & secrets labels
-		if err := mergo.Map(&s.Secrets.Labels, map[string]string(kratosLabel)); err != nil {
-			return fmt.Errorf("merging secrets labels failed: %s", err)
-		}
-
-		// merge common & ingress annotations
-		if err := mergo.Map(&s.Secrets.Annotations, s.Common.Annotations); err != nil {
+		// merge annotations
+		if err := mergeStringMaps(&s.Secrets.Annotations, s.Common.Annotations); err != nil {
 			return fmt.Errorf("merging secrets annotations failed: %s", err)
 		}
 	} else {
@@ -133,7 +126,7 @@ func (s *Secrets) CreateUpdate(name, namespace string) error {
 		s.Secrets = &config.Secrets{
 			Labels: map[string]string(kratosLabel),
 		}
-		if err := mergo.Map(&s.Secrets.Labels, s.Common.Labels); err != nil {
+		if err := mergeStringMaps(&s.Secrets.Labels, s.Common.Labels); err != nil {
 			return fmt.Errorf("merging secrets labels failed: %s", err)
 		}
 	}

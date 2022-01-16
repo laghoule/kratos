@@ -14,7 +14,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/imdario/mergo"
 	"github.com/jinzhu/copier"
 )
 
@@ -55,25 +54,20 @@ func (d *Deployment) CreateUpdate(name, namespace string) error {
 		return fmt.Errorf("converting label failed: %s", err)
 	}
 
-	// merge common & deployments labels
-	if err := mergo.Map(&d.Deployment.Labels, d.Common.Labels); err != nil {
+	// merge labels
+	if err := mergeStringMaps(&d.Deployment.Labels, d.Common.Labels, kratosLabel); err != nil {
 		return fmt.Errorf("merging deployment labels failed: %s", err)
 	}
 
-	// deep copy of map for podLabels
+	// merge annotations
+	if err := mergeStringMaps(&d.Deployment.Annotations, d.Common.Annotations); err != nil {
+		return fmt.Errorf("merging deployment annotations failed: %s", err)
+	}
+
+	// pod labels should have the same labels as the deployment
 	podLabels := map[string]string{}
 	if err := copier.Copy(&podLabels, &d.Deployment.Labels); err != nil {
 		return fmt.Errorf("copying deployment labels values failed: %s", err)
-	}
-
-	// merge kratosLabels & deployment labels
-	if err := mergo.Map(&d.Deployment.Labels, map[string]string(kratosLabel)); err != nil {
-		return fmt.Errorf("merging deployment labels failed: %s", err)
-	}
-
-	// merge common & deployments annotations
-	if err := mergo.Map(&d.Deployment.Annotations, d.Common.Annotations); err != nil {
-		return fmt.Errorf("merging deployment annotations failed: %s", err)
 	}
 
 	containers := []corev1.Container{}
