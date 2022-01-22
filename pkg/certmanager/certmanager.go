@@ -24,8 +24,8 @@ func New(client k8s.Client) (*Certmanager, error) {
 	return &Certmanager{Interface: cm}, nil
 }
 
-// IsClusterIssuerExist check if a clusterIssuer exist
-func (c *Certmanager) IsClusterIssuerExist(client *k8s.Client, clusterIssuer string) error {
+// CheckClusterIssuerExist check if a clusterIssuer exist
+func (c *Certmanager) CheckClusterIssuerExist(client *k8s.Client, clusterIssuer string) error {
 	_, err := c.CertmanagerV1().ClusterIssuers().Get(context.Background(), clusterIssuer, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("clusterIssuer %s not found", clusterIssuer)

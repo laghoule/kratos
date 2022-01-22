@@ -32,14 +32,14 @@ func new() *Certmanager {
 func TestCheckClusterIssuer(t *testing.T) {
 	c := new()
 
-	err := c.IsClusterIssuerExist(&k8s.Client{}, goodName)
+	err := c.CheckClusterIssuerExist(&k8s.Client{}, goodName)
 	assert.NoError(t, err)
 }
 
 func TestCheckBadClusterIssuer(t *testing.T) {
 	c := new()
 
-	if err := c.IsClusterIssuerExist(&k8s.Client{}, badName); assert.Error(t, err) {
+	if err := c.CheckClusterIssuerExist(&k8s.Client{}, badName); assert.Error(t, err) {
 		assert.Equal(t, err.Error(), "clusterIssuer notletsencrypt not found")
 	}
 
