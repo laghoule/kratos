@@ -17,14 +17,14 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
-func newDeployment() (*Deployment, error) {
+func newDeployment() (*deployment, error) {
 	conf := &config.Config{}
 
 	if err := conf.Load(deploymentConfig); err != nil {
 		return nil, err
 	}
 
-	return &Deployment{
+	return &deployment{
 		Clientset: fake.NewSimpleClientset(),
 		Config:    conf,
 	}, nil

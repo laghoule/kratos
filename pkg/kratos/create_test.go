@@ -17,11 +17,6 @@ func TestCreate(t *testing.T) {
 		return
 	}
 
-	// deployment
-	depList, err := k.Client.Deployment.List(namespace)
-	assert.NoError(t, err)
-	assert.Equal(t, name, depList[0].Name)
-
 	// service
 	svcList, err := k.Client.Service.List(namespace)
 	assert.NoError(t, err)

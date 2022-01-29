@@ -20,7 +20,7 @@ type Client struct {
 	RestConfig *rest.Config
 	*ConfigMaps
 	*Cronjob
-	*Deployment
+	Deployment
 	Ingress
 	*Secrets
 	*Service
@@ -63,7 +63,7 @@ func New(kubeconfig string, conf *config.Config) (*Client, error) {
 			Clientset: clientset,
 			Config:    conf,
 		},
-		Deployment: &Deployment{
+		Deployment: &deployment{
 			Clientset: clientset,
 			Config:    conf,
 		},

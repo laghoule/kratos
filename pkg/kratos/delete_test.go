@@ -15,13 +15,6 @@ func TestDelete(t *testing.T) {
 		return
 	}
 
-	depList, err := k.Client.Deployment.List(namespace)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	assert.NotEmpty(t, depList)
-
 	svcList, err := k.Client.Service.List(namespace)
 	if err != nil {
 		t.Error(err)
@@ -47,13 +40,6 @@ func TestDelete(t *testing.T) {
 		t.Error(err)
 		return
 	}
-
-	depList, err = k.Client.Deployment.List(namespace)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	assert.Empty(t, depList)
 
 	svcList, err = k.Client.Service.List(namespace)
 	if err != nil {

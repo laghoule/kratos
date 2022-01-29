@@ -17,14 +17,21 @@ import (
 	"github.com/jinzhu/copier"
 )
 
-// Deployment contain the kubernetes clientset and configuration of the release
-type Deployment struct {
+// Deployment is the interface for deployment
+type Deployment interface {
+	CreateUpdate(string, string) error
+	Delete(string, string) error
+	List(string) ([]appsv1.Deployment, error)
+}
+
+// deployment contain the kubernetes clientset and configuration of the release
+type deployment struct {
 	Clientset kubernetes.Interface
 	*config.Config
 }
 
 // checkOwnership check if it's safe to create, update or delete the deployment
-func (d *Deployment) checkOwnership(name, namespace string) error {
+func (d *deployment) checkOwnership(name, namespace string) error {
 	dep, err := d.Clientset.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -44,7 +51,7 @@ func (d *Deployment) checkOwnership(name, namespace string) error {
 }
 
 // CreateUpdate create or update a deployment
-func (d *Deployment) CreateUpdate(name, namespace string) error {
+func (d *deployment) CreateUpdate(name, namespace string) error {
 	if err := d.checkOwnership(name, namespace); err != nil {
 		return err
 	}
@@ -151,7 +158,7 @@ func (d *Deployment) CreateUpdate(name, namespace string) error {
 }
 
 // Delete the specified deployment
-func (d *Deployment) Delete(name, namespace string) error {
+func (d *deployment) Delete(name, namespace string) error {
 	if err := d.checkOwnership(name, namespace); err != nil {
 		return err
 	}
@@ -164,7 +171,7 @@ func (d *Deployment) Delete(name, namespace string) error {
 }
 
 // List the deployments of the specified namespace
-func (d *Deployment) List(namespace string) ([]appsv1.Deployment, error) {
+func (d *deployment) List(namespace string) ([]appsv1.Deployment, error) {
 	list, err := d.Clientset.AppsV1().Deployments(namespace).List(context.Background(), metav1.ListOptions{
 		LabelSelector: config.ManagedLabel,
 	})
