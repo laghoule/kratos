@@ -70,9 +70,9 @@ func (d *Deployment) CreateUpdate(name, namespace string) error {
 		return fmt.Errorf("copying deployment labels values failed: %s", err)
 	}
 
-	containers := []corev1.Container{}
-	volumesMount := []corev1.VolumeMount{}
-	volumes := []corev1.Volume{}
+	var containers []corev1.Container
+	var volumesMount []corev1.VolumeMount
+	var volumes []corev1.Volume
 
 	for _, container := range d.Deployment.Containers {
 		volumesMount, volumes = getVolumesConfForContainer(name, &container, d.Config)

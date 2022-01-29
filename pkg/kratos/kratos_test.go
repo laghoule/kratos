@@ -8,6 +8,7 @@ import (
 	"github.com/laghoule/kratos/pkg/config"
 	"github.com/laghoule/kratos/pkg/k8s"
 	"github.com/stretchr/testify/assert"
+	netv1 "k8s.io/api/networking/v1"
 
 	"k8s.io/client-go/kubernetes/fake"
 )
@@ -27,6 +28,13 @@ const (
 	hostname            = "example.com"
 )
 
+type fakeIngress struct{}
+
+func (f fakeIngress) CheckIngressClassExist(name string) error       { return nil }
+func (f fakeIngress) CreateUpdate(name, namespace string) error      { return nil }
+func (f fakeIngress) Delete(name, namespace string) error            { return nil }
+func (f fakeIngress) List(namespace string) ([]netv1.Ingress, error) { return []netv1.Ingress{}, nil }
+
 func new() *Kratos {
 	conf := createConf()
 	clientset := fake.NewSimpleClientset()
@@ -45,10 +53,7 @@ func new() *Kratos {
 				Clientset: clientset,
 				Config:    conf,
 			},
-			Ingress: &k8s.Ingress{
-				Clientset: clientset,
-				Config:    conf,
-			},
+			Ingress: fakeIngress{},
 			Secrets: &k8s.Secrets{
 				Clientset: clientset,
 				Config:    conf,

@@ -21,7 +21,7 @@ type Client struct {
 	*ConfigMaps
 	*Cronjob
 	*Deployment
-	*Ingress
+	Ingress
 	*Secrets
 	*Service
 }
@@ -67,7 +67,7 @@ func New(kubeconfig string, conf *config.Config) (*Client, error) {
 			Clientset: clientset,
 			Config:    conf,
 		},
-		Ingress: &Ingress{
+		Ingress: &ingress{
 			Clientset: clientset,
 			Config:    conf,
 		},

@@ -53,7 +53,7 @@ func (k *Kratos) CheckDependency() error {
 		}
 
 		// validate ingressClass
-		if err := k.Client.IsIngressClassExist(k.Config.Deployment.Ingress.IngressClass); err != nil {
+		if err := k.Client.CheckIngressClassExist(k.Config.Deployment.Ingress.IngressClass); err != nil {
 			return err
 		}
 	}

@@ -12,14 +12,14 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
-func newIngress() (*Ingress, error) {
+func newIngress() (ingress, error) {
 	conf := &config.Config{}
 
 	if err := conf.Load(deploymentConfig); err != nil {
-		return nil, err
+		return ingress{}, err
 	}
 
-	return &Ingress{
+	return ingress{
 		Clientset: fake.NewSimpleClientset(),
 		Config:    conf,
 	}, nil
@@ -104,7 +104,7 @@ func createIngressClass() *netv1.IngressClass {
 	}
 }
 
-func createNotKratosIngress(i *Ingress) error {
+func createNotKratosIngress(i ingress) error {
 	ing := createIngress()
 	ing.Labels = nil
 
@@ -239,6 +239,6 @@ func TestIsIngressClassExist(t *testing.T) {
 		return
 	}
 
-	err = i.IsIngressClassExist(name)
+	err = i.CheckIngressClassExist(name)
 	assert.NoError(t, err)
 }

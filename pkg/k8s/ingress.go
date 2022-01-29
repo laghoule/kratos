@@ -18,14 +18,22 @@ const (
 	sslRedirectAnnotation   = "nginx.ingress.kubernetes.io/ssl-redirect"
 )
 
-// Ingress contain the kubernetes clientset and configuration of the release
-type Ingress struct {
+// Ingress is the interface
+type Ingress interface {
+	CheckIngressClassExist(string) error
+	CreateUpdate(string, string) error
+	Delete(string, string) error
+	List(string) ([]netv1.Ingress, error)
+}
+
+// ingress contain the kubernetes clientset and configuration of the release
+type ingress struct {
 	Clientset kubernetes.Interface
 	*config.Config
 }
 
 // checkOwnership check if it's safe to create, update or delete the ingress
-func (i *Ingress) checkOwnership(name, namespace string) error {
+func (i *ingress) checkOwnership(name, namespace string) error {
 	ing, err := i.Clientset.NetworkingV1().Ingresses(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -45,7 +53,7 @@ func (i *Ingress) checkOwnership(name, namespace string) error {
 }
 
 // CreateUpdate create or update an ingress
-func (i *Ingress) CreateUpdate(name, namespace string) error {
+func (i *ingress) CreateUpdate(name, namespace string) error {
 	if err := i.checkOwnership(name, namespace); err != nil {
 		return err
 	}
@@ -138,7 +146,7 @@ func (i *Ingress) CreateUpdate(name, namespace string) error {
 }
 
 // Delete specified ingress
-func (i *Ingress) Delete(name, namespace string) error {
+func (i *ingress) Delete(name, namespace string) error {
 	if err := i.checkOwnership(name, namespace); err != nil {
 		return err
 	}
@@ -151,8 +159,8 @@ func (i *Ingress) Delete(name, namespace string) error {
 	return nil
 }
 
-// IsIngressClassExist check if an ingress class object exist
-func (i *Ingress) IsIngressClassExist(name string) error {
+// CheckIngressClassExist check if an ingress class object exist
+func (i *ingress) CheckIngressClassExist(name string) error {
 	_, err := i.Clientset.NetworkingV1().IngressClasses().Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("ingressClass %s not found", name)
@@ -162,7 +170,7 @@ func (i *Ingress) IsIngressClassExist(name string) error {
 }
 
 // List ingress of the specified namespace
-func (i *Ingress) List(namespace string) ([]netv1.Ingress, error) {
+func (i *ingress) List(namespace string) ([]netv1.Ingress, error) {
 	list, err := i.Clientset.NetworkingV1().Ingresses(namespace).List(context.Background(), metav1.ListOptions{
 		LabelSelector: config.ManagedLabel,
 	})

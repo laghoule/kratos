@@ -29,13 +29,6 @@ func TestDelete(t *testing.T) {
 	}
 	assert.NotEmpty(t, svcList)
 
-	ingList, err := k.Client.Ingress.List(namespace)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	assert.NotEmpty(t, ingList)
-
 	cmList, err := k.Client.ConfigMaps.List(namespace)
 	if err != nil {
 		t.Error(err)
@@ -68,13 +61,6 @@ func TestDelete(t *testing.T) {
 		return
 	}
 	assert.Empty(t, svcList)
-
-	ingList, err = k.Client.Ingress.List(namespace)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	assert.Empty(t, ingList)
 
 	cmList, err = k.Client.ConfigMaps.List(namespace)
 	if err != nil {

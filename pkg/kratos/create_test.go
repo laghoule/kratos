@@ -27,11 +27,6 @@ func TestCreate(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, name, svcList[0].Name)
 
-	// ingress
-	ingList, err := k.Client.Ingress.List(namespace)
-	assert.NoError(t, err)
-	assert.Equal(t, name, ingList[0].Name)
-
 	// configmaps
 	cmList, err := k.Client.ConfigMaps.List(namespace)
 	assert.NoError(t, err)
