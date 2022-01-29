@@ -16,14 +16,14 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
-func newCronjob() (*Cronjob, error) {
+func newCronjob() (*cronjob, error) {
 	conf := &config.Config{}
 
 	if err := conf.Load(cronjobConfig); err != nil {
 		return nil, err
 	}
 
-	return &Cronjob{
+	return &cronjob{
 		Clientset: fake.NewSimpleClientset(),
 		Config:    conf,
 	}, nil

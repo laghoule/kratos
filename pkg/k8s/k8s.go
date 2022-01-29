@@ -19,7 +19,7 @@ type Client struct {
 	Clientset  kubernetes.Interface
 	RestConfig *rest.Config
 	*ConfigMaps
-	*Cronjob
+	Cronjob
 	Deployment
 	Ingress
 	*Secrets
@@ -59,7 +59,7 @@ func New(kubeconfig string, conf *config.Config) (*Client, error) {
 			Clientset: clientset,
 			Config:    conf,
 		},
-		Cronjob: &Cronjob{
+		Cronjob: &cronjob{
 			Clientset: clientset,
 			Config:    conf,
 		},

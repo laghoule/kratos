@@ -15,14 +15,21 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// Cronjob contain the kubernetes clientset and configuration of the release
-type Cronjob struct {
+// Cronjob is the interface for cronjob
+type Cronjob interface {
+	CreateUpdate(string, string) error
+	Delete(string, string) error
+	List(string) ([]batchv1.CronJob, error)
+}
+
+// cronjob contain the kubernetes clientset and configuration of the release
+type cronjob struct {
 	Clientset kubernetes.Interface
 	*config.Config
 }
 
 // checkOwnership check if it's safe to create, update or delete the cronjob
-func (c *Cronjob) checkOwnership(name, namespace string) error {
+func (c *cronjob) checkOwnership(name, namespace string) error {
 	cron, err := c.Clientset.BatchV1().CronJobs(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -42,7 +49,7 @@ func (c *Cronjob) checkOwnership(name, namespace string) error {
 }
 
 // CreateUpdate create or update a cronjobs
-func (c *Cronjob) CreateUpdate(name, namespace string) error {
+func (c *cronjob) CreateUpdate(name, namespace string) error {
 	if err := c.checkOwnership(name, namespace); err != nil {
 		return err
 	}
@@ -147,7 +154,7 @@ func (c *Cronjob) CreateUpdate(name, namespace string) error {
 }
 
 // Delete the specified cronjobs
-func (c *Cronjob) Delete(name, namespace string) error {
+func (c *cronjob) Delete(name, namespace string) error {
 	if err := c.checkOwnership(name, namespace); err != nil {
 		return err
 	}
@@ -160,7 +167,7 @@ func (c *Cronjob) Delete(name, namespace string) error {
 }
 
 // List cronjob of the specified namespace
-func (c *Cronjob) List(namespace string) ([]batchv1.CronJob, error) {
+func (c *cronjob) List(namespace string) ([]batchv1.CronJob, error) {
 	list, err := c.Clientset.BatchV1().CronJobs(namespace).List(context.Background(), metav1.ListOptions{
 		LabelSelector: config.ManagedLabel,
 	})
