@@ -19,14 +19,14 @@ const (
 	secretFileName    = "credentials.yaml"
 )
 
-func newSecret() (*Secrets, error) {
+func newSecret() (*secrets, error) {
 	conf := &config.Config{}
 
 	if err := conf.Load(secretConfig); err != nil {
 		return nil, err
 	}
 
-	return &Secrets{
+	return &secrets{
 		Clientset: fake.NewSimpleClientset(),
 		Config:    conf,
 	}, nil
@@ -89,7 +89,7 @@ func createConfigSecret() *corev1.Secret {
 	}
 }
 
-func createNotKratosSecret(s *Secrets) error {
+func createNotKratosSecret(s *secrets) error {
 	secret := createSecret()
 	secret.Labels = nil
 

@@ -35,6 +35,7 @@ type fakeConfigmaps struct{}
 type fakeCronjob struct{}
 type fakeDeployment struct{}
 type fakeIngress struct{}
+type fakeSecrets struct{}
 
 func (f fakeConfigmaps) CreateUpdate(name, namespace string) error { return nil }
 func (f fakeConfigmaps) Delete(name, namespace string) error       { return nil }
@@ -61,20 +62,28 @@ func (f fakeIngress) List(namespace string) ([]netv1.Ingress, error) {
 	return []netv1.Ingress{}, nil
 }
 
+func (f fakeSecrets) CreateUpdate(name, namespace string) error { return nil }
+func (f fakeSecrets) Delete(name, namespace string) error       { return nil }
+func (f fakeSecrets) DeleteConfig(name, namespace string) error { return nil }
+func (f fakeSecrets) Get(name, namespace string) (*corev1.Secret, error) {
+	return createSecretConfig(), nil
+}
+func (f fakeSecrets) List(namespace string) ([]corev1.Secret, error) {
+	return []corev1.Secret{}, nil
+}
+func (f fakeSecrets) SaveConfig(name, namespace, key, value string) error { return nil }
+
 func new() *Kratos {
 	conf := createConf()
 	clientset := fake.NewSimpleClientset()
 	return &Kratos{
 		Client: &k8s.Client{
-			Clientset: clientset,
+			Clientset:  clientset,
 			ConfigMaps: fakeConfigmaps{},
 			Cronjob:    fakeCronjob{},
 			Deployment: fakeDeployment{},
 			Ingress:    fakeIngress{},
-			Secrets: &k8s.Secrets{
-				Clientset: clientset,
-				Config:    conf,
-			},
+			Secrets:    fakeSecrets{},
 			Service: &k8s.Service{
 				Clientset: clientset,
 				Config:    conf,
