@@ -22,11 +22,6 @@ func TestCreate(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, name, svcList[0].Name)
 
-	// configmaps
-	cmList, err := k.Client.ConfigMaps.List(namespace)
-	assert.NoError(t, err)
-	assert.Equal(t, "myapp-configuration.yaml", cmList[0].Name)
-
 	// secrets (index 1)
 	secList, err := k.Client.Secrets.List(namespace)
 	assert.NoError(t, err)

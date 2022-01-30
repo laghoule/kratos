@@ -19,14 +19,14 @@ const (
 	configFileName    = "settings.yaml"
 )
 
-func newConfigMaps() (*ConfigMaps, error) {
+func newConfigMaps() (*configMaps, error) {
 	conf := &config.Config{}
 
 	if err := conf.Load(configMapsConfig); err != nil {
 		return nil, err
 	}
 
-	return &ConfigMaps{
+	return &configMaps{
 		Clientset: fake.NewSimpleClientset(),
 		Config:    conf,
 	}, nil
@@ -62,7 +62,7 @@ func createConfigMap() *corev1.ConfigMap {
 	}
 }
 
-func createNotKratosConfigMaps(c *ConfigMaps) error {
+func createNotKratosConfigMaps(c *configMaps) error {
 	configmap := createConfigMap()
 	configmap.Labels = nil
 

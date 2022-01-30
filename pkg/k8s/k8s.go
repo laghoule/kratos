@@ -18,7 +18,7 @@ import (
 type Client struct {
 	Clientset  kubernetes.Interface
 	RestConfig *rest.Config
-	*ConfigMaps
+	ConfigMaps
 	Cronjob
 	Deployment
 	Ingress
@@ -55,7 +55,7 @@ func New(kubeconfig string, conf *config.Config) (*Client, error) {
 	return &Client{
 		Clientset:  clientset, // TODO: Check to eliminate the Clientset
 		RestConfig: config,    // TODO: Needed for certmanager client, check to better integrate this
-		ConfigMaps: &ConfigMaps{
+		ConfigMaps: &configMaps{
 			Clientset: clientset,
 			Config:    conf,
 		},

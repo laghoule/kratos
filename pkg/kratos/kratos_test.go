@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
 	netv1 "k8s.io/api/networking/v1"
 
 	"k8s.io/client-go/kubernetes/fake"
@@ -30,9 +31,16 @@ const (
 	hostname            = "example.com"
 )
 
+type fakeConfigmaps struct{}
 type fakeCronjob struct{}
 type fakeDeployment struct{}
 type fakeIngress struct{}
+
+func (f fakeConfigmaps) CreateUpdate(name, namespace string) error { return nil }
+func (f fakeConfigmaps) Delete(name, namespace string) error       { return nil }
+func (f fakeConfigmaps) List(namespace string) ([]corev1.ConfigMap, error) {
+	return []corev1.ConfigMap{}, nil
+}
 
 func (f fakeCronjob) CreateUpdate(name, namespace string) error { return nil }
 func (f fakeCronjob) Delete(name, namespace string) error       { return nil }
@@ -46,10 +54,12 @@ func (f fakeDeployment) List(namespace string) ([]appsv1.Deployment, error) {
 	return []appsv1.Deployment{}, nil
 }
 
-func (f fakeIngress) CheckIngressClassExist(name string) error       { return nil }
-func (f fakeIngress) CreateUpdate(name, namespace string) error      { return nil }
-func (f fakeIngress) Delete(name, namespace string) error            { return nil }
-func (f fakeIngress) List(namespace string) ([]netv1.Ingress, error) { return []netv1.Ingress{}, nil }
+func (f fakeIngress) CheckIngressClassExist(name string) error  { return nil }
+func (f fakeIngress) CreateUpdate(name, namespace string) error { return nil }
+func (f fakeIngress) Delete(name, namespace string) error       { return nil }
+func (f fakeIngress) List(namespace string) ([]netv1.Ingress, error) {
+	return []netv1.Ingress{}, nil
+}
 
 func new() *Kratos {
 	conf := createConf()
@@ -57,10 +67,7 @@ func new() *Kratos {
 	return &Kratos{
 		Client: &k8s.Client{
 			Clientset: clientset,
-			ConfigMaps: &k8s.ConfigMaps{
-				Clientset: clientset,
-				Config:    conf,
-			},
+			ConfigMaps: fakeConfigmaps{},
 			Cronjob:    fakeCronjob{},
 			Deployment: fakeDeployment{},
 			Ingress:    fakeIngress{},

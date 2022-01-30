@@ -13,14 +13,21 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// ConfigMaps contain the kubernetes clientset and configuration of the release
-type ConfigMaps struct {
+// ConfigMaps is the interface for configMaps
+type ConfigMaps interface {
+	CreateUpdate(string, string) error
+	Delete(string, string) error
+	List(string) ([]corev1.ConfigMap, error)
+}
+
+// configMaps contain the kubernetes clientset and configuration of the release
+type configMaps struct {
 	Clientset kubernetes.Interface
 	*config.Config
 }
 
 // checkOwnership check if it's safe to create, update or delete the configmaps
-func (c *ConfigMaps) checkOwnership(name, namespace string) error {
+func (c *configMaps) checkOwnership(name, namespace string) error {
 	configmap, err := c.Clientset.CoreV1().ConfigMaps(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -40,7 +47,7 @@ func (c *ConfigMaps) checkOwnership(name, namespace string) error {
 }
 
 // CreateUpdate create or update a configmaps
-func (c *ConfigMaps) CreateUpdate(name, namespace string) error {
+func (c *configMaps) CreateUpdate(name, namespace string) error {
 	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.ManagedLabel)
 	if err != nil {
 		return fmt.Errorf("converting label failed: %s", err)
@@ -101,7 +108,7 @@ func (c *ConfigMaps) CreateUpdate(name, namespace string) error {
 }
 
 // Delete the configmaps contained in conf for the specified namespace
-func (c *ConfigMaps) Delete(name, namespace string) error {
+func (c *configMaps) Delete(name, namespace string) error {
 	for _, file := range c.ConfigMaps.Files {
 		if err := c.delete(name+"-"+file.Name, namespace); err != nil {
 			return err
@@ -112,7 +119,7 @@ func (c *ConfigMaps) Delete(name, namespace string) error {
 }
 
 // delete a configmaps from a namespace
-func (c *ConfigMaps) delete(name, namespace string) error {
+func (c *configMaps) delete(name, namespace string) error {
 	if err := c.checkOwnership(name, namespace); err != nil {
 		return err
 	}
@@ -125,7 +132,7 @@ func (c *ConfigMaps) delete(name, namespace string) error {
 }
 
 // Get a configmap from a namespace
-func (c *ConfigMaps) get(name, namespace string) (*corev1.ConfigMap, error) {
+func (c *configMaps) get(name, namespace string) (*corev1.ConfigMap, error) {
 	configmap, err := c.Clientset.CoreV1().ConfigMaps(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("getting configmap %s failed: %s", name, err)
@@ -135,7 +142,7 @@ func (c *ConfigMaps) get(name, namespace string) (*corev1.ConfigMap, error) {
 }
 
 // List the configmaps in the specified namespace
-func (c *ConfigMaps) List(namespace string) ([]corev1.ConfigMap, error) {
+func (c *configMaps) List(namespace string) ([]corev1.ConfigMap, error) {
 	list, err := c.Clientset.CoreV1().ConfigMaps(namespace).List(context.Background(), metav1.ListOptions{
 		LabelSelector: config.ManagedLabel,
 	})
