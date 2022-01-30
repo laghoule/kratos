@@ -14,14 +14,21 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// Service contain the kubernetes clientset and configuration of the release
-type Service struct {
+// Service is the interface for service
+type Service interface {
+	CreateUpdate(string, string) error
+	Delete(string, string) error
+	List(string) ([]corev1.Service, error)
+}
+
+// service contain the kubernetes clientset and configuration of the release
+type service struct {
 	Clientset kubernetes.Interface
 	*config.Config
 }
 
 // checkOwnership check if it's safe to create, update or delete the service
-func (s *Service) checkOwnership(name, namespace string) error {
+func (s *service) checkOwnership(name, namespace string) error {
 	svc, err := s.Clientset.CoreV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -41,7 +48,7 @@ func (s *Service) checkOwnership(name, namespace string) error {
 }
 
 // CreateUpdate create or update a service
-func (s *Service) CreateUpdate(name, namespace string) error {
+func (s *service) CreateUpdate(name, namespace string) error {
 	if err := s.checkOwnership(name, namespace); err != nil {
 		return err
 	}
@@ -94,7 +101,7 @@ func (s *Service) CreateUpdate(name, namespace string) error {
 }
 
 // update an existing service. Used by CreateUpdateService.
-func (s *Service) update(name, namespace string) error {
+func (s *service) update(name, namespace string) error {
 	kratosLabel, err := labels.ConvertSelectorToLabelsMap(config.ManagedLabel)
 	if err != nil {
 		return nil
@@ -149,7 +156,7 @@ func (s *Service) update(name, namespace string) error {
 }
 
 // Delete the specified service
-func (s *Service) Delete(name, namespace string) error {
+func (s *service) Delete(name, namespace string) error {
 	if err := s.checkOwnership(name, namespace); err != nil {
 		return err
 	}
@@ -162,7 +169,7 @@ func (s *Service) Delete(name, namespace string) error {
 }
 
 // List services of the specified namespace
-func (s *Service) List(namespace string) ([]corev1.Service, error) {
+func (s *service) List(namespace string) ([]corev1.Service, error) {
 	list, err := s.Clientset.CoreV1().Services(namespace).List(context.Background(), metav1.ListOptions{
 		LabelSelector: config.ManagedLabel,
 	})

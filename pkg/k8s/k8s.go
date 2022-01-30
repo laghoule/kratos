@@ -23,7 +23,7 @@ type Client struct {
 	Deployment
 	Ingress
 	Secrets
-	*Service
+	Service
 }
 
 const (
@@ -75,7 +75,7 @@ func New(kubeconfig string, conf *config.Config) (*Client, error) {
 			Clientset: clientset,
 			Config:    conf,
 		},
-		Service: &Service{
+		Service: &service{
 			Clientset: clientset,
 			Config:    conf,
 		},

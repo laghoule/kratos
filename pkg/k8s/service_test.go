@@ -14,14 +14,14 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
-func newService() (*Service, error) {
+func newService() (*service, error) {
 	conf := &config.Config{}
 
 	if err := conf.Load(secretConfig); err != nil {
 		return nil, err
 	}
 
-	return &Service{
+	return &service{
 		Clientset: fake.NewSimpleClientset(),
 		Config:    conf,
 	}, nil
