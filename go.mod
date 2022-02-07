@@ -7,7 +7,7 @@ require (
 	github.com/imdario/mergo v0.3.12
 	github.com/jetstack/cert-manager v1.7.0
 	github.com/jinzhu/copier v0.3.5
-	github.com/pterm/pterm v0.12.34
+	github.com/pterm/pterm v0.12.36
 	github.com/spf13/cobra v1.3.0
 	github.com/spf13/viper v1.10.1
 	github.com/stretchr/testify v1.7.0
