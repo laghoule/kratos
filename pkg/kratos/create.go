@@ -23,7 +23,7 @@ func (k *Kratos) Create(name, namespace string) error {
 
 	// deployment
 	if k.Config.Deployment != nil {
-		spinner, _ := pterm.DefaultSpinner.Start("creating deployment")
+		spinner, _ := pterm.DefaultSpinner.Start("processing deployment")
 		if err := k.Client.Deployment.CreateUpdate(name, namespace); err != nil {
 			spinner.Fail(err)
 			runWithError = true
@@ -32,7 +32,7 @@ func (k *Kratos) Create(name, namespace string) error {
 		}
 
 		// service
-		spinner, _ = pterm.DefaultSpinner.Start("creating service")
+		spinner, _ = pterm.DefaultSpinner.Start("processing service")
 		if err := k.Client.Service.CreateUpdate(name, namespace); err != nil {
 			spinner.Fail(err)
 			runWithError = true
@@ -41,7 +41,7 @@ func (k *Kratos) Create(name, namespace string) error {
 		}
 
 		// ingress
-		spinner, _ = pterm.DefaultSpinner.Start("creating ingress")
+		spinner, _ = pterm.DefaultSpinner.Start("processing ingress")
 		if err := k.Client.Ingress.CreateUpdate(name, namespace); err != nil {
 			spinner.Fail(err)
 			runWithError = true
@@ -52,7 +52,7 @@ func (k *Kratos) Create(name, namespace string) error {
 
 	// cronjob
 	if k.Config.Cronjob != nil {
-		spinner, _ := pterm.DefaultSpinner.Start("creating cronjob")
+		spinner, _ := pterm.DefaultSpinner.Start("processing cronjob")
 		if err := k.Client.Cronjob.CreateUpdate(name, namespace); err != nil {
 			spinner.Fail(err)
 			runWithError = true
@@ -63,7 +63,7 @@ func (k *Kratos) Create(name, namespace string) error {
 
 	// configmaps
 	if k.Config.ConfigMaps != nil {
-		spinner, _ := pterm.DefaultSpinner.Start("creating configmaps")
+		spinner, _ := pterm.DefaultSpinner.Start("processing configmaps")
 		if err := k.Client.ConfigMaps.CreateUpdate(name, namespace); err != nil {
 			spinner.Fail(err)
 			runWithError = true
@@ -74,7 +74,7 @@ func (k *Kratos) Create(name, namespace string) error {
 
 	// secrets
 	if k.Config.Secrets != nil {
-		spinner, _ := pterm.DefaultSpinner.Start("creating secrets")
+		spinner, _ := pterm.DefaultSpinner.Start("processing secrets")
 		if err := k.Client.Secrets.CreateUpdate(name, namespace); err != nil {
 			spinner.Fail(err)
 			runWithError = true

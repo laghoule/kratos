@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/laghoule/kratos/pkg/kratos"
+	"github.com/pterm/pterm"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -24,6 +25,14 @@ var createCmd = &cobra.Command{
 
 		if err := k.CheckDependency(); err != nil {
 			errorExit(err.Error())
+		}
+
+		if exist, err := k.IsReleaseExist(name, namespace); exist && err == nil {
+			pterm.Warning.Printfln("existing release found for %s/%s, will do an update", namespace, name)
+		} else {
+			if err != nil {
+				errorExit(err.Error())
+			}
 		}
 
 		if err := k.Create(name, namespace); err != nil {

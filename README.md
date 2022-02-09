@@ -45,6 +45,7 @@ Available Commands:
   help        Help about any command
   init        Create an empty configuration file.
   list        List applications.
+  update      Update an application
   version     Show version of kratos.
 
 Flags:
