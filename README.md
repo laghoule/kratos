@@ -26,7 +26,7 @@ Contribution are welcome.
 
 ## Prerequisite
 
-* Kubernetes 1.19+ (use of Ingress V1)
+* Kubernetes 1.19+
 * Certmanager for TLS certificates
 * A working kubeconfig configuration
 
@@ -42,10 +42,10 @@ Available Commands:
   create      Deploy an application.
   delete      Delete an application.
   get         Retreive a configuration of deployed application.
-  help        Help about any command
+  help        Help about any command.
   init        Create an empty configuration file.
   list        List applications.
-  update      Update an application
+  update      Update an application.
   version     Show version of kratos.
 
 Flags:
