@@ -12,23 +12,7 @@ import (
 func (k *Kratos) Delete(name, namespace string) error {
 	runWithError := false
 
-	secret, err := k.Get(name+config.ConfigSuffix, namespace)
-	if err != nil {
-		return fmt.Errorf("getting config from secret failed: %s", err)
-	}
-
-	conf := ""
-	if _, ok := secret.Data[config.ConfigKey]; ok {
-		conf = string(secret.Data[config.ConfigKey])
-	} else {
-		if _, ok := secret.StringData[config.ConfigKey]; ok {
-			conf = secret.StringData[config.ConfigKey]
-		} else {
-			return fmt.Errorf("getting config data from secret failed")
-		}
-	}
-
-	if err := k.Config.LoadFromString(conf); err != nil {
+	if err := k.loadConfigFromSecret(name, namespace); err != nil {
 		return err
 	}
 

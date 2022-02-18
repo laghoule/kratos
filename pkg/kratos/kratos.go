@@ -1,6 +1,8 @@
 package kratos
 
 import (
+	"fmt"
+
 	"github.com/laghoule/kratos/pkg/certmanager"
 	"github.com/laghoule/kratos/pkg/config"
 	"github.com/laghoule/kratos/pkg/k8s"
@@ -35,15 +37,11 @@ func New(confFile, kubeconfig string) (*Kratos, error) {
 
 // CheckDependency check if all dependency are met
 func (k *Kratos) CheckDependency() error {
-	// check if we meet k8s version requirement
 	if err := k.CheckVersionDepency(); err != nil {
 		return err
 	}
 
-	// dependency for deployment
 	if k.Config.Deployment != nil {
-
-		// validate clusterIssuer
 		if cm, err := certmanager.New(*k.Client); err == nil {
 			if err := cm.CheckClusterIssuerExist(k.Client, k.Config.Deployment.Ingress.ClusterIssuer); err != nil {
 				return err
@@ -51,11 +49,35 @@ func (k *Kratos) CheckDependency() error {
 		} else {
 			return err
 		}
-
-		// validate ingressClass
+		
 		if err := k.Client.CheckIngressClassExist(k.Config.Deployment.Ingress.IngressClass); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+// loadConfigFromSecret load application config from secret
+func (k *Kratos) loadConfigFromSecret(name, namespace string) error {
+	secret, err := k.Get(name+config.ConfigSuffix, namespace)
+	if err != nil {
+		return fmt.Errorf("getting config from secret failed: %s", err)
+	}
+
+	var conf string
+	if _, ok := secret.Data[config.ConfigKey]; ok {
+		conf = string(secret.Data[config.ConfigKey])
+	} else {
+		if _, ok := secret.StringData[config.ConfigKey]; ok {
+			conf = secret.StringData[config.ConfigKey]
+		} else {
+			return fmt.Errorf("getting config data from secret failed")
+		}
+	}
+
+	if err := k.Config.LoadFromString(conf); err != nil {
+		return err
 	}
 
 	return nil
