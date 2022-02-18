@@ -18,7 +18,7 @@ var listCmd = &cobra.Command{
 			errorExit(err.Error())
 		}
 
-		if err := k.PrintList(viper.GetString("listNamespace")); err != nil {
+		if err := k.PrintList(viper.GetString("lNamespace")); err != nil {
 			errorExit(err.Error())
 		}
 	},
@@ -28,7 +28,7 @@ func init() {
 	rootCmd.AddCommand(listCmd)
 	listCmd.Flags().StringP("namespace", "n", "", "specify a namespace")
 
-	if err := viper.BindPFlag("listNamespace", listCmd.Flags().Lookup("namespace")); err != nil {
+	if err := viper.BindPFlag("lNamespace", listCmd.Flags().Lookup("namespace")); err != nil {
 		errorExit(err.Error())
 	}
 }
