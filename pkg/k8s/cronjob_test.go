@@ -99,9 +99,9 @@ func createCronjobs() *batchv1.CronJob {
 									VolumeMounts: []corev1.VolumeMount{},
 								},
 							},
-							AutomountServiceAccountToken: common.BoolPTR(false),
+							AutomountServiceAccountToken: common.PTR(false),
 							SecurityContext: &corev1.PodSecurityContext{
-								RunAsNonRoot: common.BoolPTR(true),
+								RunAsNonRoot: common.PTR(true),
 							},
 							Volumes: []corev1.Volume{},
 						},

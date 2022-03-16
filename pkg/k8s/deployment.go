@@ -132,9 +132,9 @@ func (d *deployment) CreateUpdate(name, namespace string) error {
 				},
 				Spec: corev1.PodSpec{
 					Containers:                   containers,
-					AutomountServiceAccountToken: common.BoolPTR(false),
+					AutomountServiceAccountToken: common.PTR(false),
 					SecurityContext: &corev1.PodSecurityContext{
-						RunAsNonRoot: common.BoolPTR(true),
+						RunAsNonRoot: common.PTR(true),
 					},
 					Volumes: volumes,
 				},

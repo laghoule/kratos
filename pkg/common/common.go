@@ -16,9 +16,9 @@ func ListContain(list []string, searchItem string) bool {
 	return false
 }
 
-// BoolPTR return a bool pointer
-func BoolPTR(b bool) *bool {
-	return &b
+// PTR return a pointer
+func PTR[T any](t T) *T {
+	return &t
 }
 
 // MD5Sum16 return a md5sum cut to 16 caracters

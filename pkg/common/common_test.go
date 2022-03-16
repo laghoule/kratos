@@ -6,9 +6,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestBoolPTR(t *testing.T) {
+func TestPTR(t *testing.T) {
 	expected := true
-	assert.Equal(t, &expected, BoolPTR(true))
+	assert.Equal(t, &expected, PTR(true))
 }
 
 func TestMD5Sum16(t *testing.T) {

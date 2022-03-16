@@ -123,9 +123,9 @@ func createDeployment() *appsv1.Deployment {
 							},
 						},
 					},
-					AutomountServiceAccountToken: common.BoolPTR(false),
+					AutomountServiceAccountToken: common.PTR(false),
 					SecurityContext: &corev1.PodSecurityContext{
-						RunAsNonRoot: common.BoolPTR(true),
+						RunAsNonRoot: common.PTR(true),
 					},
 					Volumes: []corev1.Volume{
 						{
