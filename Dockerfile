@@ -1,4 +1,4 @@
-FROM golang:1.17-alpine AS dep
+FROM golang:1.18-alpine AS dep
 WORKDIR /src/
 COPY . .
 RUN go get -d -v

@@ -29,6 +29,7 @@ Contribution are welcome.
 ## Prerequisite
 
 * Kubernetes 1.19+
+* Golang 1.18+ for building
 * Certmanager for TLS certificates
 * A working kubeconfig configuration
 
