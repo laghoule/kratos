@@ -26,9 +26,5 @@ func MD5Sum16(input string) string {
 	hash := md5.New()
 	md5sum := fmt.Sprintf("%x", hash.Sum([]byte(input)))
 
-	if len(md5sum) > 16 {
-		return md5sum[0:16]
-	}
-
-	return md5sum
+	return md5sum[0:16]
 }
