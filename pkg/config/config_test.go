@@ -1,6 +1,7 @@
 package config
 
 import (
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -309,4 +310,32 @@ func TestListContainerNames(t *testing.T) {
 	d := createDeploymentConf()
 	list := d.listContainerNames()
 	assert.Contains(t, list, name)
+}
+
+func TestLoadFromString(t *testing.T) {
+	c := &Config{}
+	expected := &Config{}
+
+	if err := c.Load(deploymentConfig); err != nil {
+		t.Error(err)
+	}
+
+	file, err := os.ReadFile(deploymentConfig)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if err := expected.LoadFromString(string(file)); err != nil {
+		t.Error(err)
+	}
+
+	assert.Equal(t, expected, c)
+}
+
+func TestLoadFromStringError(t *testing.T) {
+	c := &Config{}
+	yaml := " broken yaml"
+
+	err := c.LoadFromString(yaml)
+	assert.Error(t, err)
 }
