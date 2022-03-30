@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/go-playground/validator/v10 v10.10.1
 	github.com/imdario/mergo v0.3.12
-	github.com/jetstack/cert-manager v1.7.1
+	github.com/jetstack/cert-manager v1.7.2
 	github.com/jinzhu/copier v0.3.5
 	github.com/pterm/pterm v0.12.39
 	github.com/spf13/cobra v1.4.0
