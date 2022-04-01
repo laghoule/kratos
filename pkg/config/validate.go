@@ -207,6 +207,8 @@ func (r *ResourceType) validateConfig(container, rType string) error {
 	return nil
 }
 
+// TODO: use generic for secrets & config validation
+
 // validateConfig validate secrets labels & annotations
 func (s *Secrets) validateConfig(conf *Config) error {
 	if err := validateLabelsAnnotations(conf.Common, s.Labels, s.Annotations); err != nil {

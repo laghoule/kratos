@@ -9,6 +9,7 @@ import (
 	fake "github.com/jetstack/cert-manager/pkg/client/clientset/versioned/fake"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/rest"
 )
 
 const (
@@ -27,6 +28,15 @@ func createClusterIssuer() *cmv1.ClusterIssuer {
 func new() *Certmanager {
 	c := fake.NewSimpleClientset(createClusterIssuer())
 	return &Certmanager{Interface: c}
+}
+
+func TestNew(t *testing.T) {
+	k := k8s.Client{
+		RestConfig: &rest.Config{},
+	}
+
+	_, err := New(k)
+	assert.NoError(t, err)
 }
 
 func TestCheckClusterIssuer(t *testing.T) {

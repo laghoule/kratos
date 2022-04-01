@@ -42,9 +42,42 @@ func TestConfigValidateConfig(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestConfigValidateConfigError(t *testing.T) {
+func TestConfigValidateDeploymentError(t *testing.T) {
 	c := createDeploymentConf()
 	c.Deployment.Labels["environment"] = environment
+	err := c.validateConfig()
+	assert.Error(t, err)
+}
+
+func TestConfigValidateCronjobError(t *testing.T) {
+	c := createCronjobConf()
+	c.Cronjob.Labels["environment"] = environment
+	err := c.validateConfig()
+	assert.Error(t, err)
+}
+
+func TestConfigValidateConfigMapsError(t *testing.T) {
+	c := createDeploymentConf()
+	c.ConfigMaps.Labels["environment"] = environment
+	err := c.ConfigMaps.validateConfig(c)
+	assert.Error(t, err)
+	err = c.validateConfig()
+	assert.Error(t, err)
+}
+
+func TestConfigValidateSecretsError(t *testing.T) {
+	c := createDeploymentConf()
+	c.Secrets.Labels["environment"] = environment
+	err := c.Secrets.validateConfig(c)
+	assert.Error(t, err)
+	err = c.validateConfig()
+	assert.Error(t, err)
+}
+
+func TestConfigValidateMountPathError(t *testing.T) {
+	c := createDeploymentConf()
+	c.ConfigMaps.Files[0].Mount.Path = "/tmp"
+	c.Secrets.Files[0].Mount.Path = "/tmp"
 	err := c.validateConfig()
 	assert.Error(t, err)
 }
