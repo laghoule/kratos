@@ -65,13 +65,15 @@ func (c *Config) validateConfig() error {
 	}
 
 	if c.ConfigMaps != nil {
-		if err := c.ConfigMaps.validateConfig(c); err != nil {
+		d := DataFiles(*c.ConfigMaps)
+		if err := d.validateConfig(c); err != nil {
 			return err
 		}
 	}
 
 	if c.Secrets != nil {
-		if err := c.Secrets.validateConfig(c); err != nil {
+		d := DataFiles(*c.Secrets)
+		if err := d.validateConfig(c); err != nil {
 			return err
 		}
 	}
@@ -207,28 +209,13 @@ func (r *ResourceType) validateConfig(container, rType string) error {
 	return nil
 }
 
-// TODO: use generic for secrets & config validation
-
-// validateConfig validate secrets labels & annotations
-func (s *Secrets) validateConfig(conf *Config) error {
-	if err := validateLabelsAnnotations(conf.Common, s.Labels, s.Annotations); err != nil {
+// validateConfig validate configmaps / secrets labels & annotations
+func (d *DataFiles) validateConfig(conf *Config) error {
+	if err := validateLabelsAnnotations(conf.Common, d.Labels, d.Annotations); err != nil {
 		return err
 	}
 
-	if err := validateExposedTo(s.Files, conf); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// validateConfig validate configmaps labels & annotations
-func (c *ConfigMaps) validateConfig(conf *Config) error {
-	if err := validateLabelsAnnotations(conf.Common, c.Labels, c.Annotations); err != nil {
-		return err
-	}
-
-	if err := validateExposedTo(c.Files, conf); err != nil {
+	if err := validateExposedTo(d.Files, conf); err != nil {
 		return err
 	}
 

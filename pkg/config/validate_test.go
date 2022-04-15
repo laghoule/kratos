@@ -59,7 +59,8 @@ func TestConfigValidateCronjobError(t *testing.T) {
 func TestConfigValidateConfigMapsError(t *testing.T) {
 	c := createDeploymentConf()
 	c.ConfigMaps.Labels["environment"] = environment
-	err := c.ConfigMaps.validateConfig(c)
+	d := DataFiles(*c.ConfigMaps)
+	err := d.validateConfig(c)
 	assert.Error(t, err)
 	err = c.validateConfig()
 	assert.Error(t, err)
@@ -68,7 +69,8 @@ func TestConfigValidateConfigMapsError(t *testing.T) {
 func TestConfigValidateSecretsError(t *testing.T) {
 	c := createDeploymentConf()
 	c.Secrets.Labels["environment"] = environment
-	err := c.Secrets.validateConfig(c)
+	d := DataFiles(*c.Secrets)
+	err := d.validateConfig(c)
 	assert.Error(t, err)
 	err = c.validateConfig()
 	assert.Error(t, err)
@@ -188,8 +190,8 @@ func TestResourceTypeValidateConfigERROR(t *testing.T) {
 
 func TestSecretValidateConfig(t *testing.T) {
 	c := createDeploymentConf()
-	secret := c.Secrets
-	err := secret.validateConfig(c)
+	d := DataFiles(*c.Secrets)
+	err := d.validateConfig(c)
 	assert.NoError(t, err)
 }
 
@@ -197,14 +199,15 @@ func TestSecretValidateConfigError(t *testing.T) {
 	c := createDeploymentConf()
 	secret := c.Secrets
 	secret.Files[0].Mount.ExposedTo = []string{"error"}
-	err := secret.validateConfig(c)
+	d := DataFiles(*c.Secrets)
+	err := d.validateConfig(c)
 	assert.Error(t, err)
 }
 
 func TestConfigMapsValidateConfig(t *testing.T) {
 	c := createDeploymentConf()
-	cm := c.ConfigMaps
-	err := cm.validateConfig(c)
+	d := DataFiles(*c.ConfigMaps)
+	err := d.validateConfig(c)
 	assert.NoError(t, err)
 }
 
@@ -212,7 +215,8 @@ func TestConfigMapsValidateConfigError(t *testing.T) {
 	c := createDeploymentConf()
 	cm := c.ConfigMaps
 	cm.Files[0].Mount.ExposedTo = []string{"error"}
-	err := cm.validateConfig(c)
+	d := DataFiles(*cm)
+	err := d.validateConfig(c)
 	assert.Error(t, err)
 }
 

@@ -99,14 +99,13 @@ type Cronjob struct {
 }
 
 // ConfigMaps represent the Kubernetes configmaps
-type ConfigMaps struct {
-	Labels      map[string]string `yaml:"labels,omitempty"`
-	Annotations map[string]string `yaml:"annotations,omitempty"`
-	Files       []File            `yaml:"files" validate:"required,dive"`
-}
+type ConfigMaps DataFiles
 
 // Secrets represent the Kubernetes secrets
-type Secrets struct {
+type Secrets DataFiles
+
+// DataFiles represent the common data struct for ConfigMaps and Secrets
+type DataFiles struct {
 	Labels      map[string]string `yaml:"labels,omitempty"`
 	Annotations map[string]string `yaml:"annotations,omitempty"`
 	Files       []File            `yaml:"files" validate:"required,dive"`
