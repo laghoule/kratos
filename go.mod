@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/go-playground/validator/v10 v10.11.0
-	github.com/imdario/mergo v0.3.12
+	github.com/imdario/mergo v0.3.13
 	github.com/jetstack/cert-manager v1.7.2
 	github.com/jinzhu/copier v0.3.5
 	github.com/pterm/pterm v0.12.41
@@ -12,7 +12,7 @@ require (
 	github.com/spf13/viper v1.11.0
 	github.com/stretchr/testify v1.7.1
 	golang.org/x/mod v0.5.1
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+	gopkg.in/yaml.v3 v3.0.0
 	k8s.io/api v0.24.0
 	k8s.io/apimachinery v0.24.0
 	k8s.io/client-go v0.24.0
