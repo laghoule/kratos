@@ -10,7 +10,7 @@ require (
 	github.com/pterm/pterm v0.12.42
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/viper v1.12.0
-	github.com/stretchr/testify v1.7.5
+	github.com/stretchr/testify v1.8.0
 	golang.org/x/mod v0.5.1
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.24.2
